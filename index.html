@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickFix Pro - Professional Service Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6B46C1',
+                        'primary-dark': '#553C9A',
+                        'primary-light': '#8B5CF6',
+                        secondary: '#059669',
+                        'secondary-dark': '#047857',
+                        'secondary-light': '#10B981',
+                        accent: '#F59E0B',
+                        'accent-dark': '#D97706',
+                        'accent-light': '#FBBF24',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        info: '#3B82F6',
+                        neutral: '#374151',
+                        'neutral-light': '#6B7280',
+                        'text-primary': '#1F2937',
+                        'text-secondary': '#4B5563',
+                        'gray-50': '#FAFAFA',
+                        'gray-100': '#F4F4F5',
+                        'gray-200': '#E4E4E7',
+                        'gray-300': '#D4D4D8',
+                        'gray-400': '#A1A1AA',
+                        'gray-500': '#71717A',
+                        'gray-600': '#52525B',
+                        'gray-700': '#3F3F46',
+                        'gray-800': '#27272A',
+                        'gray-900': '#18181B'
+                    },
+                    fontSize: {
+                        'xs': ['0.875rem', { lineHeight: '1.5' }],
+                        'sm': ['1rem', { lineHeight: '1.6' }],
+                        'base': ['1.125rem', { lineHeight: '1.7' }],
+                        'lg': ['1.25rem', { lineHeight: '1.7' }],
+                        'xl': ['1.5rem', { lineHeight: '1.7' }],
+                        '2xl': ['1.875rem', { lineHeight: '1.6' }],
+                        '3xl': ['2.25rem', { lineHeight: '1.5' }],
+                        '4xl': ['2.75rem', { lineHeight: '1.4' }],
+                        '5xl': ['3.25rem', { lineHeight: '1.3' }],
+                        '6xl': ['3.75rem', { lineHeight: '1.2' }]
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    screens: {
+                        'xs': '475px',
+                        'sm': '640px',
+                        'md': '768px',
+                        'lg': '1024px',
+                        'xl': '1280px',
+                        '2xl': '1536px'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out',
+                        'bounce-gentle': 'bounceGentle 0.6s ease-out',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-gentle': 'pulseGentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideIn: {
+                            '0%': { opacity: '0', transform: 'translateX(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        },
+                        bounceGentle: {
+                            '0%, 20%, 53%, 80%, 100%': { transform: 'translate3d(0,0,0)' },
+                            '40%, 43%': { transform: 'translate3d(0, -3px, 0)' },
+                            '70%': { transform: 'translate3d(0, -2px, 0)' },
+                            '90%': { transform: 'translate3d(0, -1px, 0)' }
+                        },
+                        shimmer: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-3px)' }
+                        },
+                        pulseGentle: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '.8' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F4F4F5 100%);
+            color: #1F2937;
+            font-size: 1.125rem;
+            line-height: 1.7;
+        }
+        
+        /* Responsive container system */
+        .responsive-container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        @media (min-width: 475px) {
+            .responsive-container { max-width: 475px; }
+        }
+        
+        @media (min-width: 640px) {
+            .responsive-container { 
+                max-width: 640px; 
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .responsive-container { max-width: 768px; }
+        }
+        
+        @media (min-width: 1024px) {
+            .responsive-container { 
+                max-width: 1024px;
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            .responsive-container { max-width: 1280px; }
+        }
+        
+        @media (min-width: 1536px) {
+            .responsive-container { max-width: 1536px; }
+        }
+        
+        /* Enhanced button system with animations */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            outline: none;
+            min-height: 40px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .btn-base {
+                min-height: 44px;
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+        
+        .btn-base::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-base:hover::before {
+            left: 100%;
+        }
+        
+        .btn-base:focus {
+            ring: 3px solid currentColor;
+            ring-opacity: 30%;
+        }
+        
+        .btn-base:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-base:active {
+            transform: translateY(-1px);
+            transition: all 0.1s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(107, 70, 193, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #553C9A 0%, #7C3AED 100%);
+            box-shadow: 0 8px 25px rgba(107, 70, 193, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-accent:hover {
+            background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #6B46C1;
+            border: 2px solid #6B46C1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-outline:hover {
+            background: #6B46C1;
+            color: white;
+            box-shadow: 0 8px 25px rgba(107, 70, 193, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Enhanced card system with professional animations */
+        .card {
+            background: white;
+            border: 1px solid #E4E4E7;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .card {
+                padding: 2rem;
+                border-radius: 20px;
+            }
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            border-color: #6B46C1;
+        }
+        
+        .card-interactive {
+            cursor: pointer;
+        }
+        
+        .card-interactive:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+        
+        /* Professional card enhanced animations */
+        .professional-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .professional-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        .professional-card .avatar-container {
+            transition: all 0.3s ease;
+        }
+        
+        .professional-card:hover .avatar-container {
+            transform: scale(1.1) rotate(2deg);
+        }
+        
+        .professional-card .qualification-badge {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .professional-card:hover .qualification-badge {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Language dropdown with animations */
+        .language-dropdown {
+            position: relative;
+        }
+        
+        .language-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #E4E4E7;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        
+        .language-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        .language-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #F4F4F5;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .language-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1), transparent);
+            transition: left 0.3s ease;
+        }
+        
+        .language-item:hover::before {
+            left: 100%;
+        }
+        
+        .language-item:last-child {
+            border-bottom: none;
+        }
+        
+        .language-item:hover {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            transform: translateX(5px);
+        }
+        
+        .language-item.active {
+            background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+            color: #6B46C1;
+            font-weight: 600;
+        }
+        
+        /* Mobile navigation animations */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid #E4E4E7;
+            padding: 0.75rem 0 1rem;
+            z-index: 100;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-nav {
+                display: none;
+            }
+            
+            body {
+                padding-bottom: 0 !important;
+            }
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: #71717A;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 12px;
+            margin: 0 0.25rem;
+        }
+        
+        .nav-item.active {
+            color: #6B46C1;
+            background: linear-gradient(135deg, rgba(107, 70, 193, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            transform: scale(1.05);
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-3px) scale(1.05);
+            color: #6B46C1;
+            background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+        
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover i {
+            transform: scale(1.1);
+        }
+        
+        /* Form styles with animations */
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            border: 2px solid #D4D4D8;
+            border-radius: 12px;
+            background: white;
+            color: #1F2937;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        @media (min-width: 768px) {
+            .form-input {
+                padding: 1.25rem;
+                font-size: 1.125rem;
+            }
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #6B46C1;
+            box-shadow: 0 0 0 4px rgba(107, 70, 193, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .form-input:hover {
+            border-color: #8B5CF6;
+            transform: translateY(-1px);
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s ease;
+        }
+        
+        .form-group:focus-within .form-label {
+            color: #6B46C1;
+        }
+        
+        /* Modal system with enhanced animations */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        @media (min-width: 768px) {
+            .modal-content {
+                max-width: 600px;
+            }
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid #E4E4E7;
+            text-align: center;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 44px;
+            height: 44px;
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .close-btn:hover {
+            background: #DC2626;
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Data visualization with animations */
+        .stat-card {
+            background: white;
+            border: 1px solid #E4E4E7;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1), transparent);
+            transition: left 0.8s ease;
+        }
+        
+        .stat-card:hover::before {
+            left: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #6B46C1;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-value {
+            transform: scale(1.1);
+        }
+        
+        @media (min-width: 768px) {
+            .stat-value {
+                font-size: 3rem;
+            }
+        }
+        
+        .stat-label {
+            color: #71717A;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-label {
+            color: #6B46C1;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #E4E4E7;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Service icons with floating animation */
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        @media (min-width: 768px) {
+            .service-icon {
+                width: 72px;
+                height: 72px;
+                font-size: 2rem;
+            }
+        }
+        
+        .service-icon:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            animation: float 1s ease-in-out;
+        }
+        
+        /* Qualification badges */
+        .qualification-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+            color: #6B46C1;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0.25rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(107, 70, 193, 0.2);
+        }
+        
+        .qualification-badge:hover {
+            background: linear-gradient(135deg, #DDD6FE 0%, #C4B5FD 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(107, 70, 193, 0.2);
+        }
+        
+        .qualification-badge i {
+            margin-right: 0.375rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Rating stars animation */
+        .rating-stars {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .rating-stars .star {
+            color: #FCD34D;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .rating-stars:hover .star {
+            transform: scale(1.2);
+        }
+        
+        .rating-stars .star:hover ~ .star {
+            transform: scale(0.8);
+        }
+        
+        /* Hide elements based on screen size */
+        @media (max-width: 767px) {
+            .desktop-only {
+                display: none !important;
+            }
+            
+            .mobile-only {
+                display: block !important;
+            }
+            
+            body {
+                padding-bottom: 90px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-only {
+                display: none !important;
+            }
+        }
+        
+        /* Search suggestions with animations */
+        .search-suggestions {
+            background: white;
+            border: 2px solid #6B46C1;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            transform: translateY(-5px) scale(0.98);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .search-suggestions.show {
+            transform: translateY(0) scale(1);
+        }
+        
+        .suggestion-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #F4F4F5;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .suggestion-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1), transparent);
+            transition: left 0.3s ease;
+        }
+        
+        .suggestion-item:hover::before {
+            left: 100%;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+            transform: translateX(5px);
+        }
+        
+        /* Admin earnings highlight */
+        .earnings-highlight {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 12px 40px rgba(245, 158, 11, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .earnings-highlight::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse-gentle 3s ease-in-out infinite;
+        }
+        
+        /* User type card animations */
+        .user-type-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .user-type-card:hover::before {
+            left: 100%;
+        }
+        
+        .user-type-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Professional experience timeline */
+        .experience-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .experience-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #6B46C1, #8B5CF6);
+        }
+        
+        .experience-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .experience-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6B46C1;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #6B46C1;
+        }
+        
+        .experience-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Service page styles */
+        .service-page {
+            min-height: 100vh;
+            padding-bottom: 90px;
+        }
+
+        .service-hero {
+            background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .breadcrumb {
+            background: #F3F4F6;
+            padding: 1rem 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .breadcrumb-link {
+            color: #6B46C1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-link:hover {
+            color: #553C9A;
+        }
+
+        .service-professional {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .service-professional:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #6B46C1;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            background: #6B46C1;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #553C9A;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(107, 70, 193, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                left: 10px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button for Service Pages -->
+    <button id="backBtn" class="back-btn hidden" onclick="goBackToHome()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <!-- Slimmer Responsive Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="responsive-container">
+            <div class="flex items-center justify-between h-12 md:h-14">
+                <!-- Language Dropdown & Logo (Close Together) -->
+                <div class="flex items-center space-x-3">
+                    <div class="language-dropdown">
+                        <button id="languageBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="toggleLanguageMenu(event)">
+                            <i class="fas fa-globe text-lg text-primary mr-1.5"></i>
+                            <span id="currentLang" class="hidden sm:inline font-semibold text-primary text-sm">EN</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500 ml-1"></i>
+                        </button>
+                        <div id="languageMenu" class="language-menu">
+                            <div class="language-item active" onclick="setLanguage('en', 'English', '🇺🇸', event)">
+                                <span class="mr-3">🇺🇸</span> English
+                            </div>
+                            <div class="language-item" onclick="setLanguage('es', 'Español', '🇪🇸', event)">
+                                <span class="mr-3">🇪🇸</span> Español
+                            </div>
+                            <div class="language-item" onclick="setLanguage('fr', 'Français', '🇫🇷', event)">
+                                <span class="mr-3">🇫🇷</span> Français
+                            </div>
+                            <div class="language-item" onclick="setLanguage('de', 'Deutsch', '🇩🇪', event)">
+                                <span class="mr-3">🇩🇪</span> Deutsch
+                            </div>
+                            <div class="language-item" onclick="setLanguage('it', 'Italiano', '🇮🇹', event)">
+                                <span class="mr-3">🇮🇹</span> Italiano
+                            </div>
+                            <div class="language-item" onclick="setLanguage('pt', 'Português', '🇵🇹', event)">
+                                <span class="mr-3">🇵🇹</span> Português
+                            </div>
+                            <div class="language-item" onclick="setLanguage('zh', '中文', '🇨🇳', event)">
+                                <span class="mr-3">🇨🇳</span> 中文
+                            </div>
+                            <div class="language-item" onclick="setLanguage('ja', '日本語', '🇯🇵', event)">
+                                <span class="mr-3">🇯🇵</span> 日本語
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logo (Now close to language menu) -->
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
+                            <i class="fas fa-tools text-white text-sm md:text-base"></i>
+                        </div>
+                        <div class="hidden xs:block">
+                            <h1 class="text-lg md:text-xl font-black text-primary">QuickFix Pro</h1>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side - Desktop Navigation & User Menu -->
+                <div class="flex items-center space-x-2">
+                    <!-- Desktop Navigation with Padding -->
+                    <div class="desktop-only hidden lg:flex items-center space-x-2">
+                        <button id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer', event)">
+                            <i class="fas fa-home mr-1.5"></i>Customer
+                        </button>
+                        <button id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('professional', event)">
+                            <i class="fas fa-briefcase mr-1.5"></i>Professional
+                        </button>
+                        <button id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('admin', event)">
+                            <i class="fas fa-crown mr-1.5"></i>Admin
+                        </button>
+                    </div>
+
+                    <!-- User Menu -->
+                    <button id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal', event)">
+                        <div id="userAvatar" class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Customer View -->
+    <div id="customerView" class="min-h-screen pb-20 md:pb-8">
+        <!-- Hero Section (Smaller) -->
+        <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] animate-float"></div>
+            <div class="responsive-container text-center relative z-10">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-4 animate-fade-in">Fix It Fast</h1>
+                <h2 class="text-lg md:text-2xl font-bold text-purple-100 mb-6 md:mb-8 animate-slide-up">Find Expert Professionals</h2>
+                
+                <!-- Search -->
+                <div class="relative max-w-md md:max-w-2xl mx-auto animate-slide-up">
+                    <input type="text" id="searchInput" 
+                           placeholder="What needs fixing? (e.g., 'leaky tap', 'IKEA assembly')" 
+                           class="form-input pr-16 text-gray-900 text-base md:text-lg shadow-2xl">
+                    <button id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" onclick="executeSearchFromInput(event)">
+                        <i class="fas fa-search text-white text-lg md:text-xl"></i>
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions absolute top-full left-0 right-0 mt-2 rounded-lg hidden z-20"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Services (Smaller with Navigation) -->
+        <div class="responsive-container py-6 md:py-8">
+            <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-text-primary animate-slide-up">Popular Services</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4" id="popularServices"></div>
+        </div>
+
+        <!-- Trust Stats (Smaller) -->
+        <div class="bg-white py-6 md:py-10 my-4 md:my-8">
+            <div class="responsive-container">
+                <h2 class="text-xl md:text-2xl font-black text-center mb-6 md:mb-8 text-text-primary animate-slide-up">Trusted Worldwide</h2>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6" id="trustStats">
+                    <div class="stat-card animate-scale-in">
+                        <div class="stat-value text-2xl md:text-3xl">12K+</div>
+                        <div class="stat-label">Verified Professionals</div>
+                    </div>
+                    <div class="stat-card animate-scale-in" style="animation-delay: 0.1s;">
+                        <div class="stat-value text-2xl md:text-3xl">85K+</div>
+                        <div class="stat-label">Jobs Completed</div>
+                    </div>
+                    <div class="stat-card animate-scale-in" style="animation-delay: 0.2s;">
+                        <div class="stat-value text-2xl md:text-3xl">4.9★</div>
+                        <div class="stat-label">Average Rating</div>
+                    </div>
+                    <div class="stat-card animate-scale-in" style="animation-delay: 0.3s;">
+                        <div class="stat-value text-2xl md:text-3xl">24/7</div>
+                        <div class="stat-label">Support Available</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Categories (Smaller) -->
+        <div class="responsive-container py-6 md:py-10">
+            <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">All Services</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" id="serviceCategories"></div>
+        </div>
+
+        <!-- Featured Professionals (Smaller) -->
+        <div class="responsive-container py-6 md:py-10">
+            <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">Top Professionals</h2>
+            <div id="featuredProfessionals" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+        </div>
+    </div>
+
+    <!-- Service Pages -->
+    <div id="ikeaAssemblyPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">IKEA Assembly</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-tools text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">IKEA Assembly</h1>
+                        <p class="text-xl text-purple-100">Professional furniture assembly service</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Get your IKEA furniture assembled quickly and correctly by experienced professionals. No more confusing instructions!</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available IKEA Assembly Professionals</h2>
+            <div id="ikeaAssemblyProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="tvMountingPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">TV Mounting</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-tv text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">TV Mounting</h1>
+                        <p class="text-xl text-purple-100">Professional TV wall mounting service</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Secure, professional TV mounting with perfect positioning and cable management. All wall types supported!</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available TV Mounting Professionals</h2>
+            <div id="tvMountingProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="leakyTapPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">Leaky Tap Repair</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-faucet text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">Leaky Tap Repair</h1>
+                        <p class="text-xl text-purple-100">Quick and reliable tap repair service</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Stop that annoying drip! Our plumbing experts will fix your leaky tap quickly and efficiently.</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available Plumbing Professionals</h2>
+            <div id="leakyTapProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="acRepairPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">AC Repair</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-snowflake text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">AC Repair</h1>
+                        <p class="text-xl text-purple-100">Fast air conditioning repair service</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Stay cool with our expert AC repair service. Quick diagnosis and professional repairs for all AC units.</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available HVAC Professionals</h2>
+            <div id="acRepairProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="blockedDrainPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">Blocked Drain</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-toilet text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">Blocked Drain</h1>
+                        <p class="text-xl text-purple-100">Professional drain unblocking service</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Clear any blockage fast! Our drain specialists use professional tools to get your drains flowing again.</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available Drainage Professionals</h2>
+            <div id="blockedDrainProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="ceilingFanPage" class="service-page hidden">
+        <div class="breadcrumb">
+            <div class="responsive-container">
+                <div class="flex items-center text-sm">
+                    <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-gray-600">Ceiling Fan Repair</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-hero">
+            <div class="responsive-container">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-fan text-4xl text-white"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="text-3xl md:text-5xl font-black mb-2">Ceiling Fan Repair</h1>
+                        <p class="text-xl text-purple-100">Expert ceiling fan installation & repair</p>
+                    </div>
+                </div>
+                <p class="text-lg max-w-2xl mx-auto">Keep your home comfortable with professional ceiling fan services. Installation, repair, and maintenance.</p>
+            </div>
+        </div>
+
+        <div class="responsive-container py-8">
+            <h2 class="text-2xl font-bold mb-6">Available Electrical Professionals</h2>
+            <div id="ceilingFanProfessionals" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- Professional View -->
+    <div id="professionalView" class="min-h-screen pb-20 md:pb-8 hidden">
+        <!-- Professional Header -->
+        <div class="bg-gradient-to-br from-secondary via-secondary-dark to-secondary-light text-white py-12 md:py-20 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpolygon points="20,0 40,20 20,40 0,20"/%3E%3C/g%3E%3C/svg%3E')] animate-pulse-gentle"></div>
+            <div class="responsive-container text-center relative z-10">
+                <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">Professional Dashboard</h1>
+                <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8 animate-slide-up">Manage your business and grow your income</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto animate-slide-up">
+                    <button onclick="openModal('workUploadModal', event)" class="btn-base btn-accent">
+                        <i class="fas fa-plus mr-2"></i>Add Work
+                    </button>
+                    <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white">
+                        <i class="fas fa-user-edit mr-2"></i>Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Overview -->
+        <div class="responsive-container py-8 md:py-12">
+            <div class="card mb-6 md:mb-8 animate-slide-up">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Available Balance</h3>
+                        <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold animate-pulse-gentle">Ready to withdraw</span>
+                    </div>
+                    <button onclick="openModal('withdrawModal', event)" class="btn-base btn-secondary mt-4 md:mt-0">
+                        <i class="fas fa-university mr-2"></i>Withdraw Funds
+                    </button>
+                </div>
+                <div class="text-center md:text-left">
+                    <div class="text-4xl md:text-6xl font-black text-secondary mb-4 animate-bounce-gentle">$2,847.50</div>
+                    <p class="text-gray-600 text-base md:text-lg">This month: <span class="text-secondary font-bold">+$1,234</span> | Total earned: <span class="font-bold">$18,432</span></p>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+                <div class="card text-center animate-scale-in">
+                    <div class="stat-value text-2xl md:text-3xl">8</div>
+                    <div class="stat-label mb-2">Jobs This Week</div>
+                    <div class="text-emerald-600 font-bold text-sm">+2 from last week</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.1s;">
+                    <div class="stat-value text-2xl md:text-3xl">4.95★</div>
+                    <div class="stat-label mb-2">Rating</div>
+                    <div class="text-emerald-600 font-bold text-sm">234 reviews</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.2s;">
+                    <div class="stat-value text-2xl md:text-3xl">< 30min</div>
+                    <div class="stat-label mb-2">Response Time</div>
+                    <div class="text-emerald-600 font-bold text-sm">Excellent</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.3s;">
+                    <div class="stat-value text-2xl md:text-3xl">68%</div>
+                    <div class="stat-label mb-2">Repeat Rate</div>
+                    <div class="text-emerald-600 font-bold text-sm">Above average</div>
+                </div>
+            </div>
+
+            <!-- Performance Breakdown -->
+            <div class="card mb-8 animate-slide-up">
+                <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Performance Breakdown</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">Customer Satisfaction</span>
+                            <span class="font-bold text-primary">96%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-gradient-to-r from-primary to-primary-light" style="width: 96%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">On-Time Completion</span>
+                            <span class="font-bold text-secondary">92%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-gradient-to-r from-secondary to-secondary-light" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">Job Success Rate</span>
+                            <span class="font-bold text-accent">89%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-gradient-to-r from-accent to-accent-light" style="width: 89%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Portfolio -->
+            <div class="card animate-slide-up">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-4 md:mb-0">Recent Work</h3>
+                    <button onclick="openModal('workUploadModal', event)" class="btn-base btn-primary">
+                        <i class="fas fa-camera mr-2"></i>Add Photos
+                    </button>
+                </div>
+                <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin View -->
+    <div id="adminView" class="min-h-screen pb-20 md:pb-8 hidden">
+        <!-- Admin Header -->
+        <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 md:py-20 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="25" cy="25" r="3"/%3E%3C/g%3E%3C/svg%3E')] animate-pulse-gentle"></div>
+            <div class="responsive-container text-center relative z-10">
+                <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">
+                    <i class="fas fa-crown mr-4 text-accent animate-bounce-gentle"></i>Admin Dashboard
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 animate-slide-up">Platform management and analytics</p>
+            </div>
+        </div>
+
+        <!-- Platform Earnings (1.5% Commission) -->
+        <div class="responsive-container py-8 md:py-12">
+            <div class="earnings-highlight mb-8 animate-slide-up">
+                <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
+                    <div class="animate-scale-in">
+                        <div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div>
+                        <div class="text-amber-100 font-medium">Available Balance</div>
+                    </div>
+                    <div class="animate-scale-in" style="animation-delay: 0.1s;">
+                        <div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div>
+                        <div class="text-amber-100 font-medium">This Month</div>
+                    </div>
+                    <div class="animate-scale-in" style="animation-delay: 0.2s;">
+                        <div class="text-3xl md:text-4xl font-black mb-2">347,832</div>
+                        <div class="text-amber-100 font-medium">Total Jobs</div>
+                    </div>
+                    <div class="animate-scale-in" style="animation-delay: 0.3s;">
+                        <div class="text-3xl md:text-4xl font-black mb-2">$52,168</div>
+                        <div class="text-amber-100 font-medium">Total Earned</div>
+                    </div>
+                </div>
+                <button onclick="openModal('adminWithdrawModal', event)" class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle">
+                    <i class="fas fa-university mr-2"></i>Withdraw Platform Earnings
+                </button>
+            </div>
+
+            <!-- Platform Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                <div class="card text-center animate-scale-in">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
+                        <i class="fas fa-dollar-sign text-white text-2xl"></i>
+                    </div>
+                    <div class="stat-value text-2xl md:text-3xl text-primary">$347K</div>
+                    <div class="stat-label mb-2">Total Revenue</div>
+                    <div class="text-emerald-600 font-bold text-sm">+18.2% this month</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.1s;">
+                    <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay: 0.5s;">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <div class="stat-value text-2xl md:text-3xl text-secondary">1,847</div>
+                    <div class="stat-label mb-2">Active Professionals</div>
+                    <div class="text-emerald-600 font-bold text-sm">+12.3% this month</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.2s;">
+                    <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay: 1s;">
+                        <i class="fas fa-briefcase text-white text-2xl"></i>
+                    </div>
+                    <div class="stat-value text-2xl md:text-3xl text-accent">4,291</div>
+                    <div class="stat-label mb-2">Jobs This Month</div>
+                    <div class="text-emerald-600 font-bold text-sm">+22.1% this month</div>
+                </div>
+                <div class="card text-center animate-scale-in" style="animation-delay: 0.3s;">
+                    <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-gentle">
+                        <i class="fas fa-clock text-white text-2xl"></i>
+                    </div>
+                    <div class="stat-value text-2xl md:text-3xl text-red-600">31</div>
+                    <div class="stat-label mb-2">Pending Approvals</div>
+                    <div class="text-red-600 font-bold text-sm">Requires attention</div>
+                </div>
+            </div>
+
+            <!-- Service Distribution -->
+            <div class="card mb-8 animate-slide-up">
+                <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Service Distribution</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium flex items-center">
+                            <div class="w-4 h-4 bg-primary rounded mr-3"></div>
+                            Plumbing
+                        </span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-3 bg-gray-200 rounded mr-3">
+                                <div class="h-full bg-primary rounded progress-fill" style="width: 75%"></div>
+                            </div>
+                            <span class="font-bold text-primary w-16 text-right">1,247</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium flex items-center">
+                            <div class="w-4 h-4 bg-danger rounded mr-3"></div>
+                            Handyman
+                        </span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-3 bg-gray-200 rounded mr-3">
+                                <div class="h-full bg-danger rounded progress-fill" style="width: 90%"></div>
+                            </div>
+                            <span class="font-bold text-danger w-16 text-right">1,523</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium flex items-center">
+                            <div class="w-4 h-4 bg-warning rounded mr-3"></div>
+                            Electrical
+                        </span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-3 bg-gray-200 rounded mr-3">
+                                <div class="h-full bg-warning rounded progress-fill" style="width: 55%"></div>
+                            </div>
+                            <span class="font-bold text-warning w-16 text-right">892</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium flex items-center">
+                            <div class="w-4 h-4 bg-info rounded mr-3"></div>
+                            HVAC
+                        </span>
+                        <div class="flex items-center">
+                            <div class="w-32 h-3 bg-gray-200 rounded mr-3">
+                                <div class="h-full bg-info rounded progress-fill" style="width: 40%"></div>
+                            </div>
+                            <span class="font-bold text-info w-16 text-right">634</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card animate-slide-up">
+                <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Recent Professional Activity</h3>
+                <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav mobile-only">
+        <div class="flex">
+            <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer', event)">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" id="mobileProfessional" onclick="switchView('professional', event)">
+                <i class="fas fa-briefcase"></i>
+                <span>Pro</span>
+            </div>
+            <div class="nav-item" onclick="openModal('searchModal', event)">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </div>
+            <div class="nav-item" id="mobileAdmin" onclick="switchView('admin', event)">
+                <i class="fas fa-crown"></i>
+                <span>Admin</span>
+            </div>
+            <div class="nav-item" onclick="openModal('userMenuModal', event)">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 md:py-12 mt-8 md:mt-12">
+        <div class="responsive-container">
+            <div class="text-center mb-6 md:mb-8 animate-slide-up">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center animate-float">
+                        <i class="fas fa-tools text-white text-xl md:text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-black">QuickFix Pro</h3>
+                </div>
+                <p class="text-gray-300 font-medium text-lg">Professional services made simple and accessible</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
+                <div class="animate-slide-up">
+                    <h4 class="text-lg font-bold mb-4">Services</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Plumbing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Electrical</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">HVAC</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Handyman</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Construction</a></li>
+                    </ul>
+                </div>
+                <div class="animate-slide-up" style="animation-delay: 0.1s;">
+                    <h4 class="text-lg font-bold mb-4">Company</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Press</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Investors</a></li>
+                    </ul>
+                </div>
+                <div class="animate-slide-up" style="animation-delay: 0.2s;">
+                    <h4 class="text-lg font-bold mb-4">Support</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Safety</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Trust & Safety</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Insurance</a></li>
+                    </ul>
+                </div>
+                <div class="animate-slide-up" style="animation-delay: 0.3s;">
+                    <h4 class="text-lg font-bold mb-4">Legal</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">GDPR</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Accessibility</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center text-gray-400 text-sm md:text-base animate-fade-in">
+                <p>© 2024 QuickFix Pro. All rights reserved. | Platform commission: 1.5% per completed job</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('loginModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-sign-in-alt text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
+                <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
+            </div>
+            <div class="modal-body">
+                <form class="space-y-6" onsubmit="loginUser(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="mr-2 h-4 w-4 text-primary rounded">
+                            <span class="text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn-base btn-primary w-full">
+                        Sign In Securely
+                    </button>
+                </form>
+
+                <!-- Google Sign-In Button -->
+                <div class="text-center mt-6">
+                    <button class="btn-base btn-google w-full">
+                        <i class="fab fa-google mr-2"></i> Continue with Google
+                    </button>
+                </div>
+
+                <div id="login-message" class="text-center text-red-600 mt-3"></div>
+
+                <div class="text-center mt-6">
+                    <p class="text-gray-600">
+                        Don't have an account? 
+                        <button onclick="closeModal('loginModal', event); openModal('signupModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
+                    </p>
+                </div>
+                <div id="googleSignInBtn"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Menu Modal -->
+    <div id="userMenuModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('userMenuModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div id="userAvatarLarge" class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="userNameLarge" class="text-2xl md:text-3xl font-bold text-text-primary">Guest User</h2>
+                <p id="userStatusLarge" class="text-gray-600 mt-2">Not signed in</p>
+            </div>
+            <div class="modal-body">
+                <div id="guestUserMenu" class="space-y-4">
+                    <button onclick="closeModal('userMenuModal', event); openModal('loginModal', event);" class="btn-base btn-primary w-full">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                    </button>
+                    <button onclick="closeModal('userMenuModal', event); openModal('signupModal', event);" class="btn-base btn-outline w-full">
+                        <i class="fas fa-user-plus mr-2"></i>Create Account
+                    </button>
+                    <div class="text-center pt-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p>
+                    </div>
+                </div>
+                <div id="loggedUserMenu" class="space-y-4 hidden">
+                    <button class="btn-base btn-outline w-full">
+                        <i class="fas fa-user-circle mr-2"></i>My Profile
+                    </button>
+                    <button class="btn-base btn-outline w-full">
+                        <i class="fas fa-history mr-2"></i>Booking History
+                    </button>
+                    <button class="btn-base btn-outline w-full">
+                        <i class="fas fa-credit-card mr-2"></i>Payment Methods
+                    </button>
+                    <button class="btn-base btn-outline w-full">
+                        <i class="fas fa-cog mr-2"></i>Settings & Privacy
+                    </button>
+                    <button class="btn-base btn-outline w-full">
+                        <i class="fas fa-headset mr-2"></i>Help & Support
+                    </button>
+                    <div class="pt-4 border-t border-gray-200">
+                        <button onclick="logoutUser(event)" class="btn-base btn-danger w-full">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Search Modal -->
+    <div id="searchModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('searchModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Find Services</h2>
+                <p class="text-gray-600 mt-2">Search for professionals near you</p>
+            </div>
+            <div class="modal-body">
+                <div class="relative mb-6">
+                    <input type="text" id="mobileSearchInput" 
+                           placeholder="What needs fixing?" 
+                           class="form-input pr-12">
+                    <button onclick="executeSearchFromMobileInput(event)" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center">
+                        <i class="fas fa-search text-white"></i>
+                    </button>
+                </div>
+                <div class="mt-8">
+                    <h3 class="font-bold mb-4">Popular Searches</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="navigateToService('IKEA assembly', event)" class="btn-base btn-outline text-sm">IKEA Assembly</button>
+                        <button onclick="navigateToService('Leaky tap', event)" class="btn-base btn-outline text-sm">Leaky Tap</button>
+                        <button onclick="navigateToService('TV mounting', event)" class="btn-base btn-outline text-sm">TV Mounting</button>
+                        <button onclick="navigateToService('AC repair', event)" class="btn-base btn-outline text-sm">AC Repair</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Other modals -->
+<div id="signupModal" class="modal-overlay hidden">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeModal('signupModal', event)">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+          <i class="fas fa-user-plus text-white text-2xl"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
+        <p class="text-gray-600 mt-2">Create your account</p>
+      </div>
+      <div class="modal-body">
+        <form class="space-y-6" onsubmit="signupUser(event)">
+          <div class="form-group">
+            <label class="form-label" for="fullName">Full Name</label>
+            <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emailAddress">Email Address</label>
+            <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input id="password" type="password" class="form-input" placeholder="Create a secure password" required>
+          </div>
+          <button type="submit" class="btn-base btn-secondary w-full">
+            Create Account
+          </button>
+        </form>
+  
+        <!-- Google Sign-In Button -->
+        <button id="googleSignInBtn" class="google-btn w-full mt-4 flex items-center justify-center gap-3">
+          <i class="fab fa-google"></i> Create Account with Google
+        </button>
+  
+        <div class="text-center mt-6">
+          <p class="text-gray-600">
+            Already have an account? 
+            <button onclick="closeModal('signupModal', event); openModal('loginModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    .google-btn {
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      padding: 12px 0;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 2px 6px rgba(66, 133, 244, 0.6);
+      transition: background-color 0.3s ease;
+    }
+  
+    .google-btn:hover {
+      background-color: #357ae8;
+    }
+  </style>
+  
+
+    <div id="workUploadModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('workUploadModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-camera text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Add Work</h2>
+                <p class="text-gray-600 mt-2">Upload your latest project</p>
+            </div>
+            <div class="modal-body">
+                <form class="space-y-6" onsubmit="addWork(event)">
+                    <div class="form-group">
+                        <label class="form-label">Project Title</label>
+                        <input type="text" class="form-input" placeholder="e.g., Kitchen Plumbing Repair" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-base btn-primary w-full">
+                        <i class="fas fa-plus mr-2"></i>Add to Portfolio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('withdrawModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-university text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Withdraw Funds</h2>
+                <p class="text-gray-600 mt-2">Transfer to your bank account</p>
+            </div>
+            <div class="modal-body">
+                <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
+                    <div class="text-sm text-gray-600 mb-2">Available Balance</div>
+                    <div class="text-3xl md:text-4xl font-black text-secondary">$2,847.50</div>
+                </div>
+                <form class="space-y-6" onsubmit="processWithdrawal(event)">
+                    <div class="form-group">
+                        <label class="form-label">Withdrawal Amount</label>
+                        <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="10" max="2847.50" required>
+                    </div>
+                    <button type="submit" class="btn-base btn-secondary w-full">
+                        <i class="fas fa-university mr-2"></i>Withdraw Funds
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminWithdrawModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('adminWithdrawModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-crown text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Platform Earnings</h2>
+                <p class="text-gray-600 mt-2">Withdraw platform commission</p>
+            </div>
+            <div class="modal-body">
+                <div class="earnings-highlight p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
+                    <div class="text-sm text-amber-100 mb-2">Available Earnings</div>
+                    <div class="text-3xl md:text-4xl font-black">$5,217.48</div>
+                </div>
+                <form class="space-y-6" onsubmit="processAdminWithdrawal(event)">
+                    <div class="form-group">
+                        <label class="form-label">Withdrawal Amount</label>
+                        <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="100" max="5217.48" required>
+                    </div>
+                    <button type="submit" class="btn-base btn-accent w-full">
+                        <i class="fas fa-university mr-2"></i>Withdraw Platform Earnings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="main.js"></script>
+    <script src="script.js"></script>
+    <div id="googleSignInBtn"></div>   
+</body>
+</html>
