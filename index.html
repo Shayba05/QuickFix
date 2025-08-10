@@ -1713,60 +1713,102 @@
         </div>
     </footer>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal-overlay hidden">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="close-btn" onclick="closeModal('loginModal', event)">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="modal-header">
-                <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-                    <i class="fas fa-sign-in-alt text-white text-2xl"></i>
-                </div>
-                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
-                <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
-            </div>
-            <div class="modal-body">
-                <form class="space-y-6" onsubmit="loginUser(event)">
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" class="mr-2 h-4 w-4 text-primary rounded">
-                            <span class="text-sm text-gray-600">Remember me</span>
-                        </label>
-                        <a href="#" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
-                    </div>
-                    <button type="submit" class="btn-base btn-primary w-full">
-                        Sign In Securely
-                    </button>
-                </form>
-
-                <!-- Google Sign-In Button -->
-                <div class="text-center mt-6">
-                    <button class="btn-base btn-google w-full">
-                        <i class="fab fa-google mr-2"></i> Continue with Google
-                    </button>
-                </div>
-
-                <div id="login-message" class="text-center text-red-600 mt-3"></div>
-
-                <div class="text-center mt-6">
-                    <p class="text-gray-600">
-                        Don't have an account? 
-                        <button onclick="closeModal('loginModal', event); openModal('signupModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
-                    </p>
-                </div>
-                <div id="googleSignInBtn"></div>
-            </div>
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle" onclick="closeModal('loginModal', event)">
+    <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeModal('loginModal', event)" aria-label="Close login modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+          <i class="fas fa-sign-in-alt text-white text-2xl"></i>
         </div>
+        <h2 id="loginModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
+        <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
+      </div>
+      <div class="modal-body">
+        <form class="space-y-6" onsubmit="loginUser(event)">
+          <div class="form-group">
+            <label for="login-email" class="form-label">Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password" class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+          </div>
+          <div class="flex items-center justify-between">
+            <label for="remember-me" class="flex items-center cursor-pointer">
+              <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded">
+              <span class="text-sm text-gray-600">Remember me</span>
+            </label>
+            <a href="#" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-base btn-primary w-full">
+            Sign In Securely
+          </button>
+        </form>
+  
+        <!-- Google Sign-In Button Container -->
+        <div id="googleSignInBtnLogin" class="text-center mt-6"></div>
+  
+        <div id="login-message" class="text-center text-red-600 mt-3"></div>
+  
+        <div class="text-center mt-6">
+          <p class="text-gray-600">
+            Don't have an account? 
+            <button onclick="closeModal('loginModal', event); openModal('signupModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
+          </p>
+        </div>
+      </div>
     </div>
+  </div>
+  
+  <!-- Signup Modal -->
+  <div id="signupModal" class="modal-overlay hidden" role="dialog" aria-labelledby="signupModalTitle" onclick="closeModal('signupModal', event)">
+    <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeModal('signupModal', event)" aria-label="Close signup modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+          <i class="fas fa-user-plus text-white text-2xl"></i>
+        </div>
+        <h2 id="signupModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Create Account</h2>
+        <p class="text-gray-600 mt-2">Sign up for your QuickFix Pro account</p>
+      </div>
+      <div class="modal-body">
+        <form class="space-y-6" onsubmit="signupUser(event)">
+          <div class="form-group">
+            <label for="signup-email" class="form-label">Email Address</label>
+            <input type="email" id="signup-email" class="form-input" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label for="signup-password" class="form-label">Password</label>
+            <input type="password" id="signup-password" class="form-input" placeholder="Create a password" required>
+          </div>
+          <button type="submit" class="btn-base btn-primary w-full">
+            Create Account
+          </button>
+        </form>
+  
+        <!-- Google Sign-In Button Container -->
+        <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
+  
+        <div id="signup-message" class="text-center text-red-600 mt-3"></div>
+  
+        <div class="text-center mt-6">
+          <p class="text-gray-600">
+            Already have an account? 
+            <button onclick="closeModal('signupModal', event); openModal('loginModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  
+    
 
     <!-- User Menu Modal -->
     <div id="userMenuModal" class="modal-overlay hidden">

@@ -209,52 +209,159 @@ function setLanguage(code, name, flag, event) {
     showAlert('Language Changed', `Language changed to ${name} ${flag}`);
 }
 
-// =======================
-// Modal Functions
-// =======================
+const GOOGLE_CLIENT_ID = '1005892265458-ne6o9c4n8606sov7e1lr0acicvcbeb4e.apps.googleusercontent.com';
+const AUTHORIZED_ORIGIN = 'https://quick-fix-eight.vercel.app'; // Your production URL
 
+// Modal open/close with animation and accessibility
 function openModal(modalId, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    closeAllModals();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  closeAllModals(() => {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            modal.classList.add('show');
-        }, 10);
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.add('show');
+        // Focus first focusable element inside modal
+        const focusable = modal.querySelector('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+
+        if (modalId === 'signupModal') {
+          initGoogleSignInButton();
+        } else if (modalId === 'loginModal') {
+          initLoginGoogleSignInButton();
+        }
+      }, 10);
     }
+  });
 }
 
 function closeModal(modalId, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-        }, 300);
-    }
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
 }
 
-function closeAllModals() {
-    const modals = ['loginModal', 'signupModal', 'userMenuModal', 'searchModal', 'workUploadModal', 'withdrawModal', 'adminWithdrawModal'];
-    modals.forEach(modalId => {
-        const modal = document.getElementById(modalId);
-        if (modal && !modal.classList.contains('hidden')) {
-            closeModal(modalId);
-        }
-    });
-    
-    // Close language menu
-    const langMenu = document.getElementById('languageMenu');
-    if (langMenu) langMenu.classList.remove('show');
+function closeAllModals(callback) {
+  const modals = [
+    'loginModal',
+    'signupModal',
+    'userMenuModal',
+    'searchModal',
+    'workUploadModal',
+    'withdrawModal',
+    'adminWithdrawModal'
+  ];
+  let closedCount = 0;
+  const total = modals.length;
+
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal && !modal.classList.contains('hidden')) {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        closedCount++;
+        if (closedCount === total && typeof callback === 'function') callback();
+      }, 300);
+    } else {
+      closedCount++;
+      if (closedCount === total && typeof callback === 'function') callback();
+    }
+  });
+
+  if (closedCount === total && typeof callback === 'function') callback();
 }
+
+// Initialize Google Sign-In button for Signup Modal
+function initGoogleSignInButton() {
+  if (!window.google || !document.getElementById('googleSignInBtnSignup')) return;
+  
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleSignupCredentialResponse,
+    context: 'signin',
+  });
+  
+  // Clear container first to avoid duplicate buttons
+  const container = document.getElementById('googleSignInBtnSignup');
+  container.innerHTML = '';
+  
+  google.accounts.id.renderButton(
+    container,
+    { theme: 'outline', size: 'large', width: 280 }
+  );
+  
+  google.accounts.id.prompt(); // Optional One Tap prompt
+}
+
+// Initialize Google Sign-In button for Login Modal
+function initLoginGoogleSignInButton() {
+  if (!window.google || !document.getElementById('googleSignInBtnLogin')) return;
+  
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleLoginCredentialResponse,
+    context: 'signin',
+  });
+  
+  // Clear container first to avoid duplicate buttons
+  const container = document.getElementById('googleSignInBtnLogin');
+  container.innerHTML = '';
+  
+  google.accounts.id.renderButton(
+    container,
+    { theme: 'outline', size: 'large', width: 280 }
+  );
+  
+  google.accounts.id.prompt(); // Optional One Tap prompt
+}
+
+// Handle Google Login response
+function handleGoogleLoginCredentialResponse(response) {
+  console.log('Google Login JWT token:', response.credential);
+  alert('Google Login successful! Check console for token.');
+  // TODO: Send token to your backend to verify & authenticate user
+}
+
+// Handle Google Signup response
+function handleGoogleSignupCredentialResponse(response) {
+  console.log('Google Signup JWT token:', response.credential);
+  alert('Google Signup successful! Check console for token.');
+  // TODO: Send token to your backend to verify & register user
+}
+
+// Login form submission handler
+function loginUser(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  console.log('Login attempt:', email, password);
+  alert(`Logging in with email: ${email}`);
+  // TODO: Replace with your backend login API call
+}
+
+// Signup form submission handler
+function signupUser(event) {
+  event.preventDefault();
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  console.log('Signup attempt:', email, password);
+  alert(`Signing up with email: ${email}`);
+  // TODO: Replace with your backend signup API call
+}
+
 
 // =======================
 // Navigation Functions
