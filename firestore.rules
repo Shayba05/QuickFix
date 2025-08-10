@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{uid} {
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow update: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /bookings/{id} {
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      allow read, update: if isSignedIn() &&
+        (resource.data.customerId == request.auth.uid ||
+         resource.data.professionalId == request.auth.uid ||
+         isAdmin());
+    }
+
+    match /conversations/{cid}/{coll=**}/{doc} {
+      allow read, write: if isSignedIn(); // tighten later
+    }
+  }
+}

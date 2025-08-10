@@ -230,7 +230,7 @@
             <div class="stat-label">Verified Professionals</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.1s">
-            <div class="stat-value text-2xl md:text-3xl">85K+</</div>
+            <div class="stat-value text-2xl md:text-3xl">85K+</div>
             <div class="stat-label">Jobs Completed</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.2s">
@@ -255,6 +255,13 @@
       <div id="featuredProfessionals" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
     </div>
   </main>
+
+  <!-- Simple container to show search results -->
+<div id="algoliaResults" class="responsive-container py-6 md:py-8 hidden">
+  <h2 class="text-xl md:text-2xl font-black mb-4">Search results</h2>
+  <div id="algoliaResultsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+</div>
+
 
   <!-- Professional View -->
   <section id="professionalView" class="min-h-screen pb-20 md:pb-8 hidden">
@@ -714,6 +721,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
 
   <!-- App JS -->
+   <!-- Algolia client (add this before main.js) -->
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

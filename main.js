@@ -1,5 +1,6 @@
 // =======================
 // QuickFix Pro — Buttons fixed (no stopPropagation blocking), solid signup/login
+// + Algolia search integration (frontend)
 // =======================
 
 let isLoggedIn = false;
@@ -63,6 +64,30 @@ try {
   console.warn('Firebase init failed:', e);
 }
 
+// ------------ Algolia (Frontend) ------------
+/**
+ * Replace these with your real values (Algolia dashboard):
+ * - ALGOLIA_APP_ID
+ * - ALGOLIA_SEARCH_KEY (Search-Only key)
+ * - ALGOLIA_INDEX (the index name you set in the Firebase extension, e.g. "professionals")
+ */
+const ALGOLIA_APP_ID = "VVHQ4QU6UH";
+const ALGOLIA_SEARCH_KEY = "5524d792b75a97b2f8c256a2f092293b";
+const ALGOLIA_INDEX = "professionals";
+
+let algoliaIndex = null;
+try {
+  if (window.algoliasearch && ALGOLIA_APP_ID && ALGOLIA_SEARCH_KEY && ALGOLIA_INDEX) {
+    const algoliaClient = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY);
+    algoliaIndex = algoliaClient.initIndex(ALGOLIA_INDEX);
+    console.log("✅ Algolia ready");
+  } else {
+    console.log("ℹ️ Algolia not configured yet (this is fine; fallback search will be used).");
+  }
+} catch (e) {
+  console.warn("Algolia init failed:", e);
+}
+
 // ------------ Helpers ------------
 function normalize(t){ return String(t).toLowerCase().replace(/[^a-z0-9]/g,''); }
 function getInitials(name = '', email = '') {
@@ -74,6 +99,11 @@ function pruneUndefined(o) {
   if (o === null || typeof o !== 'object') return o;
   if (Array.isArray(o)) return o.map(pruneUndefined);
   return Object.fromEntries(Object.entries(o).filter(([,v]) => v !== undefined).map(([k,v])=>[k,pruneUndefined(v)]));
+}
+function formatPrice(p){
+  if (typeof p === 'number') return `$${p}/hr`;
+  if (typeof p === 'string') return p;
+  return '';
 }
 
 // Firestore profile upsert
@@ -293,20 +323,89 @@ function renderRecentProfessionals(){
   `).join('');
 }
 
+// ------------ Algolia Search Helpers ------------
+async function searchWithAlgolia(q){
+  if (!algoliaIndex) return null;
+  try {
+    const { hits } = await algoliaIndex.search(q, { hitsPerPage: 12 });
+    return hits || [];
+  } catch (e) {
+    console.warn("Algolia search error:", e);
+    return null;
+  }
+}
+
+function renderAlgoliaResults(hits){
+  const wrap = document.getElementById('algoliaResults');
+  const list = document.getElementById('algoliaResultsList');
+  if (!wrap || !list) {
+    console.log("Algolia results:", hits); // fallback
+    return;
+  }
+
+  if (!hits.length) {
+    list.innerHTML = '<div class="text-gray-600">No results found.</div>';
+    wrap.classList.remove('hidden');
+    return;
+  }
+
+  list.innerHTML = hits.map((h) => `
+    <div class="card">
+      <div class="flex items-center mb-3">
+        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+          <i class="fas fa-user text-gray-500"></i>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-gray-800">${h.name || 'Unknown'}</div>
+          <div class="text-sm text-gray-600">${h.category || h.service || '—'}</div>
+        </div>
+        ${h.price ? `<div class="font-bold text-primary">${formatPrice(h.price)}</div>` : ''}
+      </div>
+      ${h.location ? `<div class="text-sm text-gray-600"><i class="fas fa-map-marker-alt mr-1"></i>${h.location}</div>` : ''}
+      ${h.rating ? `<div class="text-sm text-yellow-600 mt-2">★ ${h.rating}</div>` : ''}
+    </div>
+  `).join('');
+
+  wrap.classList.remove('hidden');
+}
+
 // ------------ Search / Navigate ------------
 function navigateToService(serviceName){
   showAlert('Search Results', `Found ${Math.floor(Math.random()*50)+10} professionals for "${serviceName}"`);
 }
-function executeSearchFromInput(){
+
+async function executeSearchFromInput(){
   const el = document.getElementById('searchInput');
   const q = el?.value?.trim();
-  if (q) navigateToService(q);
+  if (!q) return;
+
+  // Try Algolia first
+  const hits = await searchWithAlgolia(q);
+  if (hits && hits.length) {
+    renderAlgoliaResults(hits);
+    return;
+  }
+
+  // Fallback
+  navigateToService(q);
 }
-function executeSearchFromMobile(){
+
+async function executeSearchFromMobile(){
   const el = document.getElementById('mobileSearchInput');
   const q = el?.value?.trim();
-  if (q) navigateToService(q);
+  if (!q) return;
+
+  const hits = await searchWithAlgolia(q);
+  if (hits && hits.length) {
+    renderAlgoliaResults(hits);
+    closeAllModals();
+    return;
+  }
+
+  navigateToService(q);
 }
+
+// (optional) keep simple executeSearch for category tiles
 function executeSearch(query){
   if (!query?.trim()) return;
   const hit = popularServices.find(s=> s.name.toLowerCase() === query.toLowerCase());
@@ -676,8 +775,8 @@ function initializeApp(){
 
   const si = document.getElementById('searchInput');
   const msi = document.getElementById('mobileSearchInput');
-  si?.addEventListener('keypress', e => { if (e.key === 'Enter' && si.value.trim()) navigateToService(si.value.trim()); });
-  msi?.addEventListener('keypress', e => { if (e.key === 'Enter' && msi.value.trim()) navigateToService(msi.value.trim()); });
+  si?.addEventListener('keypress', e => { if (e.key === 'Enter' && si.value.trim()) executeSearchFromInput(); });
+  msi?.addEventListener('keypress', e => { if (e.key === 'Enter' && msi.value.trim()) executeSearchFromMobile(); });
 
   wireForms();
   updateUserInterface();
