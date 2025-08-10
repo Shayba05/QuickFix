@@ -162,6 +162,22 @@
     .user-type-card.selected { border-color:#6B46C1; background:linear-gradient(135deg, rgba(107,70,193,.06), rgba(139,92,246,.06)); }
 
     .service-icon{width:48px;height:48px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center}
+
+    /* ---------- Smoother & faster micro-transitions ---------- */
+    :root { --ease-smooth: cubic-bezier(.22,.61,.36,1); --dur-fast: .18s; --dur-med: .22s; }
+    .btn-base, .card, .nav-item, .professional-card, .modal-overlay, .modal-content {
+      transition-timing-function: var(--ease-smooth);
+      transition-duration: var(--dur-med);
+    }
+    .btn-base:hover { transition-duration: var(--dur-fast); }
+    .animate-fade-in, .animate-slide-up, .animate-slide-in, .animate-scale-in {
+      animation-duration: var(--dur-med) !important;
+      animation-timing-function: var(--ease-smooth) !important;
+    }
+
+    /* ---------- Disable animations for a view after navigation ---------- */
+    .no-anim-view * { animation: none !important; }
+
   </style>
 </head>
 <body>
@@ -332,10 +348,11 @@
       <div class="earnings-highlight mb-8 animate-slide-up">
         <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-          <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-100 font-medium">Available Balance</div></div>
-          <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-100 font-medium">This Month</div></div>
-          <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-100 font-medium">Total Jobs</div></div>
-          <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-100 font-medium">Total Earned</div></div>
+          <!-- Increased contrast for labels -->
+          <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-200 font-semibold tracking-wide">Available Balance</div></div>
+          <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-200 font-semibold tracking-wide">This Month</div></div>
+          <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-200 font-semibold tracking-wide">Total Jobs</div></div>
+          <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-200 font-semibold tracking-wide">Total Earned</div></div>
         </div>
         <button class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle" data-action="open-modal" data-modal="adminWithdrawModal"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
       </div>
@@ -507,7 +524,7 @@
         <div id="guestUserMenu" class="space-y-4">
           <button class="btn-base btn-primary w-full" data-action="swap-modal" data-close="userMenuModal" data-open="loginModal"><i class="fas fa-sign-in-alt mr-2"></i>Sign In</button>
           <button class="btn-base btn-outline w-full" data-action="swap-modal" data-close="userMenuModal" data-open="signupModal"><i class="fas fa-user-plus mr-2"></i>Create Account</button>
-          <div class="text-center pt-4 border-t border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
+          <div class="text-center pt-4 border-top border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
           <button class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
@@ -713,7 +730,8 @@
       </div>
       <div class="modal-body">
         <div class="earnings-highlight p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <div class="text-sm text-amber-100 mb-2">Available Earnings</div>
+          <!-- Increased contrast here too -->
+          <div class="text-sm text-amber-200 mb-2">Available Earnings</div>
           <div class="text-3xl md:text-4xl font-black">$5,217.48</div>
         </div>
         <form class="space-y-6" id="adminWithdrawForm">

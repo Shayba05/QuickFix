@@ -17,7 +17,6 @@ const serviceCategories = [
   { name: 'Appliances', icon: 'fas fa-tv',      color: '#8B5CF6', professionals: 428 },
   { name: 'Cleaning',   icon: 'fas fa-broom',   color: '#06B6D4', professionals: 743 },
   { name: 'Construction', icon: 'fas fa-hard-hat', color: '#F97316', professionals: 567 },
-  // FA5-compatible icon
   { name: 'Carpentry',  icon: 'fas fa-tools',   color: '#A16207', professionals: 423 }
 ];
 
@@ -160,13 +159,28 @@ window.addEventListener('error', (e) => {
 
 // ------------ Views ------------
 function switchView(view){
-  ['customerView','professionalView','adminView'].forEach(id=> document.getElementById(id)?.classList.add('hidden'));
-  document.getElementById(view + 'View')?.classList.remove('hidden');
+  // Hide all
+  ['customerView','professionalView','adminView'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el){
+      el.classList.add('hidden');
+    }
+  });
 
+  // Show target + permanently disable its CSS animations after navigation
+  const target = document.getElementById(view + 'View');
+  if (target){
+    target.classList.remove('hidden');
+    target.classList.add('no-anim-view'); // <-- stops re-animations on every switch
+  }
+
+  // Toggle nav button styles
   document.querySelectorAll('.nav-btn').forEach(b=>{ b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
-  document.getElementById(view + 'Btn')?.classList.remove('btn-outline');
-  document.getElementById(view + 'Btn')?.classList.add('btn-primary');
+  const btn = document.getElementById(view + 'Btn');
+  btn?.classList.remove('btn-outline');
+  btn?.classList.add('btn-primary');
 
+  // Mobile active indicator
   document.querySelectorAll('.mobile-nav .nav-item').forEach(i=>i.classList.remove('active'));
   const mobileBtn = document.getElementById('mobile' + view.charAt(0).toUpperCase() + view.slice(1));
   mobileBtn?.classList.add('active');
@@ -757,7 +771,7 @@ function wireForms(){
   document.getElementById('withdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); });
   document.getElementById('adminWithdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); });
 
-  // Safety net: delegate submit too (in case dynamic DOM or future changes)
+  // Safety net: delegate submit too
   document.addEventListener('submit', (e)=>{
     const id = e.target?.id;
     if (!id) return;
@@ -788,7 +802,7 @@ function initializeApp(){
 
   wireForms();
   updateUserInterface();
-  switchView('customer');
+  switchView('customer'); // first page can animate; others won't on switch
   detectCityIntoHeader();
 
   setTimeout(()=> showAlert('Welcome!', 'QuickFix Pro is ready to use.'), 500);
