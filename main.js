@@ -1,5 +1,5 @@
 // =======================
-// QuickFix Pro — Buttons fixed (no stopPropagation blocking), solid signup/login
+// QuickFix Pro — stable icons + robust modal/login/signup wiring
 // + Algolia search integration (frontend)
 // =======================
 
@@ -10,14 +10,15 @@ let currentLanguage = 'en';
 
 // ------------ Static Data ------------
 const serviceCategories = [
-  { name: 'Plumbing', icon: 'fas fa-wrench', color: '#6B46C1', professionals: 1247 },
-  { name: 'Electrical', icon: 'fas fa-bolt', color: '#F59E0B', professionals: 892 },
-  { name: 'HVAC', icon: 'fas fa-fan', color: '#059669', professionals: 634 },
-  { name: 'Handyman', icon: 'fas fa-hammer', color: '#EF4444', professionals: 1523 },
-  { name: 'Appliances', icon: 'fas fa-tv', color: '#8B5CF6', professionals: 428 },
-  { name: 'Cleaning', icon: 'fas fa-broom', color: '#06B6D4', professionals: 743 },
+  { name: 'Plumbing',   icon: 'fas fa-wrench',  color: '#6B46C1', professionals: 1247 },
+  { name: 'Electrical', icon: 'fas fa-bolt',    color: '#F59E0B', professionals: 892 },
+  { name: 'HVAC',       icon: 'fas fa-fan',     color: '#059669', professionals: 634 },
+  { name: 'Handyman',   icon: 'fas fa-hammer',  color: '#EF4444', professionals: 1523 },
+  { name: 'Appliances', icon: 'fas fa-tv',      color: '#8B5CF6', professionals: 428 },
+  { name: 'Cleaning',   icon: 'fas fa-broom',   color: '#06B6D4', professionals: 743 },
   { name: 'Construction', icon: 'fas fa-hard-hat', color: '#F97316', professionals: 567 },
-  { name: 'Carpentry', icon: 'fas fa-screwdriver-wrench', color: '#A16207', professionals: 423 }
+  // FA5-compatible icon
+  { name: 'Carpentry',  icon: 'fas fa-tools',   color: '#A16207', professionals: 423 }
 ];
 
 const popularServices = [
@@ -55,8 +56,8 @@ try {
     firebase.initializeApp(firebaseConfig);
     if (firebase.analytics) firebase.analytics();
   }
-  auth = firebase?.auth();
-  db = firebase?.firestore();
+  auth = firebase?.auth?.();
+  db = firebase?.firestore?.();
   if (db?.enablePersistence) {
     db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
   }
@@ -65,15 +66,9 @@ try {
 }
 
 // ------------ Algolia (Frontend) ------------
-/**
- * Replace these with your real values (Algolia dashboard):
- * - ALGOLIA_APP_ID
- * - ALGOLIA_SEARCH_KEY (Search-Only key)
- * - ALGOLIA_INDEX (the index name you set in the Firebase extension, e.g. "professionals")
- */
-const ALGOLIA_APP_ID = "VVHQ4QU6UH";
-const ALGOLIA_SEARCH_KEY = "5524d792b75a97b2f8c256a2f092293b";
-const ALGOLIA_INDEX = "professionals";
+const ALGOLIA_APP_ID     = "VVHQ4QU6UH";
+const ALGOLIA_SEARCH_KEY = "5524d792b75a97b2f8c256a2f092293b"; // search-only key
+const ALGOLIA_INDEX      = "professionals"; // must match your extension
 
 let algoliaIndex = null;
 try {
@@ -82,7 +77,7 @@ try {
     algoliaIndex = algoliaClient.initIndex(ALGOLIA_INDEX);
     console.log("✅ Algolia ready");
   } else {
-    console.log("ℹ️ Algolia not configured yet (this is fine; fallback search will be used).");
+    console.log("ℹ️ Algolia not configured yet (fallback search will be used).");
   }
 } catch (e) {
   console.warn("Algolia init failed:", e);
@@ -156,6 +151,12 @@ function showAlert(title, message){
   setTimeout(()=> alertDiv.isConnected && alertDiv.remove(), 5000);
 }
 function dismissAllToasts(){ document.querySelectorAll('.qf-toast').forEach(t => t.remove()); }
+
+// Global error guard so one error doesn’t kill all clicks
+window.addEventListener('error', (e) => {
+  console.error(e.error || e.message);
+  showAlert('Script error', e.message || 'An error occurred.');
+});
 
 // ------------ Views ------------
 function switchView(view){
@@ -339,7 +340,7 @@ function renderAlgoliaResults(hits){
   const wrap = document.getElementById('algoliaResults');
   const list = document.getElementById('algoliaResultsList');
   if (!wrap || !list) {
-    console.log("Algolia results:", hits); // fallback
+    console.log("Algolia results:", hits);
     return;
   }
 
@@ -379,14 +380,11 @@ async function executeSearchFromInput(){
   const q = el?.value?.trim();
   if (!q) return;
 
-  // Try Algolia first
   const hits = await searchWithAlgolia(q);
   if (hits && hits.length) {
     renderAlgoliaResults(hits);
     return;
   }
-
-  // Fallback
   navigateToService(q);
 }
 
@@ -401,11 +399,9 @@ async function executeSearchFromMobile(){
     closeAllModals();
     return;
   }
-
   navigateToService(q);
 }
 
-// (optional) keep simple executeSearch for category tiles
 function executeSearch(query){
   if (!query?.trim()) return;
   const hit = popularServices.find(s=> s.name.toLowerCase() === query.toLowerCase());
@@ -665,7 +661,7 @@ function updateUserInterface(){
   }
 }
 
-// ------------ Event Delegation ------------
+// ------------ Event Delegation (clicks) ------------
 function handleClicks(e){
   const el = e.target.closest('[data-action]');
   if (!el) return;
@@ -752,13 +748,25 @@ function handleOverlayClose(e){
   if (e.target.classList?.contains('modal-overlay')) closeAllModals();
 }
 
-// ------------ Form submits ------------
+// ------------ Form submits (robust) ------------
 function wireForms(){
+  // Direct wiring
   document.getElementById('loginForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); loginUser(); });
   document.getElementById('signupForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); signupUser(); });
   document.getElementById('workForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('workUploadModal'); showAlert('Work Added!', 'Your project has been added to your portfolio.'); });
   document.getElementById('withdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); });
   document.getElementById('adminWithdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); });
+
+  // Safety net: delegate submit too (in case dynamic DOM or future changes)
+  document.addEventListener('submit', (e)=>{
+    const id = e.target?.id;
+    if (!id) return;
+    if (id === 'loginForm')   { e.preventDefault(); loginUser(); }
+    if (id === 'signupForm')  { e.preventDefault(); signupUser(); }
+    if (id === 'workForm')    { e.preventDefault(); closeModal('workUploadModal'); showAlert('Work Added!', 'Your project has been added to your portfolio.'); }
+    if (id === 'withdrawForm'){ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); }
+    if (id === 'adminWithdrawForm'){ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); }
+  }, true);
 }
 
 // ------------ Init ------------
@@ -784,6 +792,7 @@ function initializeApp(){
   detectCityIntoHeader();
 
   setTimeout(()=> showAlert('Welcome!', 'QuickFix Pro is ready to use.'), 500);
+  console.log('✅ App initialized');
 }
 
 if (document.readyState === 'loading') {

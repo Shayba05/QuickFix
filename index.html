@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickFix Pro - Professional Service Platform</title>
 
-  <!-- Tailwind & Font Awesome -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -78,10 +78,22 @@
       }
     }
   </script>
+
+  <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Font Awesome CSS (no JS kit, low flicker) -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preload"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  </noscript>
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -256,12 +268,11 @@
     </div>
   </main>
 
-  <!-- Simple container to show search results -->
-<div id="algoliaResults" class="responsive-container py-6 md:py-8 hidden">
-  <h2 class="text-xl md:text-2xl font-black mb-4">Search results</h2>
-  <div id="algoliaResultsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
-</div>
-
+  <!-- Algolia results -->
+  <div id="algoliaResults" class="responsive-container py-6 md:py-8 hidden">
+    <h2 class="text-xl md:text-2xl font-black mb-4">Search results</h2>
+    <div id="algoliaResultsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+  </div>
 
   <!-- Professional View -->
   <section id="professionalView" class="min-h-screen pb-20 md:pb-8 hidden">
@@ -475,7 +486,8 @@
 
         <div class="text-center mt-6">
           <p class="text-gray-600">Don't have an account?
-            <button class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="loginModal" data-open="signupModal">Create account</button>
+            <!-- IMPORTANT: prevent accidental form submit -->
+            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="loginModal" data-open="signupModal">Create account</button>
           </p>
         </div>
       </div>
@@ -522,15 +534,15 @@
       <div class="modal-body">
         <div class="relative mb-6">
           <input id="mobileSearchInput" type="text" placeholder="What needs fixing?" class="form-input pr-12"/>
-          <button class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center" data-action="search-from-mobile"><i class="fas fa-search text-white"></i></button>
+          <button type="button" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center" data-action="search-from-mobile"><i class="fas fa-search text-white"></i></button>
         </div>
         <div class="mt-8">
           <h3 class="font-bold mb-4">Popular Searches</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="IKEA assembly">IKEA Assembly</button>
-            <button class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="Leaky tap">Leaky Tap</button>
-            <button class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="TV mounting">TV Mounting</button>
-            <button class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="AC repair">AC Repair</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="IKEA assembly">IKEA Assembly</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="Leaky tap">Leaky Tap</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="TV mounting">TV Mounting</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="AC repair">AC Repair</button>
           </div>
         </div>
       </div>
@@ -633,7 +645,8 @@
         <div class="text-center mt-6">
           <p class="text-gray-600">
             Already have an account?
-            <button class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="signupModal" data-open="loginModal">Sign in</button>
+            <!-- IMPORTANT: prevent accidental form submit -->
+            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="signupModal" data-open="loginModal">Sign in</button>
           </p>
         </div>
       </div>
@@ -715,14 +728,15 @@
   </div>
 
   <!-- Firebase SDKs (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+
+  <!-- Algolia client (before main.js) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
 
   <!-- App JS -->
-   <!-- Algolia client (add this before main.js) -->
-<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
-  <script src="main.js"></script>
+  <script defer src="main.js"></script>
 </body>
 </html>
