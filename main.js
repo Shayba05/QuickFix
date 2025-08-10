@@ -230,9 +230,9 @@ function openModal(modalId, event) {
         if (focusable) focusable.focus();
 
         if (modalId === 'signupModal') {
-          initGoogleSignInButton();
+          initGoogleSignInButtonSignup();
         } else if (modalId === 'loginModal') {
-          initLoginGoogleSignInButton();
+          initGoogleSignInButtonLogin();
         }
       }, 10);
     }
@@ -284,83 +284,100 @@ function closeAllModals(callback) {
   if (closedCount === total && typeof callback === 'function') callback();
 }
 
-// Initialize Google Sign-In button for Signup Modal
-function initGoogleSignInButton() {
-  if (!window.google || !document.getElementById('googleSignInBtnSignup')) return;
-  
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleSignupCredentialResponse,
-    context: 'signin',
-  });
-  
-  // Clear container first to avoid duplicate buttons
-  const container = document.getElementById('googleSignInBtnSignup');
-  container.innerHTML = '';
-  
-  google.accounts.id.renderButton(
-    container,
-    { theme: 'outline', size: 'large', width: 280 }
-  );
-  
-  google.accounts.id.prompt(); // Optional One Tap prompt
-}
+// Signup form submission handler with extra fields & account type logic
+function signupUser(event) {
+  event.preventDefault();
 
-// Initialize Google Sign-In button for Login Modal
-function initLoginGoogleSignInButton() {
-  if (!window.google || !document.getElementById('googleSignInBtnLogin')) return;
-  
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleLoginCredentialResponse,
-    context: 'signin',
-  });
-  
-  // Clear container first to avoid duplicate buttons
-  const container = document.getElementById('googleSignInBtnLogin');
-  container.innerHTML = '';
-  
-  google.accounts.id.renderButton(
-    container,
-    { theme: 'outline', size: 'large', width: 280 }
-  );
-  
-  google.accounts.id.prompt(); // Optional One Tap prompt
-}
+  const accountType = document.getElementById('account-type').value;
+  const dob = document.getElementById('dob').value;
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const password = document.getElementById('signup-password').value;
 
-// Handle Google Login response
-function handleGoogleLoginCredentialResponse(response) {
-  console.log('Google Login JWT token:', response.credential);
-  alert('Google Login successful! Check console for token.');
-  // TODO: Send token to your backend to verify & authenticate user
-}
+  if (!accountType) {
+    alert('Please select an account type.');
+    return;
+  }
 
-// Handle Google Signup response
-function handleGoogleSignupCredentialResponse(response) {
-  console.log('Google Signup JWT token:', response.credential);
-  alert('Google Signup successful! Check console for token.');
-  // TODO: Send token to your backend to verify & register user
+  // TODO: Add validation & backend signup API call here
+  console.log('Signup data:', { accountType, dob, phone, email, address, password });
+  alert(`Account created for ${email} as ${accountType}`);
+
+  if (accountType === 'professional') {
+    window.location.href = '/professional-upload.html'; // Adjust as needed
+  } else {
+    window.location.href = '/home.html'; // Adjust as needed
+  }
 }
 
 // Login form submission handler
 function loginUser(event) {
   event.preventDefault();
-  const email = document.getElementById('login-email').value;
+  const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   console.log('Login attempt:', email, password);
   alert(`Logging in with email: ${email}`);
-  // TODO: Replace with your backend login API call
+  // TODO: Replace with backend login API call
 }
 
-// Signup form submission handler
-function signupUser(event) {
-  event.preventDefault();
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-  console.log('Signup attempt:', email, password);
-  alert(`Signing up with email: ${email}`);
-  // TODO: Replace with your backend signup API call
+// Google Sign-In initialization for Signup Modal
+function initGoogleSignInButtonSignup() {
+  if (!window.google || !document.getElementById('googleSignInBtnSignup')) return;
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleSignupCredentialResponse,
+    context: 'signin',
+  });
+
+  const container = document.getElementById('googleSignInBtnSignup');
+  container.innerHTML = ''; // Clear old buttons
+
+  google.accounts.id.renderButton(
+    container,
+    { theme: 'outline', size: 'large', width: 280 }
+  );
+
+  google.accounts.id.prompt(); // Optional One Tap
 }
+
+// Google Sign-In initialization for Login Modal
+function initGoogleSignInButtonLogin() {
+  if (!window.google || !document.getElementById('googleSignInBtnLogin')) return;
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleLoginCredentialResponse,
+    context: 'signin',
+  });
+
+  const container = document.getElementById('googleSignInBtnLogin');
+  container.innerHTML = ''; // Clear old buttons
+
+  google.accounts.id.renderButton(
+    container,
+    { theme: 'outline', size: 'large', width: 280 }
+  );
+
+  google.accounts.id.prompt(); // Optional One Tap
+}
+
+// Google Login response handler
+function handleGoogleLoginCredentialResponse(response) {
+  console.log('Google Login JWT token:', response.credential);
+  alert('Google Login successful! Check console for token.');
+  // TODO: Send token to backend for verification & authentication
+}
+
+// Google Signup response handler
+function handleGoogleSignupCredentialResponse(response) {
+  console.log('Google Signup JWT token:', response.credential);
+  alert('Google Signup successful! Check console for token.');
+  // TODO: Send token to backend for verification & registration
+}
+
+
 
 
 // =======================
