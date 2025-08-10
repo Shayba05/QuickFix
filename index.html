@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickFix Pro - Professional Service Platform</title>
 
@@ -14,67 +14,35 @@
       theme: {
         extend: {
           colors: {
-            primary: '#6B46C1',
-            'primary-dark': '#553C9A',
-            'primary-light': '#8B5CF6',
-            secondary: '#059669',
-            'secondary-dark': '#047857',
-            'secondary-light': '#10B981',
-            accent: '#F59E0B',
-            'accent-dark': '#D97706',
-            'accent-light': '#FBBF24',
-            success: '#10B981',
-            warning: '#F59E0B',
-            danger: '#EF4444',
-            info: '#3B82F6',
-            neutral: '#374151',
-            'neutral-light': '#6B7280',
-            'text-primary': '#1F2937',
-            'text-secondary': '#4B5563',
-            'gray-50': '#FAFAFA',
-            'gray-100': '#F4F4F5',
-            'gray-200': '#E4E4E7',
-            'gray-300': '#D4D4D8',
-            'gray-400': '#A1A1AA',
-            'gray-500': '#71717A',
-            'gray-600': '#52525B',
-            'gray-700': '#3F3F46',
-            'gray-800': '#27272A',
-            'gray-900': '#18181B'
+            primary:'#6B46C1','primary-dark':'#553C9A','primary-light':'#8B5CF6',
+            secondary:'#059669','secondary-dark':'#047857','secondary-light':'#10B981',
+            accent:'#F59E0B','accent-dark':'#D97706','accent-light':'#FBBF24',
+            success:'#10B981',warning:'#F59E0B',danger:'#EF4444',info:'#3B82F6',
+            neutral:'#374151','neutral-light':'#6B7280',
+            'text-primary':'#1F2937','text-secondary':'#4B5563',
+            'gray-50':'#FAFAFA','gray-100':'#F4F4F5','gray-200':'#E4E4E7','gray-300':'#D4D4D8',
+            'gray-400':'#A1A1AA','gray-500':'#71717A','gray-600':'#52525B','gray-700':'#3F3F46',
+            'gray-800':'#27272A','gray-900':'#18181B'
           },
-          fontSize: {
-            xs: ['0.875rem', { lineHeight: '1.5' }],
-            sm: ['1rem', { lineHeight: '1.6' }],
-            base: ['1.125rem', { lineHeight: '1.7' }],
-            lg: ['1.25rem', { lineHeight: '1.7' }],
-            xl: ['1.5rem', { lineHeight: '1.7' }],
-            '2xl': ['1.875rem', { lineHeight: '1.6' }],
-            '3xl': ['2.25rem', { lineHeight: '1.5' }],
-            '4xl': ['2.75rem', { lineHeight: '1.4' }],
-            '5xl': ['3.25rem', { lineHeight: '1.3' }],
-            '6xl': ['3.75rem', { lineHeight: '1.2' }]
+          fontSize:{
+            xs:['0.875rem',{lineHeight:'1.5'}],sm:['1rem',{lineHeight:'1.6'}],base:['1.125rem',{lineHeight:'1.7'}],
+            lg:['1.25rem',{lineHeight:'1.7'}],xl:['1.5rem',{lineHeight:'1.7'}],
+            '2xl':['1.875rem',{lineHeight:'1.6'}],'3xl':['2.25rem',{lineHeight:'1.5'}],
+            '4xl':['2.75rem',{lineHeight:'1.4'}],'5xl':['3.25rem',{lineHeight:'1.3'}],'6xl':['3.75rem',{lineHeight:'1.2'}]
           },
-          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
-          screens: { xs:'475px', sm:'640px', md:'768px', lg:'1024px', xl:'1280px', '2xl':'1536px' },
-          animation: {
-            'fade-in':'fadeIn 0.5s ease-out',
-            'slide-up':'slideUp 0.4s ease-out',
-            'slide-in':'slideIn 0.3s ease-out',
-            'scale-in':'scaleIn 0.2s ease-out',
-            'bounce-gentle':'bounceGentle 0.6s ease-out',
-            shimmer:'shimmer 2s linear infinite',
-            float:'float 3s ease-in-out infinite',
-            'pulse-gentle':'pulseGentle 2s cubic-bezier(0.4,0,0.6,1) infinite'
+          fontFamily:{ sans:['Inter','system-ui','sans-serif'] },
+          screens:{ xs:'475px',sm:'640px',md:'768px',lg:'1024px',xl:'1280px','2xl':'1536px' },
+          animation:{
+            'fade-in':'fadeIn .5s ease-out','slide-up':'slideUp .4s ease-out','slide-in':'slideIn .3s ease-out',
+            'scale-in':'scaleIn .2s ease-out','bounce-gentle':'bounceGentle .6s ease-out',
+            shimmer:'shimmer 2s linear infinite',float:'float 3s ease-in-out infinite','pulse-gentle':'pulseGentle 2s ease-in-out infinite'
           },
-          keyframes: {
+          keyframes:{
             fadeIn:{'0%':{opacity:0},'100%':{opacity:1}},
             slideUp:{'0%':{opacity:0,transform:'translateY(10px)'},'100%':{opacity:1,transform:'translateY(0)'}},
             slideIn:{'0%':{opacity:0,transform:'translateX(-10px)'},'100%':{opacity:1,transform:'translateX(0)'}},
-            scaleIn:{'0%':{opacity:0,transform:'scale(0.9)'},'100%':{opacity:1,transform:'scale(1)'}},
-            bounceGentle:{'0%,20%,53%,80%,100%':{transform:'translate3d(0,0,0)'},
-                          '40%,43%':{transform:'translate3d(0,-3px,0)'},
-                          '70%':{transform:'translate3d(0,-2px,0)'},
-                          '90%':{transform:'translate3d(0,-1px,0)'}},
+            scaleIn:{'0%':{opacity:0,transform:'scale(.96)'},'100%':{opacity:1,transform:'scale(1)'}},
+            bounceGentle:{'0%,20%,53%,80%,100%':{transform:'translate3d(0,0,0)'},'40%,43%':{transform:'translate3d(0,-3px,0)'},'70%':{transform:'translate3d(0,-2px,0)'},'90%':{transform:'translate3d(0,-1px,0)'}},
             shimmer:{'0%':{transform:'translateX(-100%)'},'100%':{transform:'translateX(100%)'}},
             float:{'0%,100%':{transform:'translateY(0px)'},'50%':{transform:'translateY(-3px)'}},
             pulseGentle:{'0%,100%':{opacity:1},'50%':{opacity:.8}}
@@ -89,10 +57,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%); color:#1F2937; font-size:1.125rem; line-height:1.7; }
-    body.modal-open { overflow: hidden; } /* lock scroll when any modal is open */
-
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%);color:#1F2937;font-size:1.125rem;line-height:1.7}
     .responsive-container{width:100%;margin:0 auto;padding:0 1rem}
     @media(min-width:475px){.responsive-container{max-width:475px}}
     @media(min-width:640px){.responsive-container{max-width:640px;padding:0 1.5rem}}
@@ -110,107 +76,77 @@
     .btn-primary{background:linear-gradient(135deg,#6B46C1 0%,#8B5CF6 100%);color:#fff;box-shadow:0 4px 14px rgba(107,70,193,.3)}
     .btn-primary:hover{background:linear-gradient(135deg,#553C9A 0%,#7C3AED 100%);box-shadow:0 8px 25px rgba(107,70,193,.4)}
     .btn-secondary{background:linear-gradient(135deg,#059669 0%,#10B981 100%);color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.3)}
-    .btn-secondary:hover{background:linear-gradient(135deg,#047857 0%,#059669 100%);box-shadow:0 8px 25px rgba(5,150,105,.4)}
     .btn-accent{background:linear-gradient(135deg,#F59E0B 0%,#FBBF24 100%);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,.3)}
-    .btn-accent:hover{background:linear-gradient(135deg,#D97706 0%,#F59E0B 100%);box-shadow:0 8px 25px rgba(245,158,11,.4)}
     .btn-outline{background:#fff;color:#6B46C1;border:2px solid #6B46C1;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-    .btn-outline:hover{background:#6B46C1;color:#fff;box-shadow:0 8px 25px rgba(107,70,193,.4)}
     .btn-danger{background:linear-gradient(135deg,#EF4444 0%,#F87171 100%);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.3)}
-    .btn-danger:hover{background:linear-gradient(135deg,#DC2626 0%,#EF4444 100%);box-shadow:0 8px 25px rgba(239,68,68,.4)}
     .btn-google{background:#4285F4;color:#fff;box-shadow:0 4px 14px rgba(66,133,244,.3)}
-    .btn-google:hover{background:#357ae8;box-shadow:0 8px 25px rgba(66,133,244,.4)}
 
     .card{background:#fff;border:1px solid #E4E4E7;border-radius:16px;padding:1.5rem;box-shadow:0 4px 16px rgba(0,0,0,.05);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
     @media(min-width:768px){.card{padding:2rem;border-radius:20px}}
-    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(107,70,193,.05) 0%,rgba(139,92,246,.05) 100%);opacity:0;transition:opacity .3s}
-    .card:hover::before{opacity:1}
     .card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(0,0,0,.12);border-color:#6B46C1}
     .card-interactive{cursor:pointer}
 
-    .professional-card{transition:all .4s cubic-bezier(.4,0,.2,1);background:linear-gradient(145deg,#fff 0%,#f8fafc 100%)}
-    .professional-card:hover{transform:translateY(-12px);box-shadow:0 25px 50px rgba(0,0,0,.15);background:linear-gradient(145deg,#fff 0%,#f1f5f9 100%)}
-    .professional-card .avatar-container{transition:all .3s ease}
-    .professional-card:hover .avatar-container{transform:scale(1.1) rotate(2deg)}
-
-    .language-dropdown{position:relative}
-    .language-menu{position:absolute;top:100%;left:0;background:#fff;border:1px solid #E4E4E7;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);min-width:220px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.95);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
-    .language-menu.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
-    .language-item{padding:12px 16px;cursor:pointer;transition:all .2s;border-bottom:1px solid #F4F4F5;font-size:1rem;display:flex;align-items:center;position:relative;overflow:hidden}
-    .language-item:last-child{border-bottom:none}
-    .language-item:hover{background:linear-gradient(135deg,#F3F4F6 0%,#E5E7EB 100%);transform:translateX(5px)}
-    .language-item.active{background:linear-gradient(135deg,#EDE9FE 0%,#DDD6FE 100%);color:#6B46C1;font-weight:600}
-
-    .mobile-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-top:1px solid #E4E4E7;padding:.75rem 0 1rem;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.1)}
-    @media(min-width:768px){.mobile-nav{display:none} body{padding-bottom:0!important}}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:.5rem;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);text-decoration:none;color:#71717A;font-size:.875rem;font-weight:500;border-radius:12px;margin:0 .25rem}
-    .nav-item.active{color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.1) 0%,rgba(139,92,246,.1) 100%);transform:scale(1.05)}
-    .nav-item:hover{transform:translateY(-3px) scale(1.05);color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.05) 0%,rgba(139,92,246,.05) 100%)}
-    .nav-item i{font-size:1.5rem;margin-bottom:.25rem;transition:all .2s}
-
     .form-input{width:100%;padding:1rem;font-size:1rem;border:2px solid #D4D4D8;border-radius:12px;background:#fff;color:#1F2937;transition:all .3s cubic-bezier(.4,0,.2,1)}
-    @media(min-width:768px){.form-input{padding:1.25rem;font-size:1.125rem}}
-    .form-input:focus{outline:none;border-color:#6B46C1;box-shadow:0 0 0 4px rgba(107,70,193,.1);transform:translateY(-2px)}
+    @media(min-width:768px){.form-input{padding:1.1rem 1.2rem;font-size:1.05rem}}
+    .form-input:focus{outline:none;border-color:#6B46C1;box-shadow:0 0 0 4px rgba(107,70,193,.1);transform:translateY(-1px)}
 
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1)}
+    /* Modals */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;opacity:0;transition:opacity .25s ease}
+    .modal-overlay.hidden{display:none}
     .modal-overlay.show{opacity:1}
-    .modal-content{background:#fff;border-radius:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.9) translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1)}
+    .modal-content{background:#fff;border-radius:20px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.96) translateY(8px);transition:transform .25s ease}
     .modal-overlay.show .modal-content{transform:scale(1) translateY(0)}
-    @media(min-width:768px){.modal-content{max-width:640px}}
-    .modal-header{padding:2rem 2rem 1rem;border-bottom:1px solid #E4E4E7;text-align:center}
-    .modal-body{padding:2rem}
-    .close-btn{position:absolute;top:1rem;right:1rem;width:44px;height:44px;background:#EF4444;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .3s;box-shadow:0 4px 12px rgba(239,68,68,.3)}
-    .close-btn:hover{background:#DC2626;transform:scale(1.1) rotate(90deg);box-shadow:0 6px 20px rgba(239,68,68,.4)}
+    .close-btn{position:absolute;top:1rem;right:1rem;width:44px;height:44px;background:#EF4444;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .2s;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+    .close-btn:hover{background:#DC2626;transform:scale(1.05)}
 
-    .service-page{min-height:100vh;padding-bottom:90px}
-    .service-hero{background:linear-gradient(135deg,#6B46C1 0%,#8B5CF6 100%);color:#fff;padding:4rem 0;text-align:center}
-    .breadcrumb{background:#F3F4F6;padding:1rem 0;border-bottom:1px solid #E5E7EB}
-    .breadcrumb-link{color:#6B46C1;text-decoration:none;font-weight:500}
-    .breadcrumb-link:hover{color:#553C9A}
-    .service-professional{display:flex;align-items:center;padding:1.5rem;background:#fff;border-radius:12px;border:1px solid #E5E7EB;margin-bottom:1rem;transition:all .3s;cursor:pointer}
-    .service-professional:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.1);border-color:#6B46C1}
+    /* Mobile nav */
+    .mobile-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-top:1px solid #E4E4E7;padding:.7rem 0 1rem;z-index:100}
+    @media(min-width:768px){.mobile-nav{display:none} body{padding-bottom:0!important}}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:.5rem;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);color:#71717A;font-size:.875rem;font-weight:500;border-radius:12px;margin:0 .25rem}
+    .nav-item.active{color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.1) 0%,rgba(139,92,246,.1) 100%);transform:scale(1.05)}
 
-    .back-btn{position:fixed;top:50%;left:20px;transform:translateY(-50%);z-index:1000;width:48px;height:48px;background:#6B46C1;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(107,70,193,.3);transition:all .3s}
-    .back-btn:hover{background:#553C9A;transform:translateY(-50%) scale(1.1)}
-    @media(max-width:768px){.back-btn{left:10px;width:44px;height:44px}}
+    .role-card{border:2px solid #E5E7EB;border-radius:12px;padding:.85rem;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;user-select:none}
+    .role-card.active{border-color:#6B46C1;box-shadow:0 0 0 3px rgba(107,70,193,.15)}
   </style>
 </head>
 
 <body>
-  <!-- Back Button -->
-  <button type="button" id="backBtn" class="back-btn hidden" onclick="goBackToHome(event)">
-    <i class="fas fa-arrow-left"></i>
-  </button>
-
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="responsive-container">
       <div class="flex items-center justify-between h-12 md:h-14">
-        <!-- Left: Logo + Location -->
-        <div class="flex items-center space-x-3">
-          <button type="button" id="logoBtn" class="flex items-center pl-2 pr-3 py-1" onclick="goBackToHome(event)">
-            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md mr-2">
+        <!-- Left: brand + location -->
+        <div class="flex items-center space-x-4 pl-2">
+          <!-- Brand (click to go home) -->
+          <button id="brandLink" type="button" class="flex items-center space-x-2 pr-2" title="Go to Home">
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
               <i class="fas fa-tools text-white text-sm md:text-base"></i>
             </div>
-            <span class="hidden xs:inline text-lg md:text-xl font-black text-primary">QuickFix Pro</span>
+            <span class="hidden xs:block text-lg md:text-xl font-black text-primary">QuickFix Pro</span>
           </button>
 
-          <!-- Current Location pill -->
-          <div id="locationPill" class="hidden sm:flex items-center text-sm text-gray-600 ml-1 px-3 py-1.5 border rounded-full bg-white">
-            <i class="fas fa-map-marker-alt text-primary mr-2"></i>
-            <span id="currentLocationText">Detecting location…</span>
+          <!-- City-only location pill -->
+          <div id="locationPill" class="hidden sm:flex items-center px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-700">
+            <i class="fas fa-map-marker-alt mr-2 text-accent"></i>
+            <span id="cityText">Locating…</span>
           </div>
         </div>
 
         <!-- Right: Desktop Nav + User -->
         <div class="flex items-center space-x-2">
           <div class="desktop-only hidden lg:flex items-center space-x-2">
-            <button type="button" id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer',event)"><i class="fas fa-home mr-1.5"></i>Customer</button>
-            <button type="button" id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="goProfessional(event)"><i class="fas fa-briefcase mr-1.5"></i>Professional</button>
-            <button type="button" id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('admin',event)"><i class="fas fa-crown mr-1.5"></i>Admin</button>
+            <button id="customerBtn" type="button" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5"><i class="fas fa-home mr-1.5"></i>Customer</button>
+
+            <!-- Hidden until role=professional/admin -->
+            <button id="professionalBtn" type="button" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5 hidden">
+              <i class="fas fa-briefcase mr-1.5"></i>Professional
+            </button>
+
+            <button id="adminBtn" type="button" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5"><i class="fas fa-crown mr-1.5"></i>Admin</button>
           </div>
 
           <!-- User Menu -->
-          <button type="button" id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal',event)">
+          <button id="userMenuBtn" type="button" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg">
             <div id="userAvatar" class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
               <i class="fas fa-user"></i>
             </div>
@@ -229,10 +165,10 @@
 
         <div class="relative max-w-md md:max-w-2xl mx-auto animate-slide-up">
           <input id="searchInput" type="text" placeholder="What needs fixing? (e.g., 'leaky tap', 'IKEA assembly')" class="form-input pr-16 text-gray-900 text-base md:text-lg shadow-2xl"/>
-          <button type="button" id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" onclick="executeSearchFromInput(event)">
+          <button id="searchBtn" type="button" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all">
             <i class="fas fa-search text-white text-lg md:text-xl"></i>
           </button>
-          <div id="searchSuggestions" class="search-suggestions absolute top-full left-0 right-0 mt-2 rounded-lg hidden z-20"></div>
+          <div id="searchSuggestions" class="absolute top-full left-0 right-0 mt-2 rounded-lg hidden z-20"></div>
         </div>
       </div>
     </div>
@@ -267,22 +203,22 @@
 
   <!-- Service Pages -->
   <div id="ikeaAssemblyPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">IKEA Assembly</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-tools text-4xl text-white"></i></div>
           <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">IKEA Assembly</h1><p class="text-xl text-purple-100">Professional furniture assembly service</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Get your IKEA furniture assembled quickly and correctly by experienced professionals. No more confusing instructions!</p>
+        <p class="text-lg max-w-2xl mx-auto">Get your IKEA furniture assembled quickly and correctly by experienced professionals.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -292,22 +228,22 @@
   </div>
 
   <div id="tvMountingPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">TV Mounting</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-tv text-4xl text-white"></i></div>
           <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">TV Mounting</h1><p class="text-xl text-purple-100">Professional TV wall mounting service</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Secure, professional TV mounting with perfect positioning and cable management. All wall types supported!</p>
+        <p class="text-lg max-w-2xl mx-auto">Secure, professional TV mounting with perfect positioning.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -317,22 +253,22 @@
   </div>
 
   <div id="leakyTapPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Leaky Tap Repair</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-faucet text-4xl text-white"></i></div>
           <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">Leaky Tap Repair</h1><p class="text-xl text-purple-100">Quick and reliable tap repair service</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Stop that annoying drip! Our plumbing experts will fix your leaky tap quickly and efficiently.</p>
+        <p class="text-lg max-w-2xl mx-auto">Stop that annoying drip! Our plumbing experts will fix your tap fast.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -342,22 +278,22 @@
   </div>
 
   <div id="acRepairPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">AC Repair</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-snowflake text-4xl text-white"></i></div>
           <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">AC Repair</h1><p class="text-xl text-purple-100">Fast air conditioning repair service</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Stay cool with our expert AC repair service. Quick diagnosis and professional repairs for all AC units.</p>
+        <p class="text-lg max-w-2xl mx-auto">Stay cool with our expert AC repair service.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -367,22 +303,22 @@
   </div>
 
   <div id="blockedDrainPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Blocked Drain</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-toilet text-4xl text-white"></i></div>
           <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">Blocked Drain</h1><p class="text-xl text-purple-100">Professional drain unblocking service</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Clear any blockage fast! Our drain specialists use professional tools to get your drains flowing again.</p>
+        <p class="text-lg max-w-2xl mx-auto">Clear any blockage fast with our specialists.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -392,22 +328,22 @@
   </div>
 
   <div id="ceilingFanPage" class="service-page hidden">
-    <div class="breadcrumb">
+    <div class="bg-gray-100 border-b">
       <div class="responsive-container">
-        <div class="flex items-center text-sm">
-          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
+        <div class="flex items-center text-sm py-3">
+          <span class="text-primary font-medium">Home</span>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Ceiling Fan Repair</span>
         </div>
       </div>
     </div>
-    <div class="service-hero">
+    <div class="service-hero bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12">
       <div class="responsive-container">
         <div class="flex items-center justify-center mb-6">
           <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"><i class="fas fa-fan text-4xl text-white"></i></div>
-          <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">Ceiling Fan Repair</h1><p class="text-xl text-purple-100">Expert ceiling fan installation & repair</p></div>
+          <div class="text-left"><h1 class="text-3xl md:text-5xl font-black mb-2">Ceiling Fan Repair</h1><p class="text-xl text-purple-100">Expert installation & repair</p></div>
         </div>
-        <p class="text-lg max-w-2xl mx-auto">Keep your home comfortable with professional ceiling fan services. Installation, repair, and maintenance.</p>
+        <p class="text-lg max-w-2xl mx-auto">Keep your home comfortable with professional ceiling fan services.</p>
       </div>
     </div>
     <div class="responsive-container py-8">
@@ -418,32 +354,18 @@
 
   <!-- Professional View -->
   <div id="professionalView" class="min-h-screen pb-20 md:pb-8 hidden">
-    <div class="bg-gradient-to-br from-secondary via-secondary-dark to-secondary-light text-white py-12 md:py-20 relative overflow-hidden">
-      <div class="responsive-container text-center relative z-10">
+    <div class="bg-gradient-to-br from-secondary via-secondary-dark to-secondary-light text-white py-12 md:py-20">
+      <div class="responsive-container text-center">
         <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">Professional Dashboard</h1>
         <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8 animate-slide-up">Manage your business and grow your income</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto animate-slide-up">
-          <button type="button" onclick="openModal('workUploadModal',event)" class="btn-base btn-accent"><i class="fas fa-plus mr-2"></i>Add Work</button>
+          <button type="button" class="btn-base btn-accent" id="openAddWork"><i class="fas fa-plus mr-2"></i>Add Work</button>
           <button type="button" class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white"><i class="fas fa-user-edit mr-2"></i>Edit Profile</button>
         </div>
       </div>
     </div>
 
     <div class="responsive-container py-8 md:py-12">
-      <div class="card mb-6 md:mb-8 animate-slide-up">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-          <div>
-            <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Available Balance</h3>
-            <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold animate-pulse-gentle">Ready to withdraw</span>
-          </div>
-          <button type="button" onclick="openModal('withdrawModal',event)" class="btn-base btn-secondary"><i class="fas fa-university mr-2"></i>Withdraw Funds</button>
-        </div>
-        <div class="text-center md:text-left">
-          <div class="text-4xl md:text-6xl font-black text-secondary mb-4 animate-bounce-gentle">$2,847.50</div>
-          <p class="text-gray-600 text-base md:text-lg">This month: <span class="text-secondary font-bold">+$1,234</span> | Total earned: <span class="font-bold">$18,432</span></p>
-        </div>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
         <div class="card text-center animate-scale-in"><div class="stat-value text-2xl md:text-3xl">8</div><div class="stat-label mb-2">Jobs This Week</div><div class="text-emerald-600 font-bold text-sm">+2 from last week</div></div>
         <div class="card text-center animate-scale-in" style="animation-delay:.1s"><div class="stat-value text-2xl md:text-3xl">4.95★</div><div class="stat-label mb-2">Rating</div><div class="text-emerald-600 font-bold text-sm">234 reviews</div></div>
@@ -454,16 +376,16 @@
       <div class="card mb-8 animate-slide-up">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Performance Breakdown</h3>
         <div class="space-y-4">
-          <div><div class="flex justify-between mb-2"><span class="font-medium">Customer Satisfaction</span><span class="font-bold text-primary">96%</span></div><div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-primary to-primary-light" style="width:96%"></div></div></div>
-          <div><div class="flex justify-between mb-2"><span class="font-medium">On-Time Completion</span><span class="font-bold text-secondary">92%</span></div><div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-secondary to-secondary-light" style="width:92%"></div></div></div>
-          <div><div class="flex justify-between mb-2"><span class="font-medium">Job Success Rate</span><span class="font-bold text-accent">89%</span></div><div class="progress-bar"><div class="progress-fill bg-gradient-to-r from-accent to-accent-light" style="width:89%"></div></div></div>
+          <div><div class="flex justify-between mb-2"><span class="font-medium">Customer Satisfaction</span><span class="font-bold text-primary">96%</span></div><div class="w-full h-3 bg-gray-200 rounded"><div class="h-full bg-gradient-to-r from-primary to-primary-light rounded" style="width:96%"></div></div></div>
+          <div><div class="flex justify-between mb-2"><span class="font-medium">On-Time Completion</span><span class="font-bold text-secondary">92%</span></div><div class="w-full h-3 bg-gray-200 rounded"><div class="h-full bg-gradient-to-r from-secondary to-secondary-light rounded" style="width:92%"></div></div></div>
+          <div><div class="flex justify-between mb-2"><span class="font-medium">Job Success Rate</span><span class="font-bold text-accent">89%</span></div><div class="w-full h-3 bg-gray-200 rounded"><div class="h-full bg-gradient-to-r from-accent to-accent-light rounded" style="width:89%"></div></div></div>
         </div>
       </div>
 
       <div class="card animate-slide-up">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-4 md:mb-0">Recent Work</h3>
-          <button type="button" onclick="openModal('workUploadModal',event)" class="btn-base btn-primary"><i class="fas fa-camera mr-2"></i>Add Photos</button>
+          <button type="button" class="btn-base btn-primary" id="openAddWork2"><i class="fas fa-camera mr-2"></i>Add Photos</button>
         </div>
         <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
       </div>
@@ -472,42 +394,66 @@
 
   <!-- Admin View -->
   <div id="adminView" class="min-h-screen pb-20 md:pb-8 hidden">
-    <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 md:py-20 relative overflow-hidden">
-      <div class="responsive-container text-center relative z-10">
+    <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 md:py-20">
+      <div class="responsive-container text-center">
         <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in"><i class="fas fa-crown mr-4 text-accent animate-bounce-gentle"></i>Admin Dashboard</h1>
         <p class="text-lg md:text-xl text-gray-300 animate-slide-up">Platform management and analytics</p>
       </div>
     </div>
 
     <div class="responsive-container py-8 md:py-12">
-      <div class="earnings-highlight mb-8 animate-slide-up">
+      <!-- Earnings highlight -->
+      <div class="card mb-8 animate-slide-up">
         <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-          <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-100 font-medium">Available Balance</div></div>
-          <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-100 font-medium">This Month</div></div>
-          <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-100 font-medium">Total Jobs</div></div>
-          <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-100 font-medium">Total Earned</div></div>
+          <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-gray-600 font-medium">Available Balance</div></div>
+          <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-gray-600 font-medium">This Month</div></div>
+          <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-gray-600 font-medium">Total Jobs</div></div>
+          <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-gray-600 font-medium">Total Earned</div></div>
         </div>
-        <button type="button" onclick="openModal('adminWithdrawModal',event)" class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
+        <button type="button" id="openAdminWithdraw" class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
       </div>
 
+      <!-- Stat cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <div class="card text-center animate-scale-in"><div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float"><i class="fas fa-dollar-sign text-white text-2xl"></i></div><div class="stat-value text-2xl md:text-3xl text-primary">$347K</div><div class="stat-label mb-2">Total Revenue</div><div class="text-emerald-600 font-bold text-sm">+18.2% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.1s"><div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay:.5s"><i class="fas fa-users text-white text-2xl"></i></div><div class="stat-value text-2xl md:text-3xl text-secondary">1,847</div><div class="stat-label mb-2">Active Professionals</div><div class="text-emerald-600 font-bold text-sm">+12.3% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.2s"><div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay:1s"><i class="fas fa-briefcase text-white text-2xl"></i></div><div class="stat-value text-2xl md:text-3xl text-accent">4,291</div><div class="stat-label mb-2">Jobs This Month</div><div class="text-emerald-600 font-bold text-sm">+22.1% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.3s"><div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-gentle"><i class="fas fa-clock text-white text-2xl"></i></div><div class="stat-value text-2xl md:text-3xl text-red-600">31</div><div class="stat-label mb-2">Pending Approvals</div><div class="text-red-600 font-bold text-sm">Requires attention</div></div>
+        <div class="card text-center animate-scale-in">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-dollar-sign text-white text-2xl"></i></div>
+          <div class="stat-value text-2xl md:text-3xl text-primary">$347K</div>
+          <div class="stat-label mb-2">Total Revenue</div>
+          <div class="text-emerald-600 font-bold text-sm">+18.2% this month</div>
+        </div>
+        <div class="card text-center animate-scale-in" style="animation-delay:.1s">
+          <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-users text-white text-2xl"></i></div>
+          <div class="stat-value text-2xl md:text-3xl text-secondary">1,847</div>
+          <div class="stat-label mb-2">Active Professionals</div>
+          <div class="text-emerald-600 font-bold text-sm">+12.3% this month</div>
+        </div>
+        <div class="card text-center animate-scale-in" style="animation-delay:.2s">
+          <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-briefcase text-white text-2xl"></i></div>
+          <div class="stat-value text-2xl md:text-3xl text-accent">4,291</div>
+          <div class="stat-label mb-2">Jobs This Month</div>
+          <div class="text-emerald-600 font-bold text-sm">+22.1% this month</div>
+        </div>
+        <div class="card text-center animate-scale-in" style="animation-delay:.3s">
+          <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-clock text-white text-2xl"></i></div>
+          <div class="stat-value text-2xl md:text-3xl text-red-600">31</div>
+          <div class="stat-label mb-2">Pending Approvals</div>
+          <div class="text-red-600 font-bold text-sm">Requires attention</div>
+        </div>
       </div>
 
+      <!-- Service distribution -->
       <div class="card mb-8 animate-slide-up">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Service Distribution</h3>
         <div class="space-y-4">
-          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-primary rounded mr-3"></div>Plumbing</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-primary rounded progress-fill" style="width:75%"></div></div><span class="font-bold text-primary w-16 text-right">1,247</span></div></div>
-          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-danger rounded mr-3"></div>Handyman</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-danger rounded progress-fill" style="width:90%"></div></div><span class="font-bold text-danger w-16 text-right">1,523</span></div></div>
-          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-warning rounded mr-3"></div>Electrical</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-warning rounded progress-fill" style="width:55%"></div></div><span class="font-bold text-warning w-16 text-right">892</span></div></div>
-          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-info rounded mr-3"></div>HVAC</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-info rounded progress-fill" style="width:40%"></div></div><span class="font-bold text-info w-16 text-right">634</span></div></div>
+          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-primary rounded mr-3"></div>Plumbing</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-primary rounded" style="width:75%"></div></div><span class="font-bold text-primary w-16 text-right">1,247</span></div></div>
+          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-danger rounded mr-3"></div>Handyman</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-danger rounded" style="width:90%"></div></div><span class="font-bold text-danger w-16 text-right">1,523</span></div></div>
+          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-warning rounded mr-3"></div>Electrical</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-warning rounded" style="width:55%"></div></div><span class="font-bold text-warning w-16 text-right">892</span></div></div>
+          <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-info rounded mr-3"></div>HVAC</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-info rounded" style="width:40%"></div></div><span class="font-bold text-info w-16 text-right">634</span></div></div>
         </div>
       </div>
 
+      <!-- Recent -->
       <div class="card animate-slide-up">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Recent Professional Activity</h3>
         <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -516,27 +462,22 @@
   </div>
 
   <!-- Mobile Navigation -->
-  <div class="mobile-nav mobile-only">
+  <div class="mobile-nav">
     <div class="flex">
-      <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer', event)">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
+      <div class="nav-item active" id="mobileCustomer">
+        <i class="fas fa-home"></i><span>Home</span>
       </div>
-      <div class="nav-item" id="mobileProfessional" onclick="goProfessional(event)">
-        <i class="fas fa-briefcase"></i>
-        <span>Pro</span>
+      <div class="nav-item hidden" id="mobileProfessional">
+        <i class="fas fa-briefcase"></i><span>Pro</span>
       </div>
-      <div class="nav-item" onclick="openModal('searchModal', event)">
-        <i class="fas fa-search"></i>
-        <span>Search</span>
+      <div class="nav-item" id="mobileSearch">
+        <i class="fas fa-search"></i><span>Search</span>
       </div>
-      <div class="nav-item" id="mobileAdmin" onclick="switchView('admin', event)">
-        <i class="fas fa-crown"></i>
-        <span>Admin</span>
+      <div class="nav-item" id="mobileAdmin">
+        <i class="fas fa-crown"></i><span>Admin</span>
       </div>
-      <div class="nav-item" onclick="openModal('userMenuModal', event)">
-        <i class="fas fa-user"></i>
-        <span>Profile</span>
+      <div class="nav-item" id="mobileProfile">
+        <i class="fas fa-user"></i><span>Profile</span>
       </div>
     </div>
   </div>
@@ -551,50 +492,6 @@
         </div>
         <p class="text-gray-300 font-medium text-lg">Professional services made simple and accessible</p>
       </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
-        <div class="animate-slide-up">
-          <h4 class="text-lg font-bold mb-4">Services</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Plumbing',event)">Plumbing</button></li>
-            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Electrical',event)">Electrical</button></li>
-            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('HVAC',event)">HVAC</button></li>
-            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Handyman',event)">Handyman</button></li>
-            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Construction',event)">Construction</button></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.1s">
-          <h4 class="text-lg font-bold mb-4">Company</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors inline-block">About Us</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Careers</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Blog</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Press</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Investors</span></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.2s">
-          <h4 class="text-lg font-bold mb-4">Support</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors inline-block">Help Center</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Contact Us</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Safety</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Trust & Safety</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Insurance</span></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.3s">
-          <h4 class="text-lg font-bold mb-4">Legal</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors inline-block">Terms of Service</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Privacy Policy</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Cookie Policy</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">GDPR</span></li>
-            <li><span class="hover:text-white transition-colors inline-block">Accessibility</span></li>
-          </ul>
-        </div>
-      </div>
-
       <div class="text-center text-gray-400 text-sm md:text-base animate-fade-in">
         <p>© 2024 QuickFix Pro. All rights reserved. | Platform commission: 1.5% per completed job</p>
       </div>
@@ -602,23 +499,24 @@
   </footer>
 
   <!-- Modals -->
+
   <!-- Login Modal -->
-  <div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle" onclick="closeModal('loginModal',event)">
-    <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('loginModal',event)" aria-label="Close login modal"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle">
+    <div class="modal-content" tabindex="0">
+      <button class="close-btn" data-close="loginModal" aria-label="Close login modal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-sign-in-alt text-white text-2xl"></i></div>
         <h2 id="loginModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
         <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
       </div>
-      <div class="modal-body">
-        <form class="space-y-6" onsubmit="loginUser(event)">
-          <div class="form-group">
-            <label for="login-email" class="form-label">Email Address</label>
+      <div class="p-6 md:p-8">
+        <form class="space-y-6" id="loginForm">
+          <div>
+            <label for="login-email" class="block text-sm font-semibold mb-1">Email Address</label>
             <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required/>
           </div>
-          <div class="form-group">
-            <label for="login-password" class="form-label">Password</label>
+          <div>
+            <label for="login-password" class="block text-sm font-semibold mb-1">Password</label>
             <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required/>
           </div>
           <div class="flex items-center justify-between">
@@ -626,9 +524,9 @@
               <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded"/>
               <span class="text-sm text-gray-600">Remember me</span>
             </label>
-            <button type="button" onclick="startPasswordReset(event)" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</button>
+            <a href="#" id="resetLink" class="text-sm text-primary hover:text-primary-dark font-semibold">Forgot password?</a>
           </div>
-          <button type="submit" class="btn-base btn-primary w-full">Sign In Securely</button>
+          <button type="submit" class="btn-base btn-primary w-full" id="loginSubmit">Sign In Securely</button>
         </form>
 
         <div id="googleSignInBtnLogin" class="text-center mt-6"></div>
@@ -636,7 +534,7 @@
 
         <div class="text-center mt-6">
           <p class="text-gray-600">Don't have an account?
-            <button type="button" onclick="closeModal('loginModal',event); openModal('signupModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
+            <button class="text-primary font-bold hover:text-primary-dark" id="openSignupFromLogin">Create account</button>
           </p>
         </div>
       </div>
@@ -644,28 +542,28 @@
   </div>
 
   <!-- User Menu Modal -->
-  <div id="userMenuModal" class="modal-overlay hidden" onclick="closeModal('userMenuModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('userMenuModal',event)"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="userMenuModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="userMenuModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
         <div id="userAvatarLarge" class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle"><i class="fas fa-user"></i></div>
         <h2 id="userNameLarge" class="text-2xl md:text-3xl font-bold text-text-primary">Guest User</h2>
         <p id="userStatusLarge" class="text-gray-600 mt-2">Not signed in</p>
       </div>
-      <div class="modal-body">
+      <div class="p-6 md:p-8">
         <div id="guestUserMenu" class="space-y-4">
-          <button type="button" onclick="closeModal('userMenuModal',event); openModal('loginModal',event);" class="btn-base btn-primary w-full"><i class="fas fa-sign-in-alt mr-2"></i>Sign In</button>
-          <button type="button" onclick="closeModal('userMenuModal',event); openModal('signupModal',event);" class="btn-base btn-outline w-full"><i class="fas fa-user-plus mr-2"></i>Create Account</button>
+          <button class="btn-base btn-primary w-full" id="openLoginFromUserMenu"><i class="fas fa-sign-in-alt mr-2"></i>Sign In</button>
+          <button class="btn-base btn-outline w-full" id="openSignupFromUserMenu"><i class="fas fa-user-plus mr-2"></i>Create Account</button>
           <div class="text-center pt-4 border-t border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
-          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
-          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-history mr-2"></i>Booking History</button>
-          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2"></i>Payment Methods</button>
-          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
-          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2"></i>Help & Support</button>
+          <button class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
+          <button class="btn-base btn-outline w-full"><i class="fas fa-history mr-2"></i>Booking History</button>
+          <button class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2"></i>Payment Methods</button>
+          <button class="btn-base btn-outline w-full"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
+          <button class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2"></i>Help & Support</button>
           <div class="pt-4 border-t border-gray-200">
-            <button type="button" onclick="logoutUser(event)" class="btn-base btn-danger w-full"><i class="fas fa-sign-out-alt mr-2"></i>Sign Out</button>
+            <button class="btn-base btn-danger w-full" id="logoutBtn"><i class="fas fa-sign-out-alt mr-2"></i>Sign Out</button>
           </div>
         </div>
       </div>
@@ -673,138 +571,142 @@
   </div>
 
   <!-- Mobile Search Modal -->
-  <div id="searchModal" class="modal-overlay hidden" onclick="closeModal('searchModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('searchModal',event)"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="searchModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="searchModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200">
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Find Services</h2>
         <p class="text-gray-600 mt-2">Search for professionals near you</p>
       </div>
-      <div class="modal-body">
+      <div class="p-6 md:p-8">
         <div class="relative mb-6">
           <input id="mobileSearchInput" type="text" placeholder="What needs fixing?" class="form-input pr-12"/>
-          <button type="button" onclick="executeSearchFromMobileInput(event)" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center"><i class="fas fa-search text-white"></i></button>
+          <button id="mobileSearchButton" type="button" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center"><i class="fas fa-search text-white"></i></button>
         </div>
         <div class="mt-8">
           <h3 class="font-bold mb-4">Popular Searches</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="navigateToService('IKEA assembly',event)" class="btn-base btn-outline text-sm">IKEA Assembly</button>
-            <button type="button" onclick="navigateToService('Leaky tap',event)" class="btn-base btn-outline text-sm">Leaky Tap</button>
-            <button type="button" onclick="navigateToService('TV mounting',event)" class="btn-base btn-outline text-sm">TV Mounting</button>
-            <button type="button" onclick="navigateToService('AC repair',event)" class="btn-base btn-outline text-sm">AC Repair</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-service="IKEA assembly">IKEA Assembly</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-service="Leaky tap">Leaky Tap</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-service="TV mounting">TV Mounting</button>
+            <button type="button" class="btn-base btn-outline text-sm" data-service="AC repair">AC Repair</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Signup Modal (with language, DOB, address, role) -->
-  <div id="signupModal" class="modal-overlay hidden" onclick="closeModal('signupModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('signupModal',event)">
-        <i class="fas fa-times"></i>
-      </button>
-
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-          <i class="fas fa-user-plus text-white text-2xl"></i>
-        </div>
+  <!-- Signup Modal -->
+  <div id="signupModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="signupModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-user-plus text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
         <p class="text-gray-600 mt-2">Create your account</p>
       </div>
+      <div class="p-6 md:p-8">
+        <form class="space-y-6" id="signupForm">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1" for="fullName">Full Name</label>
+              <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required/>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1" for="preferredLanguage">Preferred Language</label>
+              <select id="preferredLanguage" class="form-input">
+                <option value="en">English (EN)</option>
+                <option value="es">Español (ES)</option>
+                <option value="fr">Français (FR)</option>
+                <option value="de">Deutsch (DE)</option>
+                <option value="it">Italiano (IT)</option>
+                <option value="pt">Português (PT)</option>
+                <option value="zh">中文 (ZH)</option>
+                <option value="ja">日本語 (JA)</option>
+              </select>
+            </div>
+          </div>
 
-      <div class="modal-body">
-        <form class="space-y-6" onsubmit="signupUser(event)">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1" for="emailAddress">Email Address</label>
+              <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required/>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1" for="password">Password</label>
+              <input id="password" type="password" class="form-input" placeholder="Create a secure password" required/>
+            </div>
+          </div>
 
-          <!-- Preferred Language (moved here) -->
-          <div>
-            <label class="form-label block mb-2">Preferred Language</label>
-            <div class="language-dropdown">
-              <button type="button" id="languageBtnSignup" class="btn-base btn-outline">
-                <i class="fas fa-globe mr-2"></i>
-                <span id="currentLang">EN</span>
-                <i class="fas fa-chevron-down ml-2 text-xs"></i>
-              </button>
-              <div id="languageMenu" class="language-menu mt-2">
-                <div class="language-item active" onclick="setLanguage('en','English','🇺🇸',event)"><span class="mr-3">🇺🇸</span> English</div>
-                <div class="language-item" onclick="setLanguage('es','Español','🇪🇸',event)"><span class="mr-3">🇪🇸</span> Español</div>
-                <div class="language-item" onclick="setLanguage('fr','Français','🇫🇷',event)"><span class="mr-3">🇫🇷</span> Français</div>
-                <div class="language-item" onclick="setLanguage('de','Deutsch','🇩🇪',event)"><span class="mr-3">🇩🇪</span> Deutsch</div>
-                <div class="language-item" onclick="setLanguage('it','Italiano','🇮🇹',event)"><span class="mr-3">🇮🇹</span> Italiano</div>
-                <div class="language-item" onclick="setLanguage('pt','Português','🇵🇹',event)"><span class="mr-3">🇵🇹</span> Português</div>
-                <div class="language-item" onclick="setLanguage('zh','中文','🇨🇳',event)"><span class="mr-3">🇨🇳</span> 中文</div>
-                <div class="language-item" onclick="setLanguage('ja','日本語','🇯🇵',event)"><span class="mr-3">🇯🇵</span> 日本語</div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1" for="dob">Date of Birth</label>
+              <input id="dob" type="date" class="form-input" max="2100-12-31"/>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Account Type</label>
+              <div class="grid grid-cols-2 gap-3" id="roleGroup">
+                <label class="role-card active" data-role-card data-role="user">
+                  <input type="radio" name="accountRole" value="user" class="hidden" checked>
+                  <i class="fas fa-user"></i><span class="font-semibold">User</span>
+                </label>
+                <label class="role-card" data-role-card data-role="professional">
+                  <input type="radio" name="accountRole" value="professional" class="hidden">
+                  <i class="fas fa-briefcase"></i><span class="font-semibold">Professional</span>
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Users can browse & book. Pros can list services and access the Pro dashboard.</p>
+            </div>
+          </div>
+
+          <!-- Address section -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold">Address</label>
+              <button type="button" id="useCurrentCity" class="text-sm text-primary hover:underline"><i class="fas fa-location-arrow mr-1"></i>Use current city</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-1" for="country">Country</label>
+                <select id="country" class="form-input">
+                  <option value="">Select country</option>
+                  <option>United States</option>
+                  <option>United Kingdom</option>
+                  <option>Canada</option>
+                  <option>Australia</option>
+                  <option>Germany</option>
+                  <option>France</option>
+                  <option>Italy</option>
+                  <option>Spain</option>
+                  <option>Portugal</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1" for="city">City</label>
+                <input id="city" type="text" class="form-input" placeholder="City"/>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-1" for="addressLine">Address Line</label>
+                <input id="addressLine" type="text" class="form-input" placeholder="Street, number, apartment"/>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1" for="postalCode">Postal Code</label>
+                <input id="postalCode" type="text" class="form-input" placeholder="Postal / ZIP"/>
               </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="fullName">Full Name</label>
-            <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="emailAddress">Email Address</label>
-            <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="password">Password</label>
-            <input id="password" type="password" class="form-input" placeholder="Create a secure password" required />
-          </div>
-
-          <!-- DOB -->
-          <div class="form-group">
-            <label class="form-label" for="dob">Date of Birth</label>
-            <input id="dob" type="date" class="form-input" required />
-          </div>
-
-          <!-- Address -->
-          <div class="form-group">
-            <label class="form-label block mb-2">Address</label>
-            <div class="grid md:grid-cols-2 gap-3 mb-3">
-              <input id="addressLine1" type="text" class="form-input" placeholder="Address line 1" required />
-              <input id="addressLine2" type="text" class="form-input" placeholder="Address line 2 (optional)" />
-            </div>
-            <div class="grid md:grid-cols-3 gap-3 mb-3">
-              <input id="addressCity" type="text" class="form-input" placeholder="City" required />
-              <input id="addressState" type="text" class="form-input" placeholder="State / Province" />
-              <input id="addressPostal" type="text" class="form-input" placeholder="Postal Code" />
-            </div>
-            <div class="grid md:grid-cols-2 gap-3">
-              <input id="addressCountry" type="text" class="form-input" placeholder="Country" required />
-              <button type="button" class="btn-base btn-outline" onclick="fillAddressFromLocation(event)">
-                <i class="fas fa-location-arrow mr-2"></i> Use current location
-              </button>
-            </div>
-          </div>
-
-          <!-- Account Type -->
-          <div class="form-group">
-            <label class="form-label">Account Type</label>
-            <div class="grid grid-cols-2 gap-3">
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" for="roleUser">
-                <input type="radio" name="accountRole" id="roleUser" value="user" class="hidden" checked>
-                <span class="font-semibold"><i class="fas fa-user mr-2"></i>User</span>
-              </label>
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" for="roleProfessional">
-                <input type="radio" name="accountRole" id="roleProfessional" value="professional" class="hidden">
-                <span class="font-semibold"><i class="fas fa-briefcase mr-2"></i>Professional</span>
-              </label>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">Users can browse and book pros. Professionals can list services and access the Pro dashboard.</p>
-          </div>
-
-          <button type="submit" class="btn-base btn-secondary w-full">Create Account</button>
+          <div id="signupMessage" class="text-sm"></div>
+          <button type="submit" class="btn-base btn-secondary w-full" id="signupSubmit">Create Account</button>
         </form>
 
-        <!-- Google Sign-In Button Container -->
         <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
 
         <div class="text-center mt-6">
-          <p class="text-gray-600">
-            Already have an account?
-            <button type="button" onclick="closeModal('signupModal',event); openModal('loginModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
+          <p class="text-gray-600">Already have an account?
+            <button class="text-primary font-bold hover:text-primary-dark" id="openLoginFromSignup">Sign in</button>
           </p>
         </div>
       </div>
@@ -812,22 +714,22 @@
   </div>
 
   <!-- Work Upload Modal -->
-  <div id="workUploadModal" class="modal-overlay hidden" onclick="closeModal('workUploadModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('workUploadModal',event)"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="workUploadModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="workUploadModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-camera text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Add Work</h2>
         <p class="text-gray-600 mt-2">Upload your latest project</p>
       </div>
-      <div class="modal-body">
-        <form class="space-y-6" onsubmit="addWork(event)">
-          <div class="form-group">
-            <label class="form-label">Project Title</label>
+      <div class="p-6 md:p-8">
+        <form class="space-y-6" id="addWorkForm">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Project Title</label>
             <input type="text" class="form-input" placeholder="e.g., Kitchen Plumbing Repair" required/>
           </div>
-          <div class="form-group">
-            <label class="form-label">Description</label>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Description</label>
             <textarea class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
           </div>
           <button type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2"></i>Add to Portfolio</button>
@@ -837,23 +739,19 @@
   </div>
 
   <!-- Withdraw Modals -->
-  <div id="withdrawModal" class="modal-overlay hidden" onclick="closeModal('withdrawModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('withdrawModal',event)"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="withdrawModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="withdrawModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-university text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Withdraw Funds</h2>
         <p class="text-gray-600 mt-2">Transfer to your bank account</p>
       </div>
-      <div class="modal-body">
-        <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <div class="text-sm text-gray-600 mb-2">Available Balance</div>
-          <div class="text-3xl md:text-4xl font-black text-secondary">$2,847.50</div>
-        </div>
-        <form class="space-y-6" onsubmit="processWithdrawal(event)">
-          <div class="form-group">
-            <label class="form-label">Withdrawal Amount</label>
-            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="10" max="2847.50" required/>
+      <div class="p-6 md:p-8">
+        <form class="space-y-6" id="withdrawForm">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Withdrawal Amount</label>
+            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="10" required/>
           </div>
           <button type="submit" class="btn-base btn-secondary w-full"><i class="fas fa-university mr-2"></i>Withdraw Funds</button>
         </form>
@@ -861,23 +759,19 @@
     </div>
   </div>
 
-  <div id="adminWithdrawModal" class="modal-overlay hidden" onclick="closeModal('adminWithdrawModal',event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="close-btn" onclick="closeModal('adminWithdrawModal',event)"><i class="fas fa-times"></i></button>
-      <div class="modal-header">
+  <div id="adminWithdrawModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-close="adminWithdrawModal"><i class="fas fa-times"></i></button>
+      <div class="p-6 md:p-8 border-b border-gray-200 text-center">
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-crown text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Platform Earnings</h2>
         <p class="text-gray-600 mt-2">Withdraw platform commission</p>
       </div>
-      <div class="modal-body">
-        <div class="earnings-highlight p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <div class="text-sm text-amber-100 mb-2">Available Earnings</div>
-          <div class="text-3xl md:text-4xl font-black">$5,217.48</div>
-        </div>
-        <form class="space-y-6" onsubmit="processAdminWithdrawal(event)">
-          <div class="form-group">
-            <label class="form-label">Withdrawal Amount</label>
-            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="100" max="5217.48" required/>
+      <div class="p-6 md:p-8">
+        <form class="space-y-6" id="adminWithdrawForm">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Withdrawal Amount</label>
+            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="100" required/>
           </div>
           <button type="submit" class="btn-base btn-accent w-full"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
         </form>
