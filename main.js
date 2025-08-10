@@ -1,5 +1,5 @@
 // =======================
-// QuickFix Pro - JavaScript
+// QuickFix Pro - Complete JavaScript (updated)
 // =======================
 
 // Global variables
@@ -38,7 +38,7 @@ const serviceCategories = [
     { name: 'Appliances', icon: 'fas fa-tv', color: '#8B5CF6', professionals: 428 },
     { name: 'Cleaning', icon: 'fas fa-broom', color: '#06B6D4', professionals: 743 },
     { name: 'Construction', icon: 'fas fa-hard-hat', color: '#F97316', professionals: 567 },
-    { name: 'Carpentry', icon: 'fas fa-saw-blade', color: '#A16207', professionals: 423 }
+    { name: 'Carpentry', icon: 'fas fa-screwdriver-wrench', color: '#A16207', professionals: 423 } // changed to a free FA icon
 ];
 
 const popularServices = [
@@ -167,14 +167,107 @@ const professionals = [
             cleanliness: 5.0,
             value: 4.9
         }
+    },
+    {
+        id: 5,
+        name: 'Lisa Martinez',
+        service: 'Cleaning Specialist',
+        rating: 4.96,
+        reviews: 312,
+        price: '$65/hr',
+        image: 'https://i.pravatar.cc/150?img=5',
+        verified: true,
+        responseTime: '< 15 min',
+        availability: 'Available Now',
+        experience: '7 years',
+        completedJobs: 892,
+        services: ['cleaning', 'deep cleaning', 'housekeeping'],
+        qualifications: [
+            { type: 'certification', text: 'Professional Cleaning Certified' },
+            { type: 'insurance', text: 'Bonded & Insured' },
+            { type: 'specialty', text: 'Eco-Friendly Products' },
+            { type: 'specialty', text: 'Post-Construction Cleanup' }
+        ],
+        ratingBreakdown: {
+            quality: 5.0,
+            punctuality: 4.9,
+            communication: 4.9,
+            cleanliness: 5.0,
+            value: 4.9
+        }
+    },
+    {
+        id: 6,
+        name: 'Robert Kim',
+        service: 'Construction Expert',
+        rating: 4.87,
+        reviews: 145,
+        price: '$120/hr',
+        image: 'https://i.pravatar.cc/150?img=6',
+        verified: true,
+        responseTime: '< 2 hours',
+        availability: 'Available Tomorrow',
+        experience: '18 years',
+        completedJobs: 567,
+        services: ['construction', 'renovation', 'carpentry'],
+        qualifications: [
+            { type: 'license', text: 'General Contractor License #GC-2017-8293' },
+            { type: 'certification', text: 'OSHA 30-Hour Safety Certified' },
+            { type: 'insurance', text: 'Full Commercial Insurance' },
+            { type: 'specialty', text: 'Kitchen Renovations' },
+            { type: 'specialty', text: 'Bathroom Remodeling' }
+        ],
+        ratingBreakdown: {
+            quality: 4.8,
+            punctuality: 4.8,
+            communication: 4.9,
+            cleanliness: 4.7,
+            value: 5.0
+        }
     }
 ];
+
+// =======================
+// Firebase Configuration
+// =======================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
+    authDomain: "quickfix-cee4a.firebaseapp.com",
+    projectId: "quickfix-cee4a",
+    storageBucket: "quickfix-cee4a.appspot.com", // fixed typical bucket domain
+    messagingSenderId: "1075514949479",
+    appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
+    measurementId: "G-XS4LDTFRSH"
+};
+
+// Initialize Firebase (only once)
+let auth;
+try {
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        console.log('✅ Firebase initialized successfully');
+    } else if (typeof firebase !== 'undefined') {
+        auth = firebase.auth();
+        console.log('✅ Firebase already initialized');
+    }
+} catch (error) {
+    console.error('❌ Firebase initialization error:', error);
+}
+
+// =======================
+// Helpers
+// =======================
+
+function normalize(text) {
+    return String(text).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
 
 // =======================
 // Core Functions
 // =======================
 
-// Core functions with proper event handling
 function toggleLanguageMenu(event) {
     if (event) {
         event.preventDefault();
@@ -197,188 +290,181 @@ function setLanguage(code, name, flag, event) {
         currentLangEl.textContent = code.toUpperCase();
     }
     
-    // Update active language in dropdown
-    document.querySelectorAll('.language-item').forEach(item => {
-        item.classList.remove('active');
-    });
+    // Update active language in dropdown (robust to clicks on inner spans)
+    document.querySelectorAll('.language-item').forEach(item => item.classList.remove('active'));
     if (event && event.target) {
-        event.target.classList.add('active');
+        const row = event.target.closest('.language-item');
+        if (row) row.classList.add('active');
     }
     
     toggleLanguageMenu();
     showAlert('Language Changed', `Language changed to ${name} ${flag}`);
 }
 
-const GOOGLE_CLIENT_ID = '1005892265458-ne6o9c4n8606sov7e1lr0acicvcbeb4e.apps.googleusercontent.com';
-const AUTHORIZED_ORIGIN = 'https://quick-fix-eight.vercel.app'; // Your production URL
+// =======================
+// Modal Functions
+// =======================
 
-// Modal open/close with animation and accessibility
 function openModal(modalId, event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  closeAllModals(() => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.add('show');
-        // Focus first focusable element inside modal
-        const focusable = modal.querySelector('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-
-        if (modalId === 'signupModal') {
-          initGoogleSignInButtonSignup();
-        } else if (modalId === 'loginModal') {
-          initGoogleSignInButtonLogin();
-        }
-      }, 10);
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
-  });
+
+    closeAllModals(() => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('show');
+                const focusable = modal.querySelector('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+                if (focusable) focusable.focus();
+
+                // Render Google Sign-In buttons when modals open
+                if (modalId === 'signupModal') {
+                    renderGoogleSignInButtonSignup();
+                } else if (modalId === 'loginModal') {
+                    renderGoogleSignInButtonLogin();
+                }
+            }, 10);
+        }
+    });
 }
 
 function closeModal(modalId, event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.remove('show');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-    }, 300);
-  }
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
 }
 
 function closeAllModals(callback) {
-  const modals = [
-    'loginModal',
-    'signupModal',
-    'userMenuModal',
-    'searchModal',
-    'workUploadModal',
-    'withdrawModal',
-    'adminWithdrawModal'
-  ];
-  let closedCount = 0;
-  const total = modals.length;
+    const modals = [
+        'loginModal',
+        'signupModal',
+        'userMenuModal',
+        'searchModal',
+        'workUploadModal',
+        'withdrawModal',
+        'adminWithdrawModal'
+    ];
+    let pending = 0;
+    let anyOpen = false;
 
-  modals.forEach(modalId => {
-    const modal = document.getElementById(modalId);
-    if (modal && !modal.classList.contains('hidden')) {
-      modal.classList.remove('show');
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        closedCount++;
-        if (closedCount === total && typeof callback === 'function') callback();
-      }, 300);
-    } else {
-      closedCount++;
-      if (closedCount === total && typeof callback === 'function') callback();
-    }
-  });
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal && !modal.classList.contains('hidden')) {
+            anyOpen = true;
+            pending++;
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                pending--;
+                if (pending === 0 && typeof callback === 'function') callback();
+            }, 300);
+        }
+    });
 
-  if (closedCount === total && typeof callback === 'function') callback();
+    // If nothing was open, fire immediately
+    if (!anyOpen && typeof callback === 'function') callback();
+
+    // Close language menu
+    const langMenu = document.getElementById('languageMenu');
+    if (langMenu) langMenu.classList.remove('show');
 }
 
-// Signup form submission handler with extra fields & account type logic
-function signupUser(event) {
-  event.preventDefault();
+// =======================
+// Google Sign-In Functions
+// =======================
 
-  const accountType = document.getElementById('account-type').value;
-  const dob = document.getElementById('dob').value;
-  const phone = document.getElementById('phone').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const address = document.getElementById('address').value.trim();
-  const password = document.getElementById('signup-password').value;
+function renderGoogleSignInButtonSignup() {
+    const container = document.getElementById('googleSignInBtnSignup');
+    if (!container) return;
 
-  if (!accountType) {
-    alert('Please select an account type.');
-    return;
-  }
+    container.innerHTML = '';
 
-  // TODO: Add validation & backend signup API call here
-  console.log('Signup data:', { accountType, dob, phone, email, address, password });
-  alert(`Account created for ${email} as ${accountType}`);
+    const btn = document.createElement('button');
+    btn.className = 'btn-base btn-google w-full';
+    btn.innerHTML = '<i class="fab fa-google mr-2"></i> Continue with Google';
+    btn.onclick = (event) => {
+        event.preventDefault();
+        if (auth && typeof firebase !== 'undefined') {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    console.log('✅ Google Signup user:', result.user);
+                    showAlert('Google Signup Successful', `Welcome, ${result.user.displayName || 'user'}!`);
+                    closeModal('signupModal');
+                    isLoggedIn = true;
+                    currentUser = {
+                        name: result.user.displayName || 'QuickFix User',
+                        email: result.user.email || '',
+                        avatar: (result.user.displayName || 'QF').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                    };
+                    updateUserInterface();
+                })
+                .catch(error => {
+                    console.error('❌ Google Signup error:', error);
+                    const msg = error?.code === 'auth/unauthorized-domain'
+                        ? 'Unauthorized domain. Add your site origin to Firebase Authentication → Settings → Authorized domains.'
+                        : error.message;
+                    showAlert('Signup Failed', msg);
+                });
+        } else {
+            showAlert('Error', 'Firebase not initialized');
+        }
+    };
 
-  if (accountType === 'professional') {
-    window.location.href = '/professional-upload.html'; // Adjust as needed
-  } else {
-    window.location.href = '/home.html'; // Adjust as needed
-  }
+    container.appendChild(btn);
 }
 
-// Login form submission handler
-function loginUser(event) {
-  event.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  console.log('Login attempt:', email, password);
-  alert(`Logging in with email: ${email}`);
-  // TODO: Replace with backend login API call
+function renderGoogleSignInButtonLogin() {
+    const container = document.getElementById('googleSignInBtnLogin');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-base btn-google w-full';
+    btn.innerHTML = '<i class="fab fa-google mr-2"></i> Continue with Google';
+    btn.onclick = (event) => {
+        event.preventDefault();
+        if (auth && typeof firebase !== 'undefined') {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    console.log('✅ Google Login user:', result.user);
+                    showAlert('Google Login Successful', `Welcome, ${result.user.displayName || 'user'}!`);
+                    closeModal('loginModal');
+                    isLoggedIn = true;
+                    currentUser = {
+                        name: result.user.displayName || 'QuickFix User',
+                        email: result.user.email || '',
+                        avatar: (result.user.displayName || 'QF').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                    };
+                    updateUserInterface();
+                })
+                .catch(error => {
+                    console.error('❌ Google Login error:', error);
+                    const msg = error?.code === 'auth/unauthorized-domain'
+                        ? 'Unauthorized domain. Add your site origin to Firebase Authentication → Settings → Authorized domains.'
+                        : error.message;
+                    showAlert('Login Failed', msg);
+                });
+        } else {
+            showAlert('Error', 'Firebase not initialized');
+        }
+    };
+
+    container.appendChild(btn);
 }
-
-// Google Sign-In initialization for Signup Modal
-function initGoogleSignInButtonSignup() {
-  if (!window.google || !document.getElementById('googleSignInBtnSignup')) return;
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleSignupCredentialResponse,
-    context: 'signin',
-  });
-
-  const container = document.getElementById('googleSignInBtnSignup');
-  container.innerHTML = ''; // Clear old buttons
-
-  google.accounts.id.renderButton(
-    container,
-    { theme: 'outline', size: 'large', width: 280 }
-  );
-
-  google.accounts.id.prompt(); // Optional One Tap
-}
-
-// Google Sign-In initialization for Login Modal
-function initGoogleSignInButtonLogin() {
-  if (!window.google || !document.getElementById('googleSignInBtnLogin')) return;
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleLoginCredentialResponse,
-    context: 'signin',
-  });
-
-  const container = document.getElementById('googleSignInBtnLogin');
-  container.innerHTML = ''; // Clear old buttons
-
-  google.accounts.id.renderButton(
-    container,
-    { theme: 'outline', size: 'large', width: 280 }
-  );
-
-  google.accounts.id.prompt(); // Optional One Tap
-}
-
-// Google Login response handler
-function handleGoogleLoginCredentialResponse(response) {
-  console.log('Google Login JWT token:', response.credential);
-  alert('Google Login successful! Check console for token.');
-  // TODO: Send token to backend for verification & authentication
-}
-
-// Google Signup response handler
-function handleGoogleSignupCredentialResponse(response) {
-  console.log('Google Signup JWT token:', response.credential);
-  alert('Google Signup successful! Check console for token.');
-  // TODO: Send token to backend for verification & registration
-}
-
-
-
 
 // =======================
 // Navigation Functions
@@ -390,9 +476,9 @@ function switchView(view, event) {
         event.stopPropagation();
     }
     
+    console.log(`🔄 Switching to ${view} view`);
     currentPage = view;
     
-    // Hide all main views and service pages
     const allViews = ['customerView', 'professionalView', 'adminView'];
     const allServicePages = ['ikeaAssemblyPage', 'tvMountingPage', 'leakyTapPage', 'acRepairPage', 'blockedDrainPage', 'ceilingFanPage'];
     
@@ -406,15 +492,16 @@ function switchView(view, event) {
         if (element) element.classList.add('hidden');
     });
 
-    // Show selected view
     const targetView = document.getElementById(view + 'View');
-    if (targetView) targetView.classList.remove('hidden');
+    if (targetView) {
+        targetView.classList.remove('hidden');
+        console.log(`✅ Showing ${view} view`);
+    }
 
-    // Hide back button
     const backBtn = document.getElementById('backBtn');
     if (backBtn) backBtn.classList.add('hidden');
 
-    // Update desktop navigation
+    // Desktop nav
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('btn-primary');
         btn.classList.add('btn-outline');
@@ -425,10 +512,8 @@ function switchView(view, event) {
         activeBtn.classList.add('btn-primary');
     }
 
-    // Update mobile navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
+    // Mobile nav
+    document.querySelectorAll('.mobile-nav .nav-item').forEach(item => item.classList.remove('active'));
     const mobileBtn = document.getElementById('mobile' + view.charAt(0).toUpperCase() + view.slice(1));
     if (mobileBtn) mobileBtn.classList.add('active');
 
@@ -445,24 +530,30 @@ function navigateToService(serviceName, event) {
         event.stopPropagation();
     }
     
+    console.log(`🔍 Navigating to service: ${serviceName}`);
+    
     const serviceMap = {
-        'IKEA assembly': 'ikeaAssemblyPage',
-        'TV mounting': 'tvMountingPage',
-        'Leaky tap': 'leakyTapPage',
-        'AC repair': 'acRepairPage',
-        'Blocked drain': 'blockedDrainPage',
-        'Ceiling fan': 'ceilingFanPage'
+        'ikea assembly': 'ikeaAssemblyPage',
+        'tv mounting': 'tvMountingPage',
+        'leaky tap': 'leakyTapPage',
+        'ac repair': 'acRepairPage',
+        'blocked drain': 'blockedDrainPage',
+        'ceiling fan': 'ceilingFanPage'
     };
 
-    const pageId = serviceMap[serviceName];
+    const pageId = serviceMap[String(serviceName).toLowerCase()];
     if (pageId) {
         showServicePage(pageId);
         closeAllModals();
+    } else {
+        console.log(`⚠️ Service page not found for: ${serviceName}`);
+        showAlert('Search Results', `Found ${Math.floor(Math.random() * 50) + 10} professionals for "${serviceName}"`);
     }
 }
 
 function showServicePage(pageId) {
-    // Hide all views
+    console.log(`📄 Showing service page: ${pageId}`);
+    
     const allViews = ['customerView', 'professionalView', 'adminView'];
     const allServicePages = ['ikeaAssemblyPage', 'tvMountingPage', 'leakyTapPage', 'acRepairPage', 'blockedDrainPage', 'ceilingFanPage'];
     
@@ -471,24 +562,25 @@ function showServicePage(pageId) {
         if (element) element.classList.add('hidden');
     });
     
-    allServicePages.forEach(pageId => {
-        const element = document.getElementById(pageId);
+    allServicePages.forEach(pid => {
+        const element = document.getElementById(pid);
         if (element) element.classList.add('hidden');
     });
 
-    // Show selected service page
     const targetPage = document.getElementById(pageId);
-    if (targetPage) targetPage.classList.remove('hidden');
+    if (targetPage) {
+        targetPage.classList.remove('hidden');
+        console.log(`✅ Service page ${pageId} displayed`);
+    }
 
-    // Show back button
     const backBtn = document.getElementById('backBtn');
     if (backBtn) backBtn.classList.remove('hidden');
 
-    // Render professionals for this service
     renderServiceProfessionals(pageId);
 }
 
 function goBackToHome() {
+    console.log('🏠 Going back to home');
     switchView('customer');
 }
 
@@ -498,12 +590,20 @@ function goBackToHome() {
 
 function loginUser(event) {
     if (event) event.preventDefault();
+    
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    
+    console.log(`🔐 Login attempt for: ${email}`);
+    
+    // Simulate successful login
     isLoggedIn = true;
     currentUser = {
         name: 'John Doe',
-        email: 'john.doe@example.com',
+        email: email,
         avatar: 'JD'
     };
+    
     updateUserInterface();
     closeModal('loginModal');
     showAlert('Welcome Back!', 'You have successfully signed in to your QuickFix Pro account.');
@@ -511,12 +611,20 @@ function loginUser(event) {
 
 function signupUser(event) {
     if (event) event.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('emailAddress').value.trim();
+    
+    console.log(`✍️ Signup attempt for: ${fullName} (${email})`);
+    
+    // Simulate successful signup
     isLoggedIn = true;
     currentUser = {
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        avatar: 'JS'
+        name: fullName,
+        email: email,
+        avatar: fullName.split(' ').map(n => n[0]).join('')
     };
+    
     updateUserInterface();
     closeModal('signupModal');
     showAlert('Account Created!', 'Welcome to QuickFix Pro! Your account has been created successfully.');
@@ -527,6 +635,9 @@ function logoutUser(event) {
         event.preventDefault();
         event.stopPropagation();
     }
+    
+    console.log('👋 User logging out');
+    
     isLoggedIn = false;
     currentUser = null;
     updateUserInterface();
@@ -543,6 +654,8 @@ function updateUserInterface() {
     const loggedUserMenu = document.getElementById('loggedUserMenu');
 
     if (isLoggedIn && currentUser) {
+        console.log(`👤 Updating UI for logged-in user: ${currentUser.name}`);
+        
         if (userAvatar) userAvatar.innerHTML = currentUser.avatar;
         if (userAvatarLarge) userAvatarLarge.innerHTML = currentUser.avatar;
         if (userNameLarge) userNameLarge.textContent = currentUser.name;
@@ -550,6 +663,8 @@ function updateUserInterface() {
         if (guestUserMenu) guestUserMenu.classList.add('hidden');
         if (loggedUserMenu) loggedUserMenu.classList.remove('hidden');
     } else {
+        console.log('👤 Updating UI for guest user');
+        
         if (userAvatar) userAvatar.innerHTML = '<i class="fas fa-user"></i>';
         if (userAvatarLarge) userAvatarLarge.innerHTML = '<i class="fas fa-user"></i>';
         if (userNameLarge) userNameLarge.textContent = 'Guest User';
@@ -571,6 +686,7 @@ function executeSearchFromInput(event) {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         const query = searchInput.value.trim();
+        console.log(`🔍 Search from main input: ${query}`);
         if (query) navigateToService(query);
     }
 }
@@ -583,6 +699,7 @@ function executeSearchFromMobileInput(event) {
     const mobileSearchInput = document.getElementById('mobileSearchInput');
     if (mobileSearchInput) {
         const query = mobileSearchInput.value.trim();
+        console.log(`🔍 Search from mobile input: ${query}`);
         if (query) navigateToService(query);
     }
 }
@@ -594,7 +711,8 @@ function executeSearch(query, event) {
     }
     if (!query || query.trim() === '') return;
     
-    // If it's a popular service, navigate to its page
+    console.log(`🔍 Executing search for: ${query}`);
+    
     const service = popularServices.find(s => s.name.toLowerCase() === query.toLowerCase());
     if (service) {
         navigateToService(service.name);
@@ -609,18 +727,21 @@ function executeSearch(query, event) {
 
 function addWork(event) {
     if (event) event.preventDefault();
+    console.log('📸 Adding work to portfolio');
     closeModal('workUploadModal');
     showAlert('Work Added!', 'Your project has been successfully added to your portfolio.');
 }
 
 function processWithdrawal(event) {
     if (event) event.preventDefault();
+    console.log('💰 Processing withdrawal');
     closeModal('withdrawModal');
     showAlert('Withdrawal Initiated', 'Your withdrawal request has been submitted and will be processed within 1-2 business days.');
 }
 
 function processAdminWithdrawal(event) {
     if (event) event.preventDefault();
+    console.log('👑 Processing admin withdrawal');
     closeModal('adminWithdrawModal');
     showAlert('Platform Earnings Withdrawn', 'Platform earnings have been transferred to your business account.');
 }
@@ -631,9 +752,14 @@ function processAdminWithdrawal(event) {
 
 function renderPopularServices() {
     const container = document.getElementById('popularServices');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Popular services container not found');
+        return;
+    }
     
-    container.innerHTML = popularServices.map((service, index) => `
+    console.log('🏗️ Rendering popular services...');
+    
+    const servicesHTML = popularServices.map((service, index) => `
         <button onclick="navigateToService('${service.name}', event)" 
                 class="card card-interactive text-center min-h-[80px] md:min-h-[100px] flex flex-col items-center justify-center hover:border-primary animate-scale-in"
                 style="animation-delay: ${index * 0.1}s;">
@@ -641,13 +767,21 @@ function renderPopularServices() {
             <span class="font-bold text-sm md:text-base text-gray-800">${service.name}</span>
         </button>
     `).join('');
+    
+    container.innerHTML = servicesHTML;
+    console.log(`✅ Rendered ${popularServices.length} popular services`);
 }
 
 function renderServiceCategories() {
     const container = document.getElementById('serviceCategories');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Service categories container not found');
+        return;
+    }
     
-    container.innerHTML = serviceCategories.map((category, index) => `
+    console.log('🏗️ Rendering service categories...');
+    
+    const categoriesHTML = serviceCategories.map((category, index) => `
         <div class="card card-interactive text-center hover:border-primary animate-scale-in" 
              onclick="executeSearch('${category.name.toLowerCase()}', event)"
              style="animation-delay: ${index * 0.1}s;">
@@ -658,13 +792,23 @@ function renderServiceCategories() {
             <p class="text-xs md:text-sm text-gray-600">${category.professionals} professionals</p>
         </div>
     `).join('');
+    
+    container.innerHTML = categoriesHTML;
+    console.log(`✅ Rendered ${serviceCategories.length} service categories`);
 }
 
 function renderProfessionals() {
     const container = document.getElementById('featuredProfessionals');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Featured professionals container not found');
+        return;
+    }
     
-    container.innerHTML = professionals.slice(0, 3).map((pro, index) => renderProfessionalCard(pro, index)).join('');
+    console.log('🏗️ Rendering featured professionals...');
+    
+    const professionalsHTML = professionals.slice(0, 3).map((pro, index) => renderProfessionalCard(pro, index)).join('');
+    container.innerHTML = professionalsHTML;
+    console.log(`✅ Rendered ${Math.min(3, professionals.length)} featured professionals`);
 }
 
 function renderProfessionalCard(pro, index = 0) {
@@ -719,9 +863,11 @@ function renderProfessionalCard(pro, index = 0) {
 }
 
 function renderServiceProfessionals(pageId) {
-    const serviceType = pageId.replace('Page', '').toLowerCase();
+    const slug = normalize(pageId.replace('Page', '')); // e.g., 'ikeaassembly', 'tvmounting'
+    console.log(`🔧 Rendering professionals for service: ${slug}`);
+    
     const relevantProfessionals = professionals.filter(pro => 
-        pro.services.some(service => serviceType.includes(service) || service.includes(serviceType))
+        pro.services.some(svc => normalize(svc).includes(slug) || slug.includes(normalize(svc)))
     );
 
     const containerMappings = {
@@ -733,43 +879,56 @@ function renderServiceProfessionals(pageId) {
         'ceilingfanpage': 'ceilingFanProfessionals'
     };
 
-    const containerId = containerMappings[pageId.toLowerCase()];
+    const containerId = containerMappings[normalize(pageId)];
     const container = document.getElementById(containerId);
     
-    if (container && relevantProfessionals.length > 0) {
-        container.innerHTML = relevantProfessionals.map(pro => `
-            <div class="service-professional" onclick="event.stopPropagation()">
-                <img src="${pro.image}" alt="${pro.name}" class="w-16 h-16 rounded-full mr-4 border-2 border-gray-200">
-                <div class="flex-1">
-                    <div class="flex items-center mb-2">
-                        <h3 class="font-bold text-lg mr-2">${pro.name}</h3>
-                        ${pro.verified ? '<i class="fas fa-check-circle text-secondary"></i>' : ''}
-                    </div>
-                    <p class="text-gray-600 mb-2">${pro.service}</p>
-                    <div class="flex items-center mb-2">
-                        <div class="rating-stars mr-2">
-                            ${[...Array(5)].map((_, i) => `<i class="star fas fa-star ${i < Math.floor(pro.rating) ? 'text-yellow-500' : 'text-gray-300'}"></i>`).join('')}
+    if (container) {
+        if (relevantProfessionals.length > 0) {
+            container.innerHTML = relevantProfessionals.map(pro => `
+                <div class="service-professional" onclick="event.stopPropagation()">
+                    <img src="${pro.image}" alt="${pro.name}" class="w-16 h-16 rounded-full mr-4 border-2 border-gray-200">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-2">
+                            <h3 class="font-bold text-lg mr-2">${pro.name}</h3>
+                            ${pro.verified ? '<i class="fas fa-check-circle text-secondary"></i>' : ''}
                         </div>
-                        <span class="font-bold">${pro.rating}</span>
-                        <span class="text-gray-500 ml-1">(${pro.reviews})</span>
+                        <p class="text-gray-600 mb-2">${pro.service}</p>
+                        <div class="flex items-center mb-2">
+                            <div class="rating-stars mr-2">
+                                ${[...Array(5)].map((_, i) => `<i class="star fas fa-star ${i < Math.floor(pro.rating) ? 'text-yellow-500' : 'text-gray-300'}"></i>`).join('')}
+                            </div>
+                            <span class="font-bold">${pro.rating}</span>
+                            <span class="text-gray-500 ml-1">(${pro.reviews})</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="mr-4"><i class="fas fa-clock mr-1"></i>${pro.responseTime}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>${pro.availability}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <span class="mr-4"><i class="fas fa-clock mr-1"></i>${pro.responseTime}</span>
-                        <span><i class="fas fa-calendar mr-1"></i>${pro.availability}</span>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-primary mb-2">${pro.price}</div>
+                        <button class="btn-base btn-primary" onclick="event.stopPropagation()">Book Now</button>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-2xl font-black text-primary mb-2">${pro.price}</div>
-                    <button class="btn-base btn-primary" onclick="event.stopPropagation()">Book Now</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+            console.log(`✅ Rendered ${relevantProfessionals.length} professionals for ${slug}`);
+        } else {
+            container.innerHTML = '<p class="text-gray-600 text-center py-8">No professionals found for this service.</p>';
+            console.log(`⚠️ No professionals found for ${slug}`);
+        }
+    } else {
+        console.error(`❌ Container not found: ${containerId}`);
     }
 }
 
 function renderWorkPortfolio() {
     const container = document.getElementById('workPortfolio');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Work portfolio container not found');
+        return;
+    }
+    
+    console.log('🏗️ Rendering work portfolio...');
     
     const portfolioItems = [
         { title: 'Modern Kitchen Renovation', category: 'Plumbing', duration: '6 hours', cost: '$480', image: 'https://picsum.photos/400/300?random=1', rating: '5.0' },
@@ -777,7 +936,7 @@ function renderWorkPortfolio() {
         { title: 'Complete Home Automation', category: 'Electrical', duration: '8 hours', cost: '$950', image: 'https://picsum.photos/400/300?random=3', rating: '5.0' }
     ];
 
-    container.innerHTML = portfolioItems.map((item, index) => `
+    const portfolioHTML = portfolioItems.map((item, index) => `
         <div class="card card-interactive overflow-hidden hover:border-primary animate-scale-in"
              style="animation-delay: ${index * 0.1}s;" onclick="event.stopPropagation()">
             <img src="${item.image}" alt="${item.title}" class="w-full h-32 md:h-40 object-cover mb-3 rounded-lg">
@@ -790,22 +949,27 @@ function renderWorkPortfolio() {
                     <div><i class="fas fa-clock mr-1"></i>${item.duration}</div>
                 </div>
                 <div class="text-right">
-                    <div class="font-bold text-secondary text-base">${item.cost}</div>
+                    <div class="text-base font-bold text-secondary">${item.cost}</div>
                     <div class="text-xs text-yellow-500">★ ${item.rating}</div>
                 </div>
             </div>
         </div>
     `).join('');
+    
+    container.innerHTML = portfolioHTML;
+    console.log(`✅ Rendered ${portfolioItems.length} portfolio items`);
 }
-// =======================
-// Render Recent Professionals
-// =======================
 
 function renderRecentProfessionals() {
     const container = document.getElementById('recentProfessionals');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Recent professionals container not found');
+        return;
+    }
     
-    container.innerHTML = professionals.slice(0, 6).map((pro, index) => `
+    console.log('🏗️ Rendering recent professionals...');
+    
+    const recentHTML = professionals.slice(0, 6).map((pro, index) => `
         <div class="card hover:border-primary animate-slide-up" style="animation-delay: ${index * 0.1}s;" onclick="event.stopPropagation()">
             <div class="flex items-center">
                 <img src="${pro.image}" alt="${pro.name}" class="w-10 h-10 md:w-12 md:h-12 rounded-full mr-3 border-2 border-gray-200 flex-shrink-0">
@@ -824,6 +988,9 @@ function renderRecentProfessionals() {
             </div>
         </div>
     `).join('');
+    
+    container.innerHTML = recentHTML;
+    console.log(`✅ Rendered ${Math.min(6, professionals.length)} recent professionals`);
 }
 
 // =======================
@@ -831,6 +998,8 @@ function renderRecentProfessionals() {
 // =======================
 
 function showAlert(title, message) {
+    console.log(`📢 Alert: ${title} - ${message}`);
+    
     const alertDiv = document.createElement('div');
     alertDiv.className = 'fixed top-4 right-4 bg-white border-l-4 border-primary rounded-lg p-4 shadow-lg z-50 max-w-sm md:max-w-md animate-slide-in';
     alertDiv.innerHTML = `
@@ -842,12 +1011,20 @@ function showAlert(title, message) {
                 <h4 class="font-bold text-sm md:text-base text-gray-800 mb-1">${title}</h4>
                 <p class="text-sm text-gray-600">${message}</p>
             </div>
-            <button onclick="this.closest('div').remove()" class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 transition-colors">
+            <button class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 transition-colors">
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
     `;
     document.body.appendChild(alertDiv);
+
+    // Make the close button remove the entire toast
+    const closeBtn = alertDiv.querySelector('button');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            if (alertDiv.parentNode) alertDiv.remove();
+        });
+    }
     
     setTimeout(() => {
         if (alertDiv.parentNode) alertDiv.remove();
@@ -859,6 +1036,8 @@ function showAlert(title, message) {
 // =======================
 
 function setupEventListeners() {
+    console.log('🎧 Setting up event listeners...');
+    
     // Search functionality
     const searchInput = document.getElementById('searchInput');
     const mobileSearchInput = document.getElementById('mobileSearchInput');
@@ -869,6 +1048,7 @@ function setupEventListeners() {
                 navigateToService(searchInput.value.trim());
             }
         });
+        console.log('✅ Main search input listener added');
     }
 
     if (mobileSearchInput) {
@@ -877,9 +1057,10 @@ function setupEventListeners() {
                 navigateToService(mobileSearchInput.value.trim());
             }
         });
+        console.log('✅ Mobile search input listener added');
     }
 
-    // Close dropdowns when clicking outside
+    // Click-away handlers
     document.addEventListener('click', (e) => {
         // Close modals when clicking on overlay
         if (e.target.classList.contains('modal-overlay')) {
@@ -899,6 +1080,8 @@ function setupEventListeners() {
             closeAllModals();
         }
     });
+    
+    console.log('✅ Event listeners setup complete');
 }
 
 // =======================
@@ -906,51 +1089,47 @@ function setupEventListeners() {
 // =======================
 
 function initializeApp() {
-    renderPopularServices();
-    renderServiceCategories();
-    renderProfessionals();
-    renderWorkPortfolio();
-    renderRecentProfessionals();
-    setupEventListeners();
-    updateUserInterface();
-    switchView('customer');
+    console.log('🚀 Initializing QuickFix Pro...');
     
-    console.log('QuickFix Pro initialized successfully!');
+    try {
+        // Render all sections
+        console.log('📊 Rendering all UI components...');
+        renderPopularServices();
+        renderServiceCategories();
+        renderProfessionals();
+        renderWorkPortfolio();
+        renderRecentProfessionals();
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Update UI
+        updateUserInterface();
+        switchView('customer');
+        
+        console.log('🎉 QuickFix Pro initialized successfully!');
+        
+        // Show initialization success alert
+        setTimeout(() => {
+            showAlert('Welcome!', 'QuickFix Pro is ready to use.');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('❌ Error during app initialization:', error);
+        showAlert('Error', 'Application failed to initialize properly.');
+    }
 }
 
 // =======================
-// Google Sign-In Handler
+// Start App
 // =======================
 
-function handleCredentialResponse(response) {
-  console.log('Google Credential Response:', response);
-  alert('Google sign-in successful! Implement your account creation flow here.');
-  // Here you can decode the credential and send it to your backend to create/login the user
-}
-
-// =======================
-// Start App and Google Sign-In Initialization
-// =======================
+console.log('🔄 Starting app initialization...');
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
+    console.log('⏳ DOM loading - event listener added');
 } else {
     initializeApp();
+    console.log('✅ DOM already loaded - initializing immediately');
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  google.accounts.id.initialize({
-    client_id: 1005892265458-ne6o9c4n8606sov7e1lr0acicvcbeb4e.apps.googleusercontent.com, // Replace with your actual client ID
-    callback: handleCredentialResponse,
-  });
-
-  // Render the Google Sign-In button inside the container with id 'googleSignInBtn'
-  google.accounts.id.renderButton(
-    document.getElementById('googleSignInBtn'),
-    { theme: 'outline', size: 'large' }
-  );
-
-  // Optionally prompt the user automatically
-  // google.accounts.id.prompt();
-});
-

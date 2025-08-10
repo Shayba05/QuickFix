@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickFix Pro - Professional Service Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -284,6 +288,17 @@
         .btn-danger:hover {
             background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
             box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-google {
+            background: #4285F4;
+            color: white;
+            box-shadow: 0 4px 14px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-google:hover {
+            background: #357ae8;
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.4);
         }
         
         /* Enhanced card system with professional animations */
@@ -1042,11 +1057,11 @@
         <i class="fas fa-arrow-left"></i>
     </button>
 
-    <!-- Slimmer Responsive Header -->
+    <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div class="responsive-container">
             <div class="flex items-center justify-between h-12 md:h-14">
-                <!-- Language Dropdown & Logo (Close Together) -->
+                <!-- Language Dropdown & Logo -->
                 <div class="flex items-center space-x-3">
                     <div class="language-dropdown">
                         <button id="languageBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="toggleLanguageMenu(event)">
@@ -1082,7 +1097,7 @@
                         </div>
                     </div>
 
-                    <!-- Logo (Now close to language menu) -->
+                    <!-- Logo -->
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
                             <i class="fas fa-tools text-white text-sm md:text-base"></i>
@@ -1095,7 +1110,7 @@
 
                 <!-- Right Side - Desktop Navigation & User Menu -->
                 <div class="flex items-center space-x-2">
-                    <!-- Desktop Navigation with Padding -->
+                    <!-- Desktop Navigation -->
                     <div class="desktop-only hidden lg:flex items-center space-x-2">
                         <button id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer', event)">
                             <i class="fas fa-home mr-1.5"></i>Customer
@@ -1121,7 +1136,7 @@
 
     <!-- Customer View -->
     <div id="customerView" class="min-h-screen pb-20 md:pb-8">
-        <!-- Hero Section (Smaller) -->
+        <!-- Hero Section -->
         <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12 relative overflow-hidden">
             <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] animate-float"></div>
             <div class="responsive-container text-center relative z-10">
@@ -1141,13 +1156,15 @@
             </div>
         </div>
 
-        <!-- Quick Services (Smaller with Navigation) -->
+        <!-- Popular Services -->
         <div class="responsive-container py-6 md:py-8">
             <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-text-primary animate-slide-up">Popular Services</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4" id="popularServices"></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4" id="popularServices">
+                <!-- Popular services will be rendered here by JavaScript -->
+            </div>
         </div>
 
-        <!-- Trust Stats (Smaller) -->
+        <!-- Trust Stats -->
         <div class="bg-white py-6 md:py-10 my-4 md:my-8">
             <div class="responsive-container">
                 <h2 class="text-xl md:text-2xl font-black text-center mb-6 md:mb-8 text-text-primary animate-slide-up">Trusted Worldwide</h2>
@@ -1172,16 +1189,20 @@
             </div>
         </div>
 
-        <!-- Service Categories (Smaller) -->
+        <!-- Service Categories -->
         <div class="responsive-container py-6 md:py-10">
             <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">All Services</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" id="serviceCategories"></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" id="serviceCategories">
+                <!-- Service categories will be rendered here by JavaScript -->
+            </div>
         </div>
 
-        <!-- Featured Professionals (Smaller) -->
+        <!-- Featured Professionals -->
         <div class="responsive-container py-6 md:py-10">
             <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">Top Professionals</h2>
-            <div id="featuredProfessionals" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+            <div id="featuredProfessionals" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                <!-- Featured professionals will be rendered here by JavaScript -->
+            </div>
         </div>
     </div>
 
@@ -1481,7 +1502,9 @@
                         <i class="fas fa-camera mr-2"></i>Add Photos
                     </button>
                 </div>
-                <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
+                <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Work portfolio will be rendered here by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
@@ -1499,7 +1522,7 @@
             </div>
         </div>
 
-        <!-- Platform Earnings (1.5% Commission) -->
+        <!-- Platform Earnings -->
         <div class="responsive-container py-8 md:py-12">
             <div class="earnings-highlight mb-8 animate-slide-up">
                 <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
@@ -1620,7 +1643,9 @@
             <!-- Recent Activity -->
             <div class="card animate-slide-up">
                 <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Recent Professional Activity</h3>
-                <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Recent professionals will be rendered here by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
@@ -1713,137 +1738,55 @@
         </div>
     </footer>
 
-<!-- Login Modal -->
-<div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle" onclick="closeModal('loginModal', event)">
-    <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('loginModal', event)" aria-label="Close login modal">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-          <i class="fas fa-sign-in-alt text-white text-2xl"></i>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle" onclick="closeModal('loginModal', event)">
+        <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('loginModal', event)" aria-label="Close login modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-sign-in-alt text-white text-2xl"></i>
+                </div>
+                <h2 id="loginModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
+                <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
+            </div>
+            <div class="modal-body">
+                <form class="space-y-6" onsubmit="loginUser(event)">
+                    <div class="form-group">
+                        <label for="login-email" class="form-label">Email Address</label>
+                        <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password" class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label for="remember-me" class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded">
+                            <span class="text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn-base btn-primary w-full">
+                        Sign In Securely
+                    </button>
+                </form>
+
+                <!-- Google Sign-In Button Container -->
+                <div id="googleSignInBtnLogin" class="text-center mt-6"></div>
+
+                <div id="login-message" class="text-center text-red-600 mt-3"></div>
+
+                <div class="text-center mt-6">
+                    <p class="text-gray-600">
+                        Don't have an account? 
+                        <button onclick="closeModal('loginModal', event); openModal('signupModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
+                    </p>
+                </div>
+            </div>
         </div>
-        <h2 id="loginModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
-        <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
-      </div>
-      <div class="modal-body">
-        <form class="space-y-6" onsubmit="loginUser(event)">
-          <div class="form-group">
-            <label for="login-email" class="form-label">Email Address</label>
-            <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
-          </div>
-          <div class="form-group">
-            <label for="login-password" class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
-          </div>
-          <div class="flex items-center justify-between">
-            <label for="remember-me" class="flex items-center cursor-pointer">
-              <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded">
-              <span class="text-sm text-gray-600">Remember me</span>
-            </label>
-            <a href="#" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
-          </div>
-          <button type="submit" class="btn-base btn-primary w-full">
-            Sign In Securely
-          </button>
-        </form>
-  
-        <!-- Google Sign-In Button Container -->
-        <div id="googleSignInBtnLogin" class="text-center mt-6"></div>
-  
-        <div id="login-message" class="text-center text-red-600 mt-3"></div>
-  
-        <div class="text-center mt-6">
-          <p class="text-gray-600">
-            Don't have an account? 
-            <button onclick="closeModal('loginModal', event); openModal('signupModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
-          </p>
-        </div>
-      </div>
     </div>
-  </div>
-  
- <!-- Signup Modal -->
-<div id="signupModal" class="modal-overlay hidden" role="dialog" aria-labelledby="signupModalTitle" onclick="closeModal('signupModal', event)">
-    <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('signupModal', event)" aria-label="Close signup modal">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-          <i class="fas fa-user-plus text-white text-2xl"></i>
-        </div>
-        <h2 id="signupModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Create Account</h2>
-        <p class="text-gray-600 mt-2">Sign up for your QuickFix Pro account</p>
-      </div>
-      <div class="modal-body">
-        <form class="space-y-6" id="signupForm" onsubmit="signupUser(event)">
-          
-          <!-- Account Type -->
-          <div class="form-group">
-            <label class="form-label">Account Type</label>
-            <select id="account-type" class="form-input" required>
-              <option value="" disabled selected>Select account type</option>
-              <option value="user">User</option>
-              <option value="professional">Professional</option>
-            </select>
-          </div>
-  
-          <!-- Date of Birth -->
-          <div class="form-group">
-            <label for="dob" class="form-label">Date of Birth</label>
-            <input type="date" id="dob" class="form-input" required>
-          </div>
-  
-          <!-- Phone Number -->
-          <div class="form-group">
-            <label for="phone" class="form-label">Phone Number</label>
-            <input type="tel" id="phone" class="form-input" placeholder="+1234567890" required>
-          </div>
-  
-          <!-- Email Address -->
-          <div class="form-group">
-            <label for="signup-email" class="form-label">Email Address</label>
-            <input type="email" id="signup-email" class="form-input" placeholder="Enter your email" required>
-          </div>
-  
-          <!-- Address -->
-          <div class="form-group">
-            <label for="address" class="form-label">Address</label>
-            <input type="text" id="address" class="form-input" placeholder="Enter your address" required>
-          </div>
-  
-          <!-- Password -->
-          <div class="form-group">
-            <label for="signup-password" class="form-label">Password</label>
-            <input type="password" id="signup-password" class="form-input" placeholder="Create a password" required>
-          </div>
-  
-          <button type="submit" class="btn-base btn-primary w-full">
-            Create Account
-          </button>
-        </form>
-  
-        <!-- Google Sign-In Button Container -->
-        <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
-  
-        <div id="signup-message" class="text-center text-red-600 mt-3"></div>
-  
-        <div class="text-center mt-6">
-          <p class="text-gray-600">
-            Already have an account? 
-            <button onclick="closeModal('signupModal', event); openModal('loginModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  
-  
-  
-  
-    
 
     <!-- User Menu Modal -->
     <div id="userMenuModal" class="modal-overlay hidden">
@@ -1928,72 +1871,50 @@
         </div>
     </div>
 
-<!-- Other modals -->
-<div id="signupModal" class="modal-overlay hidden">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('signupModal', event)">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-          <i class="fas fa-user-plus text-white text-2xl"></i>
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal-overlay hidden">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal('signupModal', event)">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+                    <i class="fas fa-user-plus text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
+                <p class="text-gray-600 mt-2">Create your account</p>
+            </div>
+            <div class="modal-body">
+                <form class="space-y-6" onsubmit="signupUser(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="fullName">Full Name</label>
+                        <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="emailAddress">Email Address</label>
+                        <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input id="password" type="password" class="form-input" placeholder="Create a secure password" required>
+                    </div>
+                    <button type="submit" class="btn-base btn-secondary w-full">
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- Google Sign-In Button Container -->
+                <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
+
+                <div class="text-center mt-6">
+                    <p class="text-gray-600">
+                        Already have an account? 
+                        <button onclick="closeModal('signupModal', event); openModal('loginModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
+                    </p>
+                </div>
+            </div>
         </div>
-        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
-        <p class="text-gray-600 mt-2">Create your account</p>
-      </div>
-      <div class="modal-body">
-        <form class="space-y-6" onsubmit="signupUser(event)">
-          <div class="form-group">
-            <label class="form-label" for="fullName">Full Name</label>
-            <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="emailAddress">Email Address</label>
-            <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="password">Password</label>
-            <input id="password" type="password" class="form-input" placeholder="Create a secure password" required>
-          </div>
-          <button type="submit" class="btn-base btn-secondary w-full">
-            Create Account
-          </button>
-        </form>
-  
-        <!-- Google Sign-In Button -->
-        <button id="googleSignInBtn" class="google-btn w-full mt-4 flex items-center justify-center gap-3">
-          <i class="fab fa-google"></i> Create Account with Google
-        </button>
-  
-        <div class="text-center mt-6">
-          <p class="text-gray-600">
-            Already have an account? 
-            <button onclick="closeModal('signupModal', event); openModal('loginModal', event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
-          </p>
-        </div>
-      </div>
     </div>
-  </div>
-  
-  <style>
-    .google-btn {
-      background-color: #4285F4;
-      color: white;
-      border: none;
-      padding: 12px 0;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      box-shadow: 0 2px 6px rgba(66, 133, 244, 0.6);
-      transition: background-color 0.3s ease;
-    }
-  
-    .google-btn:hover {
-      background-color: #357ae8;
-    }
-  </style>
-  
 
     <div id="workUploadModal" class="modal-overlay hidden">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -2087,7 +2008,5 @@
 
     <!-- Link to external JavaScript file -->
     <script src="main.js"></script>
-    <script src="script.js"></script>
-    <div id="googleSignInBtn"></div>   
 </body>
 </html>
