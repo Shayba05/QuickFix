@@ -71,7 +71,10 @@
             slideUp:{'0%':{opacity:0,transform:'translateY(10px)'},'100%':{opacity:1,transform:'translateY(0)'}},
             slideIn:{'0%':{opacity:0,transform:'translateX(-10px)'},'100%':{opacity:1,transform:'translateX(0)'}},
             scaleIn:{'0%':{opacity:0,transform:'scale(0.9)'},'100%':{opacity:1,transform:'scale(1)'}},
-            bounceGentle:{'0%,20%,53%,80%,100%':{transform:'translate3d(0,0,0)'},'40%,43%':{transform:'translate3d(0,-3px,0)'},'70%':{transform:'translate3d(0,-2px,0)'},'90%':{transform:'translate3d(0,-1px,0)'}},
+            bounceGentle:{'0%,20%,53%,80%,100%':{transform:'translate3d(0,0,0)'},
+                          '40%,43%':{transform:'translate3d(0,-3px,0)'},
+                          '70%':{transform:'translate3d(0,-2px,0)'},
+                          '90%':{transform:'translate3d(0,-1px,0)'}},
             shimmer:{'0%':{transform:'translateX(-100%)'},'100%':{transform:'translateX(100%)'}},
             float:{'0%,100%':{transform:'translateY(0px)'},'50%':{transform:'translateY(-3px)'}},
             pulseGentle:{'0%,100%':{opacity:1},'50%':{opacity:.8}}
@@ -88,6 +91,8 @@
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%); color:#1F2937; font-size:1.125rem; line-height:1.7; }
+    body.modal-open { overflow: hidden; } /* lock scroll when any modal is open */
+
     .responsive-container{width:100%;margin:0 auto;padding:0 1rem}
     @media(min-width:475px){.responsive-container{max-width:475px}}
     @media(min-width:640px){.responsive-container{max-width:640px;padding:0 1.5rem}}
@@ -128,7 +133,7 @@
     .professional-card:hover .avatar-container{transform:scale(1.1) rotate(2deg)}
 
     .language-dropdown{position:relative}
-    .language-menu{position:absolute;top:100%;left:0;background:#fff;border:1px solid #E4E4E7;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);min-width:200px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.95);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
+    .language-menu{position:absolute;top:100%;left:0;background:#fff;border:1px solid #E4E4E7;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);min-width:220px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.95);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
     .language-menu.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
     .language-item{padding:12px 16px;cursor:pointer;transition:all .2s;border-bottom:1px solid #F4F4F5;font-size:1rem;display:flex;align-items:center;position:relative;overflow:hidden}
     .language-item:last-child{border-bottom:none}
@@ -150,7 +155,7 @@
     .modal-overlay.show{opacity:1}
     .modal-content{background:#fff;border-radius:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.9) translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1)}
     .modal-overlay.show .modal-content{transform:scale(1) translateY(0)}
-    @media(min-width:768px){.modal-content{max-width:600px}}
+    @media(min-width:768px){.modal-content{max-width:640px}}
     .modal-header{padding:2rem 2rem 1rem;border-bottom:1px solid #E4E4E7;text-align:center}
     .modal-body{padding:2rem}
     .close-btn{position:absolute;top:1rem;right:1rem;width:44px;height:44px;background:#EF4444;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .3s;box-shadow:0 4px 12px rgba(239,68,68,.3)}
@@ -172,7 +177,7 @@
 
 <body>
   <!-- Back Button -->
-  <button id="backBtn" class="back-btn hidden" onclick="goBackToHome()">
+  <button type="button" id="backBtn" class="back-btn hidden" onclick="goBackToHome(event)">
     <i class="fas fa-arrow-left"></i>
   </button>
 
@@ -180,46 +185,32 @@
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="responsive-container">
       <div class="flex items-center justify-between h-12 md:h-14">
+        <!-- Left: Logo + Location -->
         <div class="flex items-center space-x-3">
-          <div class="language-dropdown">
-            <button id="languageBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="toggleLanguageMenu(event)">
-              <i class="fas fa-globe text-lg text-primary mr-1.5"></i>
-              <span id="currentLang" class="hidden sm:inline font-semibold text-primary text-sm">EN</span>
-              <i class="fas fa-chevron-down text-xs text-gray-500 ml-1"></i>
-            </button>
-            <div id="languageMenu" class="language-menu">
-              <div class="language-item active" onclick="setLanguage('en','English','🇺🇸',event)"><span class="mr-3">🇺🇸</span> English</div>
-              <div class="language-item" onclick="setLanguage('es','Español','🇪🇸',event)"><span class="mr-3">🇪🇸</span> Español</div>
-              <div class="language-item" onclick="setLanguage('fr','Français','🇫🇷',event)"><span class="mr-3">🇫🇷</span> Français</div>
-              <div class="language-item" onclick="setLanguage('de','Deutsch','🇩🇪',event)"><span class="mr-3">🇩🇪</span> Deutsch</div>
-              <div class="language-item" onclick="setLanguage('it','Italiano','🇮🇹',event)"><span class="mr-3">🇮🇹</span> Italiano</div>
-              <div class="language-item" onclick="setLanguage('pt','Português','🇵🇹',event)"><span class="mr-3">🇵🇹</span> Português</div>
-              <div class="language-item" onclick="setLanguage('zh','中文','🇨🇳',event)"><span class="mr-3">🇨🇳</span> 中文</div>
-              <div class="language-item" onclick="setLanguage('ja','日本語','🇯🇵',event)"><span class="mr-3">🇯🇵</span> 日本語</div>
-            </div>
-          </div>
-
-          <!-- Logo -->
-          <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
+          <button type="button" id="logoBtn" class="flex items-center pl-2 pr-3 py-1" onclick="goBackToHome(event)">
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md mr-2">
               <i class="fas fa-tools text-white text-sm md:text-base"></i>
             </div>
-            <div class="hidden xs:block">
-              <h1 class="text-lg md:text-xl font-black text-primary">QuickFix Pro</h1>
-            </div>
+            <span class="hidden xs:inline text-lg md:text-xl font-black text-primary">QuickFix Pro</span>
+          </button>
+
+          <!-- Current Location pill -->
+          <div id="locationPill" class="hidden sm:flex items-center text-sm text-gray-600 ml-1 px-3 py-1.5 border rounded-full bg-white">
+            <i class="fas fa-map-marker-alt text-primary mr-2"></i>
+            <span id="currentLocationText">Detecting location…</span>
           </div>
         </div>
 
         <!-- Right: Desktop Nav + User -->
         <div class="flex items-center space-x-2">
           <div class="desktop-only hidden lg:flex items-center space-x-2">
-            <button id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer',event)"><i class="fas fa-home mr-1.5"></i>Customer</button>
-            <button id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('professional',event)"><i class="fas fa-briefcase mr-1.5"></i>Professional</button>
-            <button id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('admin',event)"><i class="fas fa-crown mr-1.5"></i>Admin</button>
+            <button type="button" id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer',event)"><i class="fas fa-home mr-1.5"></i>Customer</button>
+            <button type="button" id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="goProfessional(event)"><i class="fas fa-briefcase mr-1.5"></i>Professional</button>
+            <button type="button" id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('admin',event)"><i class="fas fa-crown mr-1.5"></i>Admin</button>
           </div>
 
           <!-- User Menu -->
-          <button id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal',event)">
+          <button type="button" id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal',event)">
             <div id="userAvatar" class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
               <i class="fas fa-user"></i>
             </div>
@@ -238,7 +229,7 @@
 
         <div class="relative max-w-md md:max-w-2xl mx-auto animate-slide-up">
           <input id="searchInput" type="text" placeholder="What needs fixing? (e.g., 'leaky tap', 'IKEA assembly')" class="form-input pr-16 text-gray-900 text-base md:text-lg shadow-2xl"/>
-          <button id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" onclick="executeSearchFromInput(event)">
+          <button type="button" id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" onclick="executeSearchFromInput(event)">
             <i class="fas fa-search text-white text-lg md:text-xl"></i>
           </button>
           <div id="searchSuggestions" class="search-suggestions absolute top-full left-0 right-0 mt-2 rounded-lg hidden z-20"></div>
@@ -279,7 +270,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">IKEA Assembly</span>
         </div>
@@ -304,7 +295,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">TV Mounting</span>
         </div>
@@ -329,7 +320,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Leaky Tap Repair</span>
         </div>
@@ -354,7 +345,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">AC Repair</span>
         </div>
@@ -379,7 +370,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Blocked Drain</span>
         </div>
@@ -404,7 +395,7 @@
     <div class="breadcrumb">
       <div class="responsive-container">
         <div class="flex items-center text-sm">
-          <a href="#" class="breadcrumb-link" onclick="goBackToHome()">Home</a>
+          <button type="button" class="breadcrumb-link" onclick="goBackToHome(event)">Home</button>
           <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
           <span class="text-gray-600">Ceiling Fan Repair</span>
         </div>
@@ -432,8 +423,8 @@
         <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">Professional Dashboard</h1>
         <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8 animate-slide-up">Manage your business and grow your income</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto animate-slide-up">
-          <button onclick="openModal('workUploadModal',event)" class="btn-base btn-accent"><i class="fas fa-plus mr-2"></i>Add Work</button>
-          <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white"><i class="fas fa-user-edit mr-2"></i>Edit Profile</button>
+          <button type="button" onclick="openModal('workUploadModal',event)" class="btn-base btn-accent"><i class="fas fa-plus mr-2"></i>Add Work</button>
+          <button type="button" class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white"><i class="fas fa-user-edit mr-2"></i>Edit Profile</button>
         </div>
       </div>
     </div>
@@ -445,7 +436,7 @@
             <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Available Balance</h3>
             <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold animate-pulse-gentle">Ready to withdraw</span>
           </div>
-          <button onclick="openModal('withdrawModal',event)" class="btn-base btn-secondary"><i class="fas fa-university mr-2"></i>Withdraw Funds</button>
+          <button type="button" onclick="openModal('withdrawModal',event)" class="btn-base btn-secondary"><i class="fas fa-university mr-2"></i>Withdraw Funds</button>
         </div>
         <div class="text-center md:text-left">
           <div class="text-4xl md:text-6xl font-black text-secondary mb-4 animate-bounce-gentle">$2,847.50</div>
@@ -472,7 +463,7 @@
       <div class="card animate-slide-up">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-4 md:mb-0">Recent Work</h3>
-          <button onclick="openModal('workUploadModal',event)" class="btn-base btn-primary"><i class="fas fa-camera mr-2"></i>Add Photos</button>
+          <button type="button" onclick="openModal('workUploadModal',event)" class="btn-base btn-primary"><i class="fas fa-camera mr-2"></i>Add Photos</button>
         </div>
         <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
       </div>
@@ -497,7 +488,7 @@
           <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-100 font-medium">Total Jobs</div></div>
           <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-100 font-medium">Total Earned</div></div>
         </div>
-        <button onclick="openModal('adminWithdrawModal',event)" class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
+        <button type="button" onclick="openModal('adminWithdrawModal',event)" class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle"><i class="fas fa-university mr-2"></i>Withdraw Platform Earnings</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
@@ -527,11 +518,26 @@
   <!-- Mobile Navigation -->
   <div class="mobile-nav mobile-only">
     <div class="flex">
-      <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer',event)"><i class="fas fa-home"></i><span>Home</span></div>
-      <div class="nav-item" id="mobileProfessional" onclick="switchView('professional',event)"><i class="fas fa-briefcase"></i><span>Pro</span></div>
-      <div class="nav-item" onclick="openModal('searchModal',event)"><i class="fas fa-search"></i><span>Search</span></div>
-      <div class="nav-item" id="mobileAdmin" onclick="switchView('admin',event)"><i class="fas fa-crown"></i><span>Admin</span></div>
-      <div class="nav-item" onclick="openModal('userMenuModal',event)"><i class="fas fa-user"></i><span>Profile</span></div>
+      <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer', event)">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" id="mobileProfessional" onclick="goProfessional(event)">
+        <i class="fas fa-briefcase"></i>
+        <span>Pro</span>
+      </div>
+      <div class="nav-item" onclick="openModal('searchModal', event)">
+        <i class="fas fa-search"></i>
+        <span>Search</span>
+      </div>
+      <div class="nav-item" id="mobileAdmin" onclick="switchView('admin', event)">
+        <i class="fas fa-crown"></i>
+        <span>Admin</span>
+      </div>
+      <div class="nav-item" onclick="openModal('userMenuModal', event)">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </div>
     </div>
   </div>
 
@@ -550,41 +556,41 @@
         <div class="animate-slide-up">
           <h4 class="text-lg font-bold mb-4">Services</h4>
           <ul class="space-y-3 text-gray-300">
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Plumbing</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Electrical</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">HVAC</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Handyman</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Construction</a></li>
+            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Plumbing',event)">Plumbing</button></li>
+            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Electrical',event)">Electrical</button></li>
+            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('HVAC',event)">HVAC</button></li>
+            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Handyman',event)">Handyman</button></li>
+            <li><button type="button" class="hover:text-white transition-colors hover:translate-x-1 inline-block" onclick="executeSearch('Construction',event)">Construction</button></li>
           </ul>
         </div>
         <div class="animate-slide-up" style="animation-delay:.1s">
           <h4 class="text-lg font-bold mb-4">Company</h4>
           <ul class="space-y-3 text-gray-300">
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Careers</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Blog</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Press</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Investors</a></li>
+            <li><span class="hover:text-white transition-colors inline-block">About Us</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Careers</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Blog</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Press</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Investors</span></li>
           </ul>
         </div>
         <div class="animate-slide-up" style="animation-delay:.2s">
           <h4 class="text-lg font-bold mb-4">Support</h4>
           <ul class="space-y-3 text-gray-300">
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Help Center</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Contact Us</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Safety</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Trust & Safety</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Insurance</a></li>
+            <li><span class="hover:text-white transition-colors inline-block">Help Center</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Contact Us</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Safety</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Trust & Safety</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Insurance</span></li>
           </ul>
         </div>
         <div class="animate-slide-up" style="animation-delay:.3s">
           <h4 class="text-lg font-bold mb-4">Legal</h4>
           <ul class="space-y-3 text-gray-300">
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">GDPR</a></li>
-            <li><a href="#" class="hover:text-white transition-colors hover:translate-x-1 inline-block">Accessibility</a></li>
+            <li><span class="hover:text-white transition-colors inline-block">Terms of Service</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Privacy Policy</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Cookie Policy</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">GDPR</span></li>
+            <li><span class="hover:text-white transition-colors inline-block">Accessibility</span></li>
           </ul>
         </div>
       </div>
@@ -595,11 +601,11 @@
     </div>
   </footer>
 
-  <!-- Modals: Login / User Menu / Search / Signup / Work Upload / Withdrawals -->
+  <!-- Modals -->
   <!-- Login Modal -->
   <div id="loginModal" class="modal-overlay hidden" role="dialog" aria-labelledby="loginModalTitle" onclick="closeModal('loginModal',event)">
     <div class="modal-content" tabindex="0" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('loginModal',event)" aria-label="Close login modal"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('loginModal',event)" aria-label="Close login modal"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-sign-in-alt text-white text-2xl"></i></div>
         <h2 id="loginModalTitle" class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
@@ -620,7 +626,7 @@
               <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded"/>
               <span class="text-sm text-gray-600">Remember me</span>
             </label>
-            <a href="#" onclick="startPasswordReset(event)" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
+            <button type="button" onclick="startPasswordReset(event)" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</button>
           </div>
           <button type="submit" class="btn-base btn-primary w-full">Sign In Securely</button>
         </form>
@@ -630,7 +636,7 @@
 
         <div class="text-center mt-6">
           <p class="text-gray-600">Don't have an account?
-            <button onclick="closeModal('loginModal',event); openModal('signupModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
+            <button type="button" onclick="closeModal('loginModal',event); openModal('signupModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Create account</button>
           </p>
         </div>
       </div>
@@ -640,7 +646,7 @@
   <!-- User Menu Modal -->
   <div id="userMenuModal" class="modal-overlay hidden" onclick="closeModal('userMenuModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('userMenuModal',event)"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('userMenuModal',event)"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div id="userAvatarLarge" class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle"><i class="fas fa-user"></i></div>
         <h2 id="userNameLarge" class="text-2xl md:text-3xl font-bold text-text-primary">Guest User</h2>
@@ -648,18 +654,18 @@
       </div>
       <div class="modal-body">
         <div id="guestUserMenu" class="space-y-4">
-          <button onclick="closeModal('userMenuModal',event); openModal('loginModal',event);" class="btn-base btn-primary w-full"><i class="fas fa-sign-in-alt mr-2"></i>Sign In</button>
-          <button onclick="closeModal('userMenuModal',event); openModal('signupModal',event);" class="btn-base btn-outline w-full"><i class="fas fa-user-plus mr-2"></i>Create Account</button>
+          <button type="button" onclick="closeModal('userMenuModal',event); openModal('loginModal',event);" class="btn-base btn-primary w-full"><i class="fas fa-sign-in-alt mr-2"></i>Sign In</button>
+          <button type="button" onclick="closeModal('userMenuModal',event); openModal('signupModal',event);" class="btn-base btn-outline w-full"><i class="fas fa-user-plus mr-2"></i>Create Account</button>
           <div class="text-center pt-4 border-t border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
-          <button class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-history mr-2"></i>Booking History</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2"></i>Payment Methods</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2"></i>Help & Support</button>
+          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
+          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-history mr-2"></i>Booking History</button>
+          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2"></i>Payment Methods</button>
+          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
+          <button type="button" class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2"></i>Help & Support</button>
           <div class="pt-4 border-t border-gray-200">
-            <button onclick="logoutUser(event)" class="btn-base btn-danger w-full"><i class="fas fa-sign-out-alt mr-2"></i>Sign Out</button>
+            <button type="button" onclick="logoutUser(event)" class="btn-base btn-danger w-full"><i class="fas fa-sign-out-alt mr-2"></i>Sign Out</button>
           </div>
         </div>
       </div>
@@ -669,7 +675,7 @@
   <!-- Mobile Search Modal -->
   <div id="searchModal" class="modal-overlay hidden" onclick="closeModal('searchModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('searchModal',event)"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('searchModal',event)"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Find Services</h2>
         <p class="text-gray-600 mt-2">Search for professionals near you</p>
@@ -677,28 +683,28 @@
       <div class="modal-body">
         <div class="relative mb-6">
           <input id="mobileSearchInput" type="text" placeholder="What needs fixing?" class="form-input pr-12"/>
-          <button onclick="executeSearchFromMobileInput(event)" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center"><i class="fas fa-search text-white"></i></button>
+          <button type="button" onclick="executeSearchFromMobileInput(event)" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center"><i class="fas fa-search text-white"></i></button>
         </div>
         <div class="mt-8">
           <h3 class="font-bold mb-4">Popular Searches</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="navigateToService('IKEA assembly',event)" class="btn-base btn-outline text-sm">IKEA Assembly</button>
-            <button onclick="navigateToService('Leaky tap',event)" class="btn-base btn-outline text-sm">Leaky Tap</button>
-            <button onclick="navigateToService('TV mounting',event)" class="btn-base btn-outline text-sm">TV Mounting</button>
-            <button onclick="navigateToService('AC repair',event)" class="btn-base btn-outline text-sm">AC Repair</button>
+            <button type="button" onclick="navigateToService('IKEA assembly',event)" class="btn-base btn-outline text-sm">IKEA Assembly</button>
+            <button type="button" onclick="navigateToService('Leaky tap',event)" class="btn-base btn-outline text-sm">Leaky Tap</button>
+            <button type="button" onclick="navigateToService('TV mounting',event)" class="btn-base btn-outline text-sm">TV Mounting</button>
+            <button type="button" onclick="navigateToService('AC repair',event)" class="btn-base btn-outline text-sm">AC Repair</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
- <!-- Signup Modal -->
-<div id="signupModal" class="modal-overlay hidden" onclick="closeModal('signupModal',event)">
+  <!-- Signup Modal (with language, DOB, address, role) -->
+  <div id="signupModal" class="modal-overlay hidden" onclick="closeModal('signupModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('signupModal',event)">
+      <button type="button" class="close-btn" onclick="closeModal('signupModal',event)">
         <i class="fas fa-times"></i>
       </button>
-  
+
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
           <i class="fas fa-user-plus text-white text-2xl"></i>
@@ -706,73 +712,109 @@
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
         <p class="text-gray-600 mt-2">Create your account</p>
       </div>
-  
+
       <div class="modal-body">
         <form class="space-y-6" onsubmit="signupUser(event)">
+
+          <!-- Preferred Language (moved here) -->
+          <div>
+            <label class="form-label block mb-2">Preferred Language</label>
+            <div class="language-dropdown">
+              <button type="button" id="languageBtnSignup" class="btn-base btn-outline">
+                <i class="fas fa-globe mr-2"></i>
+                <span id="currentLang">EN</span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+              </button>
+              <div id="languageMenu" class="language-menu mt-2">
+                <div class="language-item active" onclick="setLanguage('en','English','🇺🇸',event)"><span class="mr-3">🇺🇸</span> English</div>
+                <div class="language-item" onclick="setLanguage('es','Español','🇪🇸',event)"><span class="mr-3">🇪🇸</span> Español</div>
+                <div class="language-item" onclick="setLanguage('fr','Français','🇫🇷',event)"><span class="mr-3">🇫🇷</span> Français</div>
+                <div class="language-item" onclick="setLanguage('de','Deutsch','🇩🇪',event)"><span class="mr-3">🇩🇪</span> Deutsch</div>
+                <div class="language-item" onclick="setLanguage('it','Italiano','🇮🇹',event)"><span class="mr-3">🇮🇹</span> Italiano</div>
+                <div class="language-item" onclick="setLanguage('pt','Português','🇵🇹',event)"><span class="mr-3">🇵🇹</span> Português</div>
+                <div class="language-item" onclick="setLanguage('zh','中文','🇨🇳',event)"><span class="mr-3">🇨🇳</span> 中文</div>
+                <div class="language-item" onclick="setLanguage('ja','日本語','🇯🇵',event)"><span class="mr-3">🇯🇵</span> 日本語</div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="fullName">Full Name</label>
             <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required />
           </div>
-  
+
           <div class="form-group">
             <label class="form-label" for="emailAddress">Email Address</label>
             <input id="emailAddress" type="email" class="form-input" placeholder="Enter your email" required />
           </div>
-  
+
           <div class="form-group">
             <label class="form-label" for="password">Password</label>
             <input id="password" type="password" class="form-input" placeholder="Create a secure password" required />
           </div>
-  
-          <!-- Account Type (NEW) -->
+
+          <!-- DOB -->
+          <div class="form-group">
+            <label class="form-label" for="dob">Date of Birth</label>
+            <input id="dob" type="date" class="form-input" required />
+          </div>
+
+          <!-- Address -->
+          <div class="form-group">
+            <label class="form-label block mb-2">Address</label>
+            <div class="grid md:grid-cols-2 gap-3 mb-3">
+              <input id="addressLine1" type="text" class="form-input" placeholder="Address line 1" required />
+              <input id="addressLine2" type="text" class="form-input" placeholder="Address line 2 (optional)" />
+            </div>
+            <div class="grid md:grid-cols-3 gap-3 mb-3">
+              <input id="addressCity" type="text" class="form-input" placeholder="City" required />
+              <input id="addressState" type="text" class="form-input" placeholder="State / Province" />
+              <input id="addressPostal" type="text" class="form-input" placeholder="Postal Code" />
+            </div>
+            <div class="grid md:grid-cols-2 gap-3">
+              <input id="addressCountry" type="text" class="form-input" placeholder="Country" required />
+              <button type="button" class="btn-base btn-outline" onclick="fillAddressFromLocation(event)">
+                <i class="fas fa-location-arrow mr-2"></i> Use current location
+              </button>
+            </div>
+          </div>
+
+          <!-- Account Type -->
           <div class="form-group">
             <label class="form-label">Account Type</label>
-  
             <div class="grid grid-cols-2 gap-3">
-              <!-- USER card -->
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer">
+              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" for="roleUser">
                 <input type="radio" name="accountRole" id="roleUser" value="user" class="hidden" checked>
-                <span class="font-semibold">
-                  <i class="fas fa-user mr-2"></i>User
-                </span>
+                <span class="font-semibold"><i class="fas fa-user mr-2"></i>User</span>
               </label>
-  
-              <!-- PROFESSIONAL card -->
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer">
+              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" for="roleProfessional">
                 <input type="radio" name="accountRole" id="roleProfessional" value="professional" class="hidden">
-                <span class="font-semibold">
-                  <i class="fas fa-briefcase mr-2"></i>Professional
-                </span>
+                <span class="font-semibold"><i class="fas fa-briefcase mr-2"></i>Professional</span>
               </label>
             </div>
-  
-            <p class="text-xs text-gray-500 mt-2">
-              Users can browse and book pros. Professionals can list services and access the Pro dashboard.
-            </p>
+            <p class="text-xs text-gray-500 mt-2">Users can browse and book pros. Professionals can list services and access the Pro dashboard.</p>
           </div>
-          <!-- /Account Type -->
-  
+
           <button type="submit" class="btn-base btn-secondary w-full">Create Account</button>
         </form>
-  
+
         <!-- Google Sign-In Button Container -->
         <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
-  
+
         <div class="text-center mt-6">
           <p class="text-gray-600">
             Already have an account?
-            <button onclick="closeModal('signupModal',event); openModal('loginModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
+            <button type="button" onclick="closeModal('signupModal',event); openModal('loginModal',event);" class="text-primary font-bold hover:text-primary-dark transition-colors">Sign in</button>
           </p>
         </div>
       </div>
     </div>
   </div>
-  
 
   <!-- Work Upload Modal -->
   <div id="workUploadModal" class="modal-overlay hidden" onclick="closeModal('workUploadModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('workUploadModal',event)"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('workUploadModal',event)"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-camera text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Add Work</h2>
@@ -797,7 +839,7 @@
   <!-- Withdraw Modals -->
   <div id="withdrawModal" class="modal-overlay hidden" onclick="closeModal('withdrawModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('withdrawModal',event)"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('withdrawModal',event)"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-university text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Withdraw Funds</h2>
@@ -821,7 +863,7 @@
 
   <div id="adminWithdrawModal" class="modal-overlay hidden" onclick="closeModal('adminWithdrawModal',event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="closeModal('adminWithdrawModal',event)"><i class="fas fa-times"></i></button>
+      <button type="button" class="close-btn" onclick="closeModal('adminWithdrawModal',event)"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-crown text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Platform Earnings</h2>

@@ -1,37 +1,17 @@
 // =======================
-// QuickFix Pro - App JS (Firebase Auth + Firestore + Roles)
+// QuickFix Pro - App JS (role-gated Pro + click-anywhere toast dismiss + city-only location)
 // =======================
 
 // Global UI state
 let isLoggedIn = false;
-let currentUser = null; // { name, email, avatar, role }
+let currentUser = null;
 let currentLanguage = 'en';
 let currentPage = 'customer';
+let currentUserRole = 'guest'; // 'guest' | 'customer' | 'professional' | 'admin'
 
 // -----------------------
-// Static data
+// Static data (trimmed to essentials)
 // -----------------------
-const serviceDatabase = {
-  handyman: {
-    emoji: '🔧',
-    title: 'Handyman Services',
-    searchTerms: ['IKEA assembly','TV mounting','furniture assembly','picture hanging','curtain installation'],
-    keywords: ['handyman','ikea','assembly','furniture','tv mount','picture','curtain']
-  },
-  plumbing: {
-    emoji: '🚰',
-    title: 'Plumbing Services',
-    searchTerms: ['leaky tap','blocked drain','toilet repair','pipe burst','water heater'],
-    keywords: ['plumber','plumbing','leak','tap','drain','toilet','pipe','water']
-  },
-  electrical: {
-    emoji: '⚡',
-    title: 'Electrical Services',
-    searchTerms: ['ceiling fan repair','light fixture','outlet installation','breaker repair'],
-    keywords: ['electrician','electrical','ceiling fan','light','outlet','breaker']
-  }
-};
-
 const serviceCategories = [
   { name: 'Plumbing', icon: 'fas fa-wrench', color: '#6B46C1', professionals: 1247 },
   { name: 'Electrical', icon: 'fas fa-bolt', color: '#F59E0B', professionals: 892 },
@@ -82,15 +62,11 @@ try {
   }
   auth = firebase.auth();
   db = firebase.firestore();
-
   if (db && db.enablePersistence) {
-    db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
-      console.warn('Firestore persistence not enabled:', err.code || err);
-    });
+    db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
   }
-  console.log('✅ Firebase ready');
 } catch (e) {
-  console.error('❌ Firebase init error:', e);
+  console.error('Firebase init error:', e);
 }
 
 // -----------------------
@@ -103,15 +79,10 @@ function getInitials(name = '', email = '') {
   return 'QF';
 }
 
-/**
- * Create/update user profile. If it's a new profile, persist preferredRole (default "user").
- * Returns the resulting role string.
- */
-async function upsertUserProfile(user, preferredRole = undefined) {
-  if (!db || !user) return 'user';
+async function upsertUserProfile(user) {
+  if (!db || !user) return;
   const ref = db.collection('users').doc(user.uid);
   const snap = await ref.get();
-
   const base = {
     uid: user.uid,
     displayName: user.displayName || '',
@@ -120,29 +91,10 @@ async function upsertUserProfile(user, preferredRole = undefined) {
     provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password',
     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
   };
-
-  let role = preferredRole || 'user';
-
   if (snap.exists) {
-    const existing = snap.data() || {};
-    role = existing.role || role;
     await ref.set(base, { merge: true });
   } else {
-    await ref.set({
-      ...base,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      role
-    }, { merge: true });
-  }
-  return role;
-}
-
-async function fetchUserRole(uid){
-  try{
-    const doc = await db.collection('users').doc(uid).get();
-    return (doc.exists && doc.data().role) ? doc.data().role : 'user';
-  }catch{
-    return 'user';
+    await ref.set({ ...base, createdAt: firebase.firestore.FieldValue.serverTimestamp(), role: 'customer' }, { merge: true });
   }
 }
 
@@ -150,19 +102,17 @@ async function fetchUserRole(uid){
 // Language menu
 // -----------------------
 function toggleLanguageMenu(event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
-  const menu = document.getElementById('languageMenu');
-  if (menu) menu.classList.toggle('show');
+  event?.preventDefault(); event?.stopPropagation();
+  document.getElementById('languageMenu')?.classList.toggle('show');
 }
 
 function setLanguage(code, name, flag, event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
+  event?.preventDefault(); event?.stopPropagation();
   currentLanguage = code;
   const currentLangEl = document.getElementById('currentLang');
   if (currentLangEl) currentLangEl.textContent = code.toUpperCase();
   document.querySelectorAll('.language-item').forEach(i => i.classList.remove('active'));
-  const row = event?.target?.closest('.language-item');
-  if (row) row.classList.add('active');
+  event?.target?.closest('.language-item')?.classList.add('active');
   toggleLanguageMenu();
   showAlert('Language Changed', `Language changed to ${name} ${flag}`);
 }
@@ -171,27 +121,23 @@ function setLanguage(code, name, flag, event){
 // Modals
 // -----------------------
 function openModal(modalId,event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
+  event?.preventDefault(); event?.stopPropagation();
   closeAllModals(()=> {
     const modal = document.getElementById(modalId);
-    if (modal){
-      modal.classList.remove('hidden');
-      setTimeout(()=>{
-        modal.classList.add('show');
-        const focusable = modal.querySelector('input,button,textarea,select,[tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-        if (modalId === 'signupModal') {
-          renderGoogleSignInButtonSignup();
-          initRolePicker(); // NEW: highlight selected role card
-        }
-        if (modalId === 'loginModal') renderGoogleSignInButtonLogin();
-      },10);
-    }
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    setTimeout(()=>{
+      modal.classList.add('show');
+      const focusable = modal.querySelector('input,button,textarea,select,[tabindex]:not([tabindex="-1"])');
+      focusable?.focus();
+      if (modalId === 'signupModal') renderGoogleSignInButtonSignup();
+      if (modalId === 'loginModal') renderGoogleSignInButtonLogin();
+    },10);
   });
 }
 
 function closeModal(modalId,event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
+  event?.preventDefault(); event?.stopPropagation();
   const modal = document.getElementById(modalId);
   if (modal){
     modal.classList.remove('show');
@@ -207,42 +153,11 @@ function closeAllModals(cb){
     if (el && !el.classList.contains('hidden')){
       any = true; pending++;
       el.classList.remove('show');
-      setTimeout(()=>{ el.classList.add('hidden'); pending--; if (pending===0 && cb) cb(); },300);
+      setTimeout(()=>{ el.classList.add('hidden'); if(--pending===0 && cb) cb(); },300);
     }
   });
   if (!any && cb) cb();
-  const langMenu = document.getElementById('languageMenu');
-  if (langMenu) langMenu.classList.remove('show');
-}
-
-// -----------------------
-// Role picker (Signup)
-// -----------------------
-function initRolePicker(){
-  const cards = document.querySelectorAll('#signupModal .user-type-card');
-  const radios = document.querySelectorAll('#signupModal input[name="accountRole"]');
-
-  const sync = () => {
-    cards.forEach(card => {
-      const input = card.querySelector('input[name="accountRole"]');
-      if (input && input.checked){
-        card.classList.remove('border-gray-200');
-        card.classList.add('border-primary','ring-2','ring-primary/20');
-      } else {
-        card.classList.add('border-gray-200');
-        card.classList.remove('border-primary','ring-2','ring-primary/20');
-      }
-    });
-  };
-
-  cards.forEach(card=>{
-    card.addEventListener('click', ()=>{
-      const input = card.querySelector('input[name="accountRole"]');
-      if (input){ input.checked = true; sync(); }
-    });
-  });
-  radios.forEach(r => r.addEventListener('change', sync));
-  setTimeout(sync, 0);
+  document.getElementById('languageMenu')?.classList.remove('show');
 }
 
 // -----------------------
@@ -261,14 +176,10 @@ function renderGoogleSignInButtonSignup(){
     try{
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);
-      // respect chosen role on first signup
-      const chosen = document.querySelector('input[name="accountRole"]:checked')?.value || 'user';
-      await upsertUserProfile(result.user, chosen === 'professional' ? 'professional' : 'user');
+      await upsertUserProfile(result.user);
       showAlert('Google Signup Successful', `Welcome, ${result.user.displayName || 'user'}!`);
       closeModal('signupModal');
-      // onAuthStateChanged will fetch role and gate UI
     }catch(err){
-      console.error('Google Signup error:', err);
       const msg = (err?.code === 'auth/unauthorized-domain')
         ? 'Unauthorized domain. Add your site origin to Firebase Auth → Settings → Authorized domains.'
         : err.message;
@@ -291,11 +202,10 @@ function renderGoogleSignInButtonLogin(){
     try{
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);
-      await upsertUserProfile(result.user); // no role change on login
+      await upsertUserProfile(result.user);
       showAlert('Google Login Successful', `Welcome, ${result.user.displayName || 'user'}!`);
       closeModal('loginModal');
     }catch(err){
-      console.error('Google Login error:', err);
       const msg = (err?.code === 'auth/unauthorized-domain')
         ? 'Unauthorized domain. Add your site origin to Firebase Auth → Settings → Authorized domains.'
         : err.message;
@@ -306,49 +216,43 @@ function renderGoogleSignInButtonLogin(){
 }
 
 // -----------------------
-// Navigation (+ gating)
+// Navigation + Role-gated Pro
 // -----------------------
 function switchView(view,event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
-
-  // Gatekeeping based on role
-  const role = currentUser?.role || 'guest';
-  if (view === 'professional' && !(role === 'professional' || role === 'admin')){
-    showAlert('Access restricted', 'Create a Professional account to access the Pro dashboard.');
-    return;
-  }
-  if (view === 'admin' && role !== 'admin'){
-    showAlert('Access restricted', 'Admin area is restricted.');
-    return;
-  }
-
+  event?.preventDefault(); event?.stopPropagation();
   currentPage = view;
-  ['customerView','professionalView','adminView'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-  });
-  ['ikeaAssemblyPage','tvMountingPage','leakyTapPage','acRepairPage','blockedDrainPage','ceilingFanPage'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-  });
-  const target = document.getElementById(view + 'View');
-  if (target) target.classList.remove('hidden');
-  const backBtn = document.getElementById('backBtn');
-  if (backBtn) backBtn.classList.add('hidden');
+  ['customerView','professionalView','adminView'].forEach(id=> document.getElementById(id)?.classList.add('hidden'));
+  ['ikeaAssemblyPage','tvMountingPage','leakyTapPage','acRepairPage','blockedDrainPage','ceilingFanPage'].forEach(id=> document.getElementById(id)?.classList.add('hidden'));
+  document.getElementById(view + 'View')?.classList.remove('hidden');
+  document.getElementById('backBtn')?.classList.add('hidden');
 
   document.querySelectorAll('.nav-btn').forEach(b=>{ b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
-  const activeBtn = document.getElementById(view + 'Btn');
-  if (activeBtn){ activeBtn.classList.remove('btn-outline'); activeBtn.classList.add('btn-primary'); }
+  document.getElementById(view + 'Btn')?.classList.remove('btn-outline');
+  document.getElementById(view + 'Btn')?.classList.add('btn-primary');
 
   document.querySelectorAll('.mobile-nav .nav-item').forEach(i=>i.classList.remove('active'));
   const mobileBtn = document.getElementById('mobile' + view.charAt(0).toUpperCase() + view.slice(1));
-  if (mobileBtn) mobileBtn.classList.add('active');
+  mobileBtn?.classList.add('active');
 
   closeAllModals();
 }
 
+function goProfessional(event){
+  event?.preventDefault(); event?.stopPropagation();
+  if (!isLoggedIn){
+    showAlert('Sign in required', 'Please sign in as a professional to access the Pro dashboard.');
+    openModal('loginModal');
+    return;
+  }
+  if (currentUserRole !== 'professional' && currentUserRole !== 'admin'){
+    showAlert('Access restricted', 'Your account is a customer. Professional features require a professional account.');
+    return;
+  }
+  switchView('professional');
+}
+
 function navigateToService(serviceName,event){
-  if (event){ event.preventDefault(); event.stopPropagation(); }
+  event?.preventDefault(); event?.stopPropagation();
   const map = {
     'ikea assembly':'ikeaAssemblyPage',
     'tv mounting':'tvMountingPage',
@@ -377,10 +281,9 @@ function goBackToHome(){ switchView('customer'); }
 // -----------------------
 async function loginUser(event){
   event?.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
+  const email = document.getElementById('login-email')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
   const remember = document.getElementById('remember-me')?.checked;
-
   if (!auth) return showAlert('Error','Firebase not initialized');
 
   try{
@@ -392,35 +295,32 @@ async function loginUser(event){
     closeModal('loginModal');
     showAlert('Welcome Back!', 'Signed in successfully.');
   }catch(err){
-    console.error('Login error:', err);
-    document.getElementById('login-message').textContent = err.message || 'Login failed.';
+    const msgEl = document.getElementById('login-message');
+    if (msgEl) msgEl.textContent = err.message || 'Login failed.';
   }
 }
 
 async function signupUser(event){
   event?.preventDefault();
-  const fullName = document.getElementById('fullName').value.trim();
-  const email = document.getElementById('emailAddress').value.trim();
-  const password = document.getElementById('password').value;
-  const chosen = document.querySelector('input[name="accountRole"]:checked')?.value || 'user';
-
+  const fullName = document.getElementById('fullName')?.value.trim();
+  const email = document.getElementById('emailAddress')?.value.trim();
+  const password = document.getElementById('password')?.value;
   if (!auth) return showAlert('Error','Firebase not initialized');
 
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     await cred.user.updateProfile({ displayName: fullName });
-    await upsertUserProfile({ ...cred.user, displayName: fullName }, chosen === 'professional' ? 'professional' : 'user');
+    await upsertUserProfile({ ...cred.user, displayName: fullName });
     closeModal('signupModal');
     showAlert('Account Created!', 'Welcome to QuickFix Pro!');
   }catch(err){
-    console.error('Signup error:', err);
     showAlert('Signup Failed', err.message || 'Could not create account.');
   }
 }
 
 async function startPasswordReset(event){
   event?.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email')?.value.trim();
   if (!email) return showAlert('Reset Password', 'Enter your email above first.');
   try{
     await auth.sendPasswordResetEmail(email);
@@ -440,25 +340,31 @@ async function logoutUser(event){
   }
 }
 
-// Watch auth state and update UI (and gate by role)
+// Watch auth state and pull role for gating
 if (auth){
   auth.onAuthStateChanged(async (user)=>{
     if (user){
-      try { await upsertUserProfile(user); } catch(e){ console.warn('Profile upsert issue:', e); }
-      const role = await fetchUserRole(user.uid);
+      try{
+        await upsertUserProfile(user);
+        currentUserRole = 'customer';
+        try{
+          const snap = await db.collection('users').doc(user.uid).get();
+          if (snap.exists && snap.data().role) currentUserRole = snap.data().role;
+        }catch{}
+      }catch{}
+
       isLoggedIn = true;
       currentUser = {
         name: user.displayName || (user.email ? user.email.split('@')[0] : 'QuickFix User'),
         email: user.email || '',
-        avatar: getInitials(user.displayName, user.email),
-        role
+        avatar: getInitials(user.displayName, user.email)
       };
     } else {
       isLoggedIn = false;
       currentUser = null;
+      currentUserRole = 'guest';
     }
     updateUserInterface();
-    applyRoleGate();
   });
 }
 
@@ -500,7 +406,7 @@ function processAdminWithdrawal(event){ event?.preventDefault(); closeModal('adm
 function renderPopularServices(){
   const container = document.getElementById('popularServices');
   if (!container) return;
-  const html = popularServices.map((s,idx)=>`
+  container.innerHTML = popularServices.map((s,idx)=>`
     <button onclick="navigateToService('${s.name}',event)"
       class="card card-interactive text-center min-h-[80px] md:min-h-[100px] flex flex-col items-center justify-center hover:border-primary animate-scale-in"
       style="animation-delay:${idx*0.1}s">
@@ -508,13 +414,12 @@ function renderPopularServices(){
       <span class="font-bold text-sm md:text-base text-gray-800">${s.name}</span>
     </button>
   `).join('');
-  container.innerHTML = html;
 }
 
 function renderServiceCategories(){
   const container = document.getElementById('serviceCategories');
   if (!container) return;
-  const html = serviceCategories.map((c,idx)=>`
+  container.innerHTML = serviceCategories.map((c,idx)=>`
     <div class="card card-interactive text-center hover:border-primary animate-scale-in"
          onclick="executeSearch('${c.name.toLowerCase()}',event)" style="animation-delay:${idx*0.1}s">
       <div class="service-icon mx-auto mb-3" style="background:${c.color}"><i class="${c.icon}"></i></div>
@@ -522,7 +427,6 @@ function renderServiceCategories(){
       <p class="text-xs md:text-sm text-gray-600">${c.professionals} professionals</p>
     </div>
   `).join('');
-  container.innerHTML = html;
 }
 
 function renderProfessionals(){
@@ -660,11 +564,11 @@ function renderRecentProfessionals(){
 }
 
 // -----------------------
-// Alerts
+// Alerts — click anywhere to dismiss immediately
 // -----------------------
 function showAlert(title, message){
   const alertDiv = document.createElement('div');
-  alertDiv.className = 'fixed top-4 right-4 bg-white border-l-4 border-primary rounded-lg p-4 shadow-lg z-50 max-w-sm md:max-w-md animate-slide-in';
+  alertDiv.className = 'qf-toast fixed top-4 right-4 bg-white border-l-4 border-primary rounded-lg p-4 shadow-lg z-50 max-w-sm md:max-w-md animate-slide-in';
   alertDiv.innerHTML = `
     <div class="flex items-start">
       <div class="w-8 h-8 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mr-3 flex-shrink-0 animate-bounce-gentle">
@@ -674,12 +578,66 @@ function showAlert(title, message){
         <h4 class="font-bold text-sm md:text-base text-gray-800 mb-1">${title}</h4>
         <p class="text-sm text-gray-600">${message}</p>
       </div>
-      <button class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 transition-colors"><i class="fas fa-times text-sm"></i></button>
+      <button class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 transition-colors" title="Close">
+        <i class="fas fa-times text-sm"></i>
+      </button>
     </div>
   `;
   document.body.appendChild(alertDiv);
-  alertDiv.querySelector('button')?.addEventListener('click', ()=> alertDiv.remove());
-  setTimeout(()=> alertDiv.remove(), 5000);
+
+  // Close button
+  alertDiv.querySelector('button')?.addEventListener('click', ()=> dismissAllToasts());
+
+  // Click ANYWHERE to dismiss (use capture & next tick to avoid closing on the same click that created it)
+  setTimeout(()=>{
+    const onDocClick = () => dismissAllToasts();
+    document.addEventListener('click', onDocClick, { capture:true, once:true });
+  },0);
+
+  // Auto timeout as a fallback
+  setTimeout(()=> alertDiv.isConnected && alertDiv.remove(), 5000);
+}
+
+function dismissAllToasts(){
+  document.querySelectorAll('.qf-toast').forEach(t => t.remove());
+}
+
+// -----------------------
+// Location (city-only)
+// -----------------------
+async function getAndShowLocation(){
+  const pillText = document.getElementById('currentLocationText');
+  if (!pillText) return; // pill not present in DOM
+  pillText.textContent = 'Detecting…';
+
+  if (!('geolocation' in navigator)) {
+    pillText.textContent = 'Location unavailable';
+    document.getElementById('locationPill')?.classList.remove('hidden');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+    const { latitude, longitude } = pos.coords;
+    try{
+      const resp = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      );
+      const data = await resp.json();
+
+      const adminName =
+        (data.localityInfo && data.localityInfo.administrative &&
+         data.localityInfo.administrative[0] && data.localityInfo.administrative[0].name) || '';
+      const city = data.city || data.locality || adminName || data.principalSubdivision || '';
+
+      pillText.textContent = city || 'Unknown';
+    }catch{
+      pillText.textContent = 'Unknown';
+    }
+    document.getElementById('locationPill')?.classList.remove('hidden');
+  }, ()=>{
+    pillText.textContent = 'Location off';
+    document.getElementById('locationPill')?.classList.remove('hidden');
+  }, { timeout: 8000 });
 }
 
 // -----------------------
@@ -700,7 +658,7 @@ function setupEventListeners(){
 }
 
 // -----------------------
-// UI sync + Role gating
+// UI sync
 // -----------------------
 function updateUserInterface(){
   const userAvatar = document.getElementById('userAvatar');
@@ -711,67 +669,26 @@ function updateUserInterface(){
   const loggedUserMenu = document.getElementById('loggedUserMenu');
 
   if (isLoggedIn && currentUser){
-    if (userAvatar) userAvatar.textContent = currentUser.avatar;
-    if (userAvatarLarge) userAvatarLarge.textContent = currentUser.avatar;
-    if (userNameLarge) userNameLarge.textContent = currentUser.name;
-    if (userStatusLarge) userStatusLarge.textContent = currentUser.email;
+    userAvatar && (userAvatar.textContent = currentUser.avatar);
+    userAvatarLarge && (userAvatarLarge.textContent = currentUser.avatar);
+    userNameLarge && (userNameLarge.textContent = currentUser.name);
+    userStatusLarge && (userStatusLarge.textContent = currentUser.email);
     guestUserMenu?.classList.add('hidden');
     loggedUserMenu?.classList.remove('hidden');
   } else {
-    if (userAvatar) userAvatar.innerHTML = '<i class="fas fa-user"></i>';
-    if (userAvatarLarge) userAvatarLarge.innerHTML = '<i class="fas fa-user"></i>';
-    if (userNameLarge) userNameLarge.textContent = 'Guest User';
-    if (userStatusLarge) userStatusLarge.textContent = 'Not signed in';
+    userAvatar && (userAvatar.innerHTML = '<i class="fas fa-user"></i>');
+    userAvatarLarge && (userAvatarLarge.innerHTML = '<i class="fas fa-user"></i>');
+    userNameLarge && (userNameLarge.textContent = 'Guest User');
+    userStatusLarge && (userStatusLarge.textContent = 'Not signed in');
     guestUserMenu?.classList.remove('hidden');
     loggedUserMenu?.classList.add('hidden');
   }
-}
-
-function toggleEl(id, show){
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (show){
-    el.classList.remove('hidden');
-    el.disabled = false;
-    el.setAttribute('aria-hidden','false');
-  } else {
-    el.classList.add('hidden');
-    el.disabled = true;
-    el.setAttribute('aria-hidden','true');
-  }
-}
-
-/**
- * Gate nav visibility based on role:
- * - user: Home only
- * - professional: Home + Pro
- * - admin: Home + Pro + Admin
- */
-function applyRoleGate(){
-  const role = currentUser?.role || 'guest';
-  const proAllowed = role === 'professional' || role === 'admin';
-  const adminAllowed = role === 'admin';
-
-  toggleEl('professionalBtn', proAllowed);
-  toggleEl('mobileProfessional', proAllowed);
-
-  // Admin hidden unless admin
-  toggleEl('adminBtn', adminAllowed);
-  toggleEl('mobileAdmin', adminAllowed);
-
-  // Kick out of restricted pages if necessary
-  if (!proAllowed && currentPage === 'professional') switchView('customer');
-  if (!adminAllowed && currentPage === 'admin') switchView('customer');
 }
 
 // -----------------------
 // Init
 // -----------------------
 function initializeApp(){
-  if (location.protocol === 'file:'){
-    showAlert('Heads up', 'For Firebase Auth to work, serve this over http(s). Use VS Code “Live Server” or Firebase Hosting.');
-  }
-
   renderPopularServices();
   renderServiceCategories();
   renderProfessionals();
@@ -779,8 +696,10 @@ function initializeApp(){
   renderRecentProfessionals();
   setupEventListeners();
   updateUserInterface();
-  applyRoleGate();
   switchView('customer');
+
+  // show city-only location in the pill (if present in DOM)
+  getAndShowLocation();
 
   setTimeout(()=> showAlert('Welcome!', 'QuickFix Pro is ready to use.'), 600);
 }
