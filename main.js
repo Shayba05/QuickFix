@@ -1,1330 +1,580 @@
-// =======================
-// QuickFix Pro — revert to your layout
-// + FIXED "Add to Portfolio" (works instantly; background Firebase sync)
-// + Public Profile modal
-// + Settings page with left menu
-// =======================
+/* QuickFix Pro – App Logic (separate file)
+ * IMPORTANT: Replace firebaseConfig with your real project keys from Firebase Console.
+ * Firestore structure used:
+ *   - users/{uid}            (profile & settings)
+ *   - work/{workId}          (portfolio items; each has uid, title, desc, images[], files[], createdAt)
+ */
 
-let isLoggedIn = false;
-let currentUser = null;
-let currentUserRole = 'guest'; // 'guest' | 'customer' | 'professional' | 'admin'
-let currentLanguage = 'en';
+(function () {
+  // ---- Firebase init ----
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    // measurementId: "G-XXXXXXX" // optional
+  };
 
-// Work items state (per-user, localStorage demo)
-let myWork = [];
-let pendingUploads = { images: [], files: [] };
-let unsubscribeMyWork = null;
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  try { firebase.analytics(); } catch (_) {}
 
-// ------------ Static Data ------------
-const serviceCategories = [
-  { name: 'Plumbing',   icon: 'fas fa-wrench',  color: '#6B46C1', professionals: 1247 },
-  { name: 'Electrical', icon: 'fas fa-bolt',    color: '#F59E0B', professionals: 892 },
-  { name: 'HVAC',       icon: 'fas fa-fan',     color: '#059669', professionals: 634 },
-  { name: 'Handyman',   icon: 'fas fa-hammer',  color: '#EF4444', professionals: 1523 },
-  { name: 'Appliances', icon: 'fas fa-tv',      color: '#8B5CF6', professionals: 428 },
-  { name: 'Cleaning',   icon: 'fas fa-broom',   color: '#06B6D4', professionals: 743 },
-  { name: 'Construction', icon: 'fas fa-hard-hat', color: '#F97316', professionals: 567 },
-  { name: 'Carpentry',  icon: 'fas fa-tools',   color: '#A16207', professionals: 423 }
-];
+  // ---- Helpers ----
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const show = (el) => el && el.classList.remove('hidden');
+  const hide = (el) => el && el.classList.add('hidden');
 
-const popularServices = [
-  { name: 'IKEA assembly', page: 'ikeaAssemblyPage' },
-  { name: 'TV mounting', page: 'tvMountingPage' },
-  { name: 'Leaky tap', page: 'leakyTapPage' },
-  { name: 'AC repair', page: 'acRepairPage' },
-  { name: 'Blocked drain', page: 'blockedDrainPage' },
-  { name: 'Ceiling fan', page: 'ceilingFanPage' }
-];
+  const views = {
+    customer: $('#customerView'),
+    professional: $('#professionalView'),
+    admin: $('#adminView'),
+    settings: $('#settingsView'),
+  };
 
-const professionals = [
-  { id:1, name:'Michael Rodriguez', service:'Master Plumber', rating:4.95, reviews:234, price:'$85/hr', image:'https://i.pravatar.cc/150?img=1', verified:true, responseTime:'< 30 min', availability:'Available Now', experience:'12 years', completedJobs:847, services:['plumbing','leaky tap','blocked drain'] },
-  { id:2, name:'Sarah Chen', service:'Licensed Electrician', rating:4.92, reviews:187, price:'$95/hr', image:'https://i.pravatar.cc/150?img=2', verified:true, responseTime:'< 45 min', availability:'Available Today', experience:'8 years', completedJobs:623, services:['electrical','ceiling fan'] },
-  { id:3, name:'David Thompson', service:'HVAC Specialist', rating:4.88, reviews:156, price:'$105/hr', image:'https://i.pravatar.cc/150?img=3', verified:true, responseTime:'< 1 hour', availability:'Busy until 3 PM', experience:'15 years', completedJobs:934, services:['hvac','ac repair'] },
-  { id:4, name:'James Wilson', service:'Handyman Expert', rating:4.91, reviews:298, price:'$75/hr', image:'https://i.pravatar.cc/150?img=4', verified:true, responseTime:'< 20 min', availability:'Available Now', experience:'10 years', completedJobs:1156, services:['handyman','ikea assembly','tv mounting'] },
-  { id:5, name:'Lisa Martinez', service:'Cleaning Specialist', rating:4.96, reviews:312, price:'$65/hr', image:'https://i.pravatar.cc/150?img=5', verified:true, responseTime:'< 15 min', availability:'Available Now', experience:'7 years', completedJobs:892, services:['cleaning','deep cleaning','housekeeping'] },
-  { id:6, name:'Robert Kim', service:'Construction Expert', rating:4.87, reviews:145, price:'$120/hr', image:'https://i.pravatar.cc/150?img=6', verified:true, responseTime:'< 2 hours', availability:'Available Tomorrow', experience:'18 years', completedJobs:567, services:['construction','renovation','carpentry'] }
-];
-
-// ------------ Firebase ------------
-const firebaseConfig = {
-  apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
-  authDomain: "quickfix-cee4a.firebaseapp.com",
-  projectId: "quickfix-cee4a",
-  storageBucket: "quickfix-cee4a.appspot.com",
-  messagingSenderId: "1075514949479",
-  appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
-  measurementId: "G-XS4LDTFRSH"
-};
-
-let auth, db, storage;
-try {
-  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-    if (firebase.analytics) firebase.analytics();
-  }
-  auth = firebase?.auth?.();
-  db = firebase?.firestore?.();
-  storage = firebase?.storage?.();
-  if (db?.enablePersistence) {
-    db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
-  }
-} catch (e) {
-  console.warn('Firebase init failed:', e);
-}
-
-// ------------ Algolia (Frontend) ------------
-const ALGOLIA_APP_ID     = "VVHQ4QU6UH";
-const ALGOLIA_SEARCH_KEY = "5524d792b75a97b2f8c256a2f092293b"; // search-only key
-const ALGOLIA_INDEX      = "professionals"; // must match your extension
-
-let algoliaIndex = null;
-try {
-  if (window.algoliasearch && ALGOLIA_APP_ID && ALGOLIA_SEARCH_KEY && ALGOLIA_INDEX) {
-    const algoliaClient = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY);
-    algoliaIndex = algoliaClient.initIndex(ALGOLIA_INDEX);
-    console.log("✅ Algolia ready");
-  } else {
-    console.log("ℹ️ Algolia not configured yet (fallback search will be used).");
-  }
-} catch (e) {
-  console.warn("Algolia init failed:", e);
-}
-
-// ------------ Helpers ------------
-function normalize(t){ return String(t).toLowerCase().replace(/[^a-z0-9]/g,''); }
-function getInitials(name = '', email = '') {
-  if (name && name.trim()) return name.trim().split(/\s+/).map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  if (email) return email[0].toUpperCase();
-  return 'QF';
-}
-function pruneUndefined(o) {
-  if (o === null || typeof o !== 'object') return o;
-  if (Array.isArray(o)) return o.map(pruneUndefined);
-  return Object.fromEntries(Object.entries(o).filter(([,v]) => v !== undefined).map(([k,v])=>[k,pruneUndefined(v)]));
-}
-function formatPrice(p){
-  if (typeof p === 'number') return `$${p}/hr`;
-  if (typeof p === 'string') return p;
-  return '';
-}
-function getUserKey(){
-  const uid = auth?.currentUser?.uid;
-  if (uid) return uid;
-  if (currentUser?.email) return currentUser.email;
-  return 'demo';
-}
-function getWorkStorageKey(){ return `qf_work_${getUserKey()}`; }
-function loadMyWork(){
-  try { return JSON.parse(localStorage.getItem(getWorkStorageKey()) || '[]'); }
-  catch { return []; }
-}
-function saveMyWork(){ try { localStorage.setItem(getWorkStorageKey(), JSON.stringify(myWork)); } catch {} }
-function dataURLtoBlob(dataurl){
-  try{
-    const [h,b] = dataurl.split(','); const mime = h.match(/:(.*?);/)[1]; const bin = atob(b); const u8 = new Uint8Array(bin.length);
-    for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return new Blob([u8], {type:mime});
-  }catch{ return null; }
-}
-function cleanName(n='file'){ return n.replace(/[^\w.\-]+/g,'_').slice(0,80); }
-
-// Firestore profile upsert
-async function upsertUserProfile(user, extra = {}) {
-  try {
-    if (!db || !user?.uid) return;
-    const ref = db.collection('users').doc(user.uid);
-    const snap = await ref.get();
-    const base = {
-      uid: user.uid,
-      displayName: user.displayName || '',
-      email: user.email || '',
-      photoURL: user.photoURL || '',
-      provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password',
-      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    const data = pruneUndefined({ ...base, ...extra });
-    if (!snap.exists) {
-      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      if (!data.role) data.role = 'customer';
-    }
-    await ref.set(data, { merge: true });
-  } catch (err) {
-    console.error('upsertUserProfile error:', err);
-    showAlert('Profile Save Error', err.message || 'Could not save profile.');
-  }
-}
-
-// ------------ Alerts ------------
-function showAlert(title, message){
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'qf-toast fixed top-4 right-4 bg-white border-l-4 border-primary rounded-lg p-4 shadow-lg z-50 max-w-sm md:max-w-md animate-slide-in';
-  alertDiv.innerHTML = `
-    <div class="flex items-start">
-      <div class="w-8 h-8 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mr-3 flex-shrink-0 animate-bounce-gentle">
-        <i class="fas fa-check text-white text-sm"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-bold text-sm md:text-base text-gray-800 mb-1">${title}</h4>
-        <p class="text-sm text-gray-600">${message}</p>
-      </div>
-      <button class="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 transition-colors" title="Close">
-        <i class="fas fa-times text-sm"></i>
-      </button>
-    </div>
-  `;
-  document.body.appendChild(alertDiv);
-  alertDiv.querySelector('button')?.addEventListener('click', ()=> dismissAllToasts());
-  setTimeout(()=>{ document.addEventListener('click', ()=> dismissAllToasts(), { capture:true, once:true }); },0);
-  setTimeout(()=> alertDiv.isConnected && alertDiv.remove(), 5000);
-}
-function dismissAllToasts(){ document.querySelectorAll('.qf-toast').forEach(t => t.remove()); }
-
-// Global error guard
-window.addEventListener('error', (e) => {
-  console.error(e.error || e.message);
-  showAlert('Script error', e.message || 'An error occurred.');
-});
-
-// ------------ Views ------------
-function switchView(view){
-  // Hide all
-  ['customerView','professionalView','adminView','settingsView'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el){
-      el.classList.add('hidden');
-    }
-  });
-
-  // Show target + permanently disable its CSS animations after navigation
-  const target = document.getElementById(view + 'View');
-  if (target){
-    target.classList.remove('hidden');
-    target.classList.add('no-anim-view');
+  function switchView(name) {
+    Object.values(views).forEach(hide);
+    show(views[name]);
+    // mobile nav active state
+    $$('.mobile-nav .nav-item').forEach(i => i.classList.remove('active'));
+    if (name === 'customer') $('#mobileCustomer')?.classList.add('active');
+    if (name === 'admin') $('#mobileAdmin')?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Toggle nav button styles
-  document.querySelectorAll('.nav-btn').forEach(b=>{ b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
-  const btn = document.getElementById(view + 'Btn');
-  btn?.classList.remove('btn-outline');
-  btn?.classList.add('btn-primary');
-
-  // Mobile active indicator
-  document.querySelectorAll('.mobile-nav .nav-item').forEach(i=>i.classList.remove('active'));
-  const mobileBtn = document.getElementById('mobile' + view.charAt(0).toUpperCase() + view.slice(1));
-  mobileBtn?.classList.add('active');
-
-  if (view === 'professional') renderWorkPortfolio();
-  if (view === 'settings') loadSettingsForm();
-}
-
-function goProfessional(){
-  if (!isLoggedIn){
-    showAlert('Sign in required', 'Please sign in as a professional to access the Pro dashboard.');
-    openModal('loginModal');
-    return;
-  }
-  if (currentUserRole !== 'professional' && currentUserRole !== 'admin'){
-    showAlert('Access restricted', 'Your account is a customer. Professional features require a professional account.');
-    return;
-  }
-  switchView('professional');
-}
-
-// ------------ Modals ------------
-function openModal(id){
-  closeAllModals(()=>{
+  function openModal(id) {
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.remove('hidden');
-    setTimeout(()=> el.classList.add('show'), 10);
-
-    if (id === 'signupModal') renderGoogleSignInButtonSignup();
-    if (id === 'loginModal') renderGoogleSignInButtonLogin();
-    if (id === 'workUploadModal') resetWorkUploadUI();
-  });
-}
-function closeModal(id){
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('show');
-  setTimeout(()=> el.classList.add('hidden'), 300);
-}
-function closeAllModals(cb){
-  const ids = ['loginModal','signupModal','userMenuModal','searchModal','workUploadModal','withdrawModal','adminWithdrawModal','profileModal'];
-  let pending = 0, any=false;
-  ids.forEach(id=>{
+    requestAnimationFrame(() => el.classList.add('show'));
+  }
+  function closeModal(id) {
     const el = document.getElementById(id);
-    if (el && !el.classList.contains('hidden')){
-      any=true; pending++;
-      el.classList.remove('show');
-      setTimeout(()=>{ el.classList.add('hidden'); if(--pending===0 && cb) cb(); },300);
+    if (!el) return;
+    el.classList.remove('show');
+    setTimeout(() => el.classList.add('hidden'), 180);
+  }
+
+  // click outside to close
+  document.addEventListener('click', (e) => {
+    const overlay = e.target.closest('.modal-overlay');
+    const content = e.target.closest('.modal-content');
+    if (overlay && !content && overlay.classList.contains('show')) {
+      overlay.classList.remove('show');
+      setTimeout(() => overlay.classList.add('hidden'), 180);
     }
   });
-  if (!any && cb) cb();
-}
 
-// ------------ Renderers ------------
-function renderPopularServices(){
-  const container = document.getElementById('popularServices');
-  if (!container) return;
-  container.innerHTML = popularServices.map((s,idx)=>`
-    <button data-action="navigate-service" data-service="${s.name}"
-      class="card card-interactive text-center min-h-[80px] md:min-h-[100px] flex flex-col items-center justify-center hover:border-primary animate-scale-in"
-      style="animation-delay:${idx*0.1}s">
-      <i class="fas fa-tools text-xl md:text-2xl text-primary mb-2 animate-float" style="animation-delay:${idx*0.2}s"></i>
-      <span class="font-bold text-sm md:text-base text-gray-800">${s.name}</span>
-    </button>
-  `).join('');
-}
-function renderServiceCategories(){
-  const container = document.getElementById('serviceCategories');
-  if (!container) return;
-  container.innerHTML = serviceCategories.map((c,idx)=>`
-    <div class="card card-interactive text-center hover:border-primary animate-scale-in"
-         data-action="execute-search" data-query="${c.name.toLowerCase()}" style="animation-delay:${idx*0.1}s">
-      <div class="service-icon mx-auto mb-3" style="background:${c.color}"><i class="${c.icon}"></i></div>
-      <h3 class="font-bold text-sm md:text-base mb-1 text-gray-800">${c.name}</h3>
-      <p class="text-xs md:text-sm text-gray-600">${c.professionals} professionals</p>
-    </div>
-  `).join('');
-}
-function renderProfessionals(){
-  const container = document.getElementById('featuredProfessionals');
-  if (!container) return;
-  container.innerHTML = professionals.slice(0,3).map((pro,idx)=>renderProfessionalCard(pro,idx)).join('');
-}
-function renderProfessionalCard(pro, index = 0){
-  return `
-    <div class="professional-card card card-interactive hover:border-primary animate-slide-up" style="animation-delay:${index*0.15}s">
-      <div class="flex items-start mb-4">
-        <div class="avatar-container"><img src="${pro.image}" alt="${pro.name}" class="w-14 h-14 md:w-16 md:h-16 rounded-lg mr-3 border-2 border-gray-200 flex-shrink-0"/></div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center mb-1">
-            <h3 class="font-bold text-base md:text-lg mr-2 truncate text-gray-800">${pro.name}</h3>
-            ${pro.verified ? '<i class="fas fa-check-circle text-secondary flex-shrink-0 animate-bounce-gentle" title="Verified Professional"></i>' : ''}
-          </div>
-          <p class="text-gray-600 mb-2 text-sm font-medium">${pro.service}</p>
-          <div class="flex items-center mb-2">
-            <div class="rating-stars mr-2">
-              ${[...Array(5)].map((_,i)=>`<i class="star fas fa-star ${i<Math.floor(pro.rating)?'text-yellow-500':'text-gray-300'} text-xs"></i>`).join('')}
-            </div>
-            <span class="text-sm font-bold">${pro.rating}</span>
-            <span class="text-gray-500 text-xs ml-1">(${pro.reviews})</span>
-          </div>
-          <div class="text-xs text-gray-600">
-            <div class="mb-1"><i class="fas fa-clock mr-1 text-primary"></i>${pro.responseTime}</div>
-            <div class="mb-1"><i class="fas fa-calendar mr-1 text-secondary"></i>${pro.availability}</div>
-          </div>
-        </div>
-      </div>
-      <div class="flex items-center justify-between mb-4">
-        <span class="text-xl md:text-2xl font-black text-primary">${pro.price}</span>
-        <div class="text-right"><div class="text-xs text-gray-500">Starting from</div></div>
-      </div>
-      <div class="flex space-x-2">
-        <button class="btn-base btn-outline flex-1 text-sm" data-action="view-pro-profile" data-pro-id="${pro.id}">View Profile</button>
-        <button class="btn-base btn-primary flex-1 text-sm">Book Now</button>
-      </div>
-    </div>
-  `;
-}
-function renderWorkPortfolio(){
-  const container = document.getElementById('workPortfolio');
-  if (!container) return;
-
-  const sample = [
-    { title:'Modern Kitchen Renovation', category:'Plumbing', duration:'6 hours', cost:'$480', image:'https://picsum.photos/400/300?random=1', rating:'5.0' },
-    { title:'Smart Bathroom Installation', category:'Plumbing', duration:'2 days', cost:'$1,250', image:'https://picsum.photos/400/300?random=2', rating:'4.9' },
-    { title:'Complete Home Automation', category:'Electrical', duration:'8 hours', cost:'$950', image:'https://picsum.photos/400/300?random=3', rating:'5.0' }
-  ];
-
-  // Convert myWork into cards (use dataUrl/url for image)
-  const getSrc = (x)=> x?.url || x?.dataUrl || '';
-  const renderAttachmentThumbs = (work)=>{
-    const imgs = (work.images || []).map((f)=>`
-      <div class="rounded-md overflow-hidden border border-gray-200">
-        <img src="${getSrc(f)}" alt="${f.name}" class="w-full h-24 object-cover"/>
-      </div>
-    `).join('');
-    const files = (work.files || []).map((f)=>`
-      <a href="${f.url || f.dataUrl}" download="${f.name}" class="flex items-center px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">
-        <i class="fas fa-paperclip mr-2"></i>${f.name}
-      </a>
-    `).join('');
-    if (!imgs && !files) return '';
-    return `<div class="grid grid-cols-3 gap-2">${imgs}${files}</div>`;
-  };
-
-  const myItems = (myWork || []).map((it, idx)=>`
-    <div class="card card-interactive overflow-hidden hover:border-primary animate-scale-in" style="animation-delay:${idx*0.05}s">
-      ${it.images?.length ? `<img src="${getSrc(it.images[0])}" alt="${it.title}" class="w-full h-32 md:h-40 object-cover mb-3 rounded-lg"/>` : `<div class="w-full h-32 md:h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-gray-400"><i class="fas fa-briefcase"></i></div>`}
-      <div class="flex justify-between items-start mb-2">
-        <h4 class="font-bold text-sm md:text-base truncate mr-2 text-gray-800">${it.title}</h4>
-        <span class="text-xs bg-gradient-to-r from-primary to-primary-light text-white px-2 py-1 rounded-full font-semibold">${it.category || 'Project'}</span>
-      </div>
-      <div class="text-sm text-gray-600 mb-3">${it.description || ''}</div>
-      ${renderAttachmentThumbs(it)}
-    </div>
-  `).join('');
-
-  const base = sample.map((it,idx)=>`
-    <div class="card card-interactive overflow-hidden hover:border-primary animate-scale-in" style="animation-delay:${idx*0.1}s">
-      <img src="${it.image}" alt="${it.title}" class="w-full h-32 md:h-40 object-cover mb-3 rounded-lg"/>
-      <div class="flex justify-between items-start mb-2">
-        <h4 class="font-bold text-sm md:text-base truncate mr-2 text-gray-800">${it.title}</h4>
-        <span class="text-xs bg-gradient-to-r from-primary to-primary-light text-white px-2 py-1 rounded-full font-semibold">${it.category}</span>
-      </div>
-      <div class="flex justify-between items-center">
-        <div class="text-sm text-gray-600"><div><i class="fas fa-clock mr-1"></i>${it.duration}</div></div>
-        <div class="text-right"><div class="text-base font-bold text-secondary">${it.cost}</div><div class="text-xs text-yellow-500">★ ${it.rating}</div></div>
-      </div>
-    </div>
-  `).join('');
-
-  container.innerHTML = (myWork?.length ? myItems : '') + base;
-}
-function renderRecentProfessionals(){
-  const container = document.getElementById('recentProfessionals');
-  if (!container) return;
-  container.innerHTML = professionals.slice(0,6).map((pro,idx)=>`
-    <div class="card hover:border-primary animate-slide-up" style="animation-delay:${idx*0.1}s">
-      <div class="flex items-center">
-        <img src="${pro.image}" alt="${pro.name}" class="w-10 h-10 md:w-12 md:h-12 rounded-full mr-3 border-2 border-gray-200 flex-shrink-0"/>
-        <div class="flex-1 min-w-0">
-          <div class="font-bold text-sm truncate text-gray-800">${pro.name}</div>
-          <div class="text-xs text-gray-600 mb-1">${pro.service}</div>
-          <div class="flex items-center"><span class="text-xs text-yellow-500 mr-1">★ ${pro.rating}</span><span class="text-xs text-gray-500">(${pro.reviews})</span></div>
-        </div>
-        <div class="text-right flex-shrink-0">
-          <div class="font-bold text-primary text-sm">${pro.price}</div>
-          <div class="text-xs text-emerald-600">${pro.availability}</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ------------ Algolia Search Helpers ------------
-async function searchWithAlgolia(q){
-  if (!algoliaIndex) return null;
-  try {
-    const { hits } = await algoliaIndex.search(q, { hitsPerPage: 12 });
-    return hits || [];
-  } catch (e) {
-    console.warn("Algolia search error:", e);
-    return null;
-  }
-}
-function renderAlgoliaResults(hits){
-  const wrap = document.getElementById('algoliaResults');
-  const list = document.getElementById('algoliaResultsList');
-  if (!wrap || !list) {
-    console.log("Algolia results:", hits);
-    return;
-  }
-
-  if (!hits.length) {
-    list.innerHTML = '<div class="text-gray-600">No results found.</div>';
-    wrap.classList.remove('hidden');
-    return;
-  }
-
-  list.innerHTML = hits.map((h) => `
-    <div class="card">
-      <div class="flex items-center mb-3">
-        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-          <i class="fas fa-user text-gray-500"></i>
-        </div>
-        <div class="flex-1">
-          <div class="font-bold text-gray-800">${h.name || 'Unknown'}</div>
-          <div class="text-sm text-gray-600">${h.category || h.service || '—'}</div>
-        </div>
-        ${h.price ? `<div class="font-bold text-primary">${formatPrice(h.price)}</div>` : ''}
-      </div>
-      ${h.location ? `<div class="text-sm text-gray-600"><i class="fas fa-map-marker-alt mr-1"></i>${h.location}</div>` : ''}
-      ${h.rating ? `<div class="text-sm text-yellow-600 mt-2">★ ${h.rating}</div>` : ''}
-    </div>
-  `).join('');
-
-  wrap.classList.remove('hidden');
-}
-
-// ------------ Search / Navigate ------------
-function navigateToService(serviceName){
-  showAlert('Search Results', `Found ${Math.floor(Math.random()*50)+10} professionals for "${serviceName}"`);
-}
-async function executeSearchFromInput(){
-  const el = document.getElementById('searchInput');
-  const q = el?.value?.trim();
-  if (!q) return;
-
-  const hits = await searchWithAlgolia(q);
-  if (hits && hits.length) {
-    renderAlgoliaResults(hits);
-    return;
-  }
-  navigateToService(q);
-}
-async function executeSearchFromMobile(){
-  const el = document.getElementById('mobileSearchInput');
-  const q = el?.value?.trim();
-  if (!q) return;
-
-  const hits = await searchWithAlgolia(q);
-  if (hits && hits.length) {
-    renderAlgoliaResults(hits);
-    closeAllModals();
-    return;
-  }
-  navigateToService(q);
-}
-function executeSearch(query){
-  if (!query?.trim()) return;
-  const hit = popularServices.find(s=> s.name.toLowerCase() === query.toLowerCase());
-  if (hit) navigateToService(hit.name);
-  else showAlert('Search Results', `Found ${Math.floor(Math.random()*50)+10} professionals for "${query}"`);
-}
-
-// ------------ Auth ------------
-async function loginUser(){
-  const email = document.getElementById('login-email')?.value?.trim();
-  const password = document.getElementById('login-password')?.value;
-  const remember = document.getElementById('remember-me')?.checked;
-
-  if (!auth) {
-    isLoggedIn = true;
-    currentUser = { name: email?.split('@')[0] || 'QuickFix User', email, avatar: getInitials('', email) };
-    currentUserRole = 'professional'; // to let you access Pro
-    myWork = loadMyWork();
-    updateUserInterface();
-    closeModal('loginModal');
-    showAlert('Welcome Back!', 'Signed in (demo).');
-    return;
-  }
-
-  try{
-    await auth.setPersistence(remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
-    const cred = await auth.signInWithEmailAndPassword(email, password);
-    await upsertUserProfile(cred.user);
-    closeModal('loginModal');
-    showAlert('Welcome Back!', 'Signed in successfully.');
-  }catch(err){
-    const el = document.getElementById('login-message');
-    if (el) el.textContent = err.message || 'Login failed.';
-  }
-}
-
-async function signupUser(){
-  const msg = document.getElementById('signup-message');
-  const btn = document.getElementById('signupSubmitBtn');
-  msg.textContent = '';
-
-  const fullName = document.getElementById('fullName')?.value?.trim();
-  const email = document.getElementById('emailAddress')?.value?.trim();
-  const password = document.getElementById('password')?.value;
-
-  if (!fullName) { msg.textContent = 'Please enter your full name.'; return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email.'; return; }
-  if (!password || password.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
-
-  const chosenRole = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
-  currentLanguage = document.getElementById('signupLanguage')?.value || 'en';
-  const dob = document.getElementById('signupDob')?.value || undefined;
-  const addressLine = document.getElementById('signupAddress')?.value || undefined;
-  const city = document.getElementById('signupCity')?.value || undefined;
-  const country = document.getElementById('signupCountry')?.value || undefined;
-  const postalCode = document.getElementById('signupPostal')?.value || undefined;
-
-  if (btn.dataset.loading === '1') return;
-  btn.dataset.loading = '1';
-  const originalText = btn.textContent;
-  btn.textContent = 'Creating...';
-
-  const finish = () => { btn.dataset.loading = '0'; btn.textContent = originalText; };
-
-  if (!auth) {
-    isLoggedIn = true;
-    currentUserRole = chosenRole;
-    currentUser = { name: fullName || (email?.split('@')[0] ?? 'QuickFix User'), email, avatar: getInitials(fullName, email) };
-    myWork = loadMyWork();
-    updateUserInterface();
-    closeModal('signupModal');
-    showAlert('Account Created!', chosenRole === 'professional' ? 'You can now access the Pro dashboard.' : 'Welcome to QuickFix Pro!');
-    finish();
-    return;
-  }
-
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    await cred.user.updateProfile({ displayName: fullName });
-    await upsertUserProfile(cred.user, {
-      displayName: fullName,
-      role: chosenRole,
-      lang: currentLanguage,
-      dob,
-      address: pruneUndefined({ addressLine, city, country, postalCode })
-    });
-    currentUserRole = chosenRole;
-    closeModal('signupModal');
-    showAlert('Account Created!', chosenRole === 'professional' ? 'You can now access the Pro dashboard.' : 'Welcome to QuickFix Pro!');
-    updateUserInterface();
-  }catch(err){
-    msg.textContent = err.message || 'Could not create account.';
-  }finally{
-    finish();
-  }
-}
-
-async function startPasswordReset(){
-  const email = document.getElementById('login-email')?.value?.trim();
-  if (!email) return showAlert('Reset Password', 'Enter your email above first.');
-  if (!auth) return showAlert('Reset (demo)', 'Auth disabled locally.');
-  try{
-    await auth.sendPasswordResetEmail(email);
-    showAlert('Reset Email Sent', 'Check your inbox for password reset instructions.');
-  }catch(err){
-    showAlert('Reset Failed', err.message || 'Could not send reset email.');
-  }
-}
-
-async function logoutUser(){
-  if (!auth) {
-    isLoggedIn = false; currentUser = null; currentUserRole = 'guest';
-    myWork = [];
-    updateUserInterface();
-    showAlert('Signed Out', 'You have been signed out (demo).');
-    return;
-  }
-  try{
-    await auth.signOut();
-    showAlert('Signed Out', 'You have been signed out.');
-  }catch(err){
-    showAlert('Error', err.message || 'Could not sign out.');
-  }
-}
-
-// Keep UI synced with auth
-if (auth){
-  auth.onAuthStateChanged(async (user)=>{
-    if (user){
-      try{
-        await upsertUserProfile(user);
-        currentUserRole = 'customer';
-        try{
-          const snap = await db.collection('users').doc(user.uid).get();
-          if (snap.exists && snap.data().role) currentUserRole = snap.data().role;
-        }catch{}
-      }catch{}
-      isLoggedIn = true;
-      currentUser = {
-        name: user.displayName || (user.email ? user.email.split('@')[0] : 'QuickFix User'),
-        email: user.email || '',
-        avatar: getInitials(user.displayName, user.email)
-      };
-      startMyWorkListener();
-    } else {
-      isLoggedIn = false; currentUser = null; currentUserRole = 'guest';
-      stopMyWorkListener();
-    }
-    myWork = loadMyWork();
-    updateUserInterface();
-  });
-}
-
-function startMyWorkListener(){
-  stopMyWorkListener();
-  if (!(db && auth?.currentUser)) return; // fall back to local
-  const uid = auth.currentUser.uid;
-  unsubscribeMyWork = db.collection('users').doc(uid).collection('work')
-    .orderBy('createdAt','desc')
-    .onSnapshot(qs=>{
-      myWork = qs.docs.map(d=> ({ id:d.id, ...d.data() }));
-      saveMyWork(); // keep local mirror
-      updateUserInterface();
-    }, err=> console.warn('work listener', err));
-}
-function stopMyWorkListener(){ try{ unsubscribeMyWork && unsubscribeMyWork(); }catch{} unsubscribeMyWork=null; }
-
-// ------------ City (after logo) ------------
-async function detectCityIntoHeader(){
-  const pill = document.getElementById('locationPill');
-  const cityEl = document.getElementById('locationCity');
-  if (!pill || !cityEl) return;
-  function setCity(text){ cityEl.textContent = text; pill.classList.remove('hidden'); }
-
-  if (!navigator.geolocation){ setCity('Your city'); return; }
-
-  navigator.geolocation.getCurrentPosition(async (pos)=>{
-    try{
-      const { latitude, longitude } = pos.coords;
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}&zoom=10&addressdetails=1`;
-      const res = await fetch(url, { headers: { 'Accept':'application/json' }});
-      const data = await res.json();
-      const city = data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || 'Your city';
-      setCity(city);
-      const sc = document.getElementById('signupCity');
-      if (sc && !sc.value) sc.value = city;
-    }catch{
-      setCity('Your city');
-    }
-  }, ()=>{
-    setCity('Your city');
-  }, { enableHighAccuracy:false, timeout:5000, maximumAge:600000 });
-}
-
-// ------------ Google Signin Buttons ------------
-function renderGoogleSignInButtonSignup(){
-  const container = document.getElementById('googleSignInBtnSignup');
-  if (!container) return;
-  container.innerHTML = '';
-  const btn = document.createElement('button');
-  btn.className = 'btn-base btn-google w-full';
-  btn.innerHTML = '<i class="fab fa-google mr-2"></i> Continue with Google';
-  btn.onclick = async (e)=>{
-    e.preventDefault();
-    if (!auth || !firebase) return showAlert('Error','Firebase not initialized');
-    try{
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      await upsertUserProfile(result.user);
-      showAlert('Google Signup Successful', `Welcome, ${result.user.displayName || 'user'}!`);
-      closeModal('signupModal');
-    }catch(err){
-      const msg = (err?.code === 'auth/unauthorized-domain')
-        ? 'Unauthorized domain. Add your site origin to Firebase Auth → Settings → Authorized domains.'
-        : err.message;
-      showAlert('Signup Failed', msg);
-    }
-  };
-  container.appendChild(btn);
-}
-function renderGoogleSignInButtonLogin(){
-  const container = document.getElementById('googleSignInBtnLogin');
-  if (!container) return;
-  container.innerHTML = '';
-  const btn = document.createElement('button');
-  btn.className = 'btn-base btn-google w-full';
-  btn.innerHTML = '<i class="fab fa-google mr-2"></i> Continue with Google';
-  btn.onclick = async (e)=>{
-    e.preventDefault();
-    if (!auth || !firebase) return showAlert('Error','Firebase not initialized');
-    try{
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      await upsertUserProfile(result.user);
-      showAlert('Google Login Successful', `Welcome, ${result.user.displayName || 'user'}!`);
-      closeModal('loginModal');
-    }catch(err){
-      const msg = (err?.code === 'auth/unauthorized-domain')
-        ? 'Unauthorized domain. Add your site origin to Firebase Auth → Settings → Authorized domains.'
-        : err.message;
-      showAlert('Login Failed', msg);
-    }
-  };
-  container.appendChild(btn);
-}
-
-// ------------ UI Sync ------------
-function updateUserInterface(){
-  const userAvatar = document.getElementById('userAvatar');
-  const userAvatarLarge = document.getElementById('userAvatarLarge');
-  const userNameLarge = document.getElementById('userNameLarge');
-  const userStatusLarge = document.getElementById('userStatusLarge');
-  const guestUserMenu = document.getElementById('guestUserMenu');
-  const loggedUserMenu = document.getElementById('loggedUserMenu');
-
-  const proBtn = document.getElementById('professionalBtn');
-  const mobileProBtn = document.getElementById('mobileProfessional');
-  const canSeePro = isLoggedIn && (currentUserRole === 'professional' || currentUserRole === 'admin');
-  proBtn?.classList.toggle('hidden', !canSeePro);
-  mobileProBtn?.classList.toggle('hidden', !canSeePro);
-
-  if (isLoggedIn && currentUser){
-    if (userAvatar) userAvatar.textContent = currentUser.avatar;
-    if (userAvatarLarge) userAvatarLarge.textContent = currentUser.avatar;
-    if (userNameLarge) userNameLarge.textContent = currentUser.name;
-    if (userStatusLarge) userStatusLarge.textContent = currentUser.email || 'Signed in';
-    guestUserMenu?.classList.add('hidden');
-    loggedUserMenu?.classList.remove('hidden');
-  } else {
-    if (userAvatar) userAvatar.innerHTML = '<i class="fas fa-user"></i>';
-    if (userAvatarLarge) userAvatarLarge.innerHTML = '<i class="fas fa-user"></i>';
-    if (userNameLarge) userNameLarge.textContent = 'Guest User';
-    if (userStatusLarge) userStatusLarge.textContent = 'Not signed in';
-    guestUserMenu?.classList.remove('hidden');
-    loggedUserMenu?.classList.add('hidden');
-  }
-
-  // Keep Pro portfolio tiles in sync
-  renderWorkPortfolio();
-  renderPopularServices();
-  renderServiceCategories();
-  renderProfessionals();
-  renderRecentProfessionals();
-}
-
-// ------------ Work Upload UI ------------
-function resetWorkUploadUI(){
-  pendingUploads = { images: [], files: [] };
-  document.getElementById('workForm')?.reset();
-  renderAttachmentList();
-}
-function setupWorkUploadUI(){
-  const dz = document.getElementById('workDropZone');
-  const imgInput = document.getElementById('workImagesInput');
-  const fileInput = document.getElementById('workFilesInput');
-
-  imgInput?.addEventListener('change', (e)=> handleImageFiles(e.target.files));
-  fileInput?.addEventListener('change', (e)=> handleDocFiles(e.target.files));
-
-  if (dz){
-    dz.addEventListener('click', ()=> imgInput?.click());
-    dz.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('dragover'); });
-    dz.addEventListener('dragleave', ()=> dz.classList.remove('dragover'));
-    dz.addEventListener('drop', (e)=>{
-      e.preventDefault(); dz.classList.remove('dragover');
-      const files = Array.from(e.dataTransfer.files || []).filter(f=> f.type.startsWith('image/'));
-      handleImageFiles(files);
-    });
-  }
-}
-function handleImageFiles(files){
-  const maxImages = 5;
-  const maxSize = 2 * 1024 * 1024; // 2MB
-  const toAdd = [];
-  Array.from(files || []).forEach(f=>{
-    if (!f.type.startsWith('image/')) return;
-    if (f.size > maxSize) { showAlert('Image too large', `${f.name} exceeds 2MB`); return; }
-    if (pendingUploads.images.length + toAdd.length >= maxImages){ return; }
-    toAdd.push(f);
-  });
-  if (!toAdd.length) { renderAttachmentList(); return; }
-  let remaining = toAdd.length;
-  toAdd.forEach(f=>{
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingUploads.images.push({ name:f.name, type:f.type, size:f.size, dataUrl: reader.result, file:f });
-      if (--remaining === 0) renderAttachmentList();
-    };
-    reader.readAsDataURL(f);
-  });
-}
-function handleDocFiles(files){
-  const maxFiles = 5;
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  const toAdd = [];
-  Array.from(files || []).forEach(f=>{
-    if (f.size > maxSize) { showAlert('File too large', `${f.name} exceeds 5MB`); return; }
-    if (pendingUploads.files.length + toAdd.length >= maxFiles){ return; }
-    toAdd.push(f);
-  });
-  if (!toAdd.length) { renderAttachmentList(); return; }
-  let remaining = toAdd.length;
-  toAdd.forEach(f=>{
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingUploads.files.push({ name:f.name, type:f.type, size:f.size, dataUrl: reader.result, file:f });
-      if (--remaining === 0) renderAttachmentList();
-    };
-    reader.readAsDataURL(f);
-  });
-}
-function renderAttachmentList(){
-  const list = document.getElementById('workAttachmentList');
-  if (!list) return;
-  const imgTiles = pendingUploads.images.map((f,idx)=>`
-    <div class="relative group">
-      <img src="${f.dataUrl}" alt="${f.name}" class="w-full h-28 object-cover rounded-md border border-gray-200"/>
-      <button class="absolute top-1 right-1 bg-white/90 border border-gray-300 rounded-full w-8 h-8 hidden group-hover:flex items-center justify-center shadow"
-              title="Remove" data-action="remove-attachment" data-kind="image" data-index="${idx}">
-        <i class="fas fa-times text-gray-700 text-sm"></i>
-      </button>
-    </div>
-  `).join('');
-  const fileTiles = pendingUploads.files.map((f,idx)=>`
-    <div class="flex items-center p-2 border border-gray-200 rounded-md bg-white">
-      <i class="fas fa-paperclip mr-2 text-gray-600"></i>
-      <span class="text-xs truncate" title="${f.name}">${f.name}</span>
-      <button class="ml-auto text-gray-500 hover:text-gray-800" title="Remove"
-              data-action="remove-attachment" data-kind="file" data-index="${idx}">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  `).join('');
-  list.innerHTML = imgTiles + fileTiles;
-}
-
-// ------------ Cloud Uploads (background) ------------
-async function uploadFilesToStorage(basePath, items){
-  if (!storage) return [];
-  const out = [];
-  for (const it of items){
-    try{
-      const fileObj = it.file || dataURLtoBlob(it.dataUrl) || new Blob([]);
-      const safe = `${Date.now()}_${cleanName(it.name || 'file')}`;
-      const ref = storage.ref().child(`${basePath}/${safe}`);
-      await ref.put(fileObj);
-      const url = await ref.getDownloadURL();
-      out.push({ name: it.name || safe, type: it.type, size: it.size, url, path: ref.fullPath });
-    }catch(e){ console.warn('upload error', e); }
-  }
-  return out;
-}
-async function saveWorkItemToCloud(tempLocalId, baseFields){
-  if (!(auth?.currentUser && db && storage)) return null;
-  const uid = auth.currentUser.uid;
-  const workId = db.collection('users').doc(uid).collection('work').doc().id;
-
-  const base = `work/${uid}/${workId}`;
-  const [uploadedImages, uploadedFiles] = await Promise.all([
-    uploadFilesToStorage(`${base}/images`, pendingUploads.images),
-    uploadFilesToStorage(`${base}/files`,  pendingUploads.files)
-  ]);
-
-  const doc = {
-    title: baseFields.title,
-    description: baseFields.description,
-    category: 'Project',
-    images: uploadedImages,
-    files: uploadedFiles,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    public: true
-  };
-  await db.collection('users').doc(uid).collection('work').doc(workId).set(doc);
-
-  const idx = myWork.findIndex(x => x.id === tempLocalId);
-  if (idx >= 0) {
-    myWork[idx] = { id: workId, ...doc };
-    saveMyWork();
-    renderWorkPortfolio();
-  }
-  return { id: workId, ...doc };
-}
-
-// ------------ Profile Modal ------------
-function openMyProfile(){
-  if (!isLoggedIn || (currentUserRole !== 'professional' && currentUserRole !== 'admin')) {
-    showAlert('Unavailable', 'Sign in as a professional to view your public profile.');
-    return;
-  }
-  const me = {
-    name: currentUser?.name || 'My Profile',
-    service: 'Professional',
-    rating: 4.9,
-    reviews: 120,
-    price: '$—',
-    image: null,
-    verified: true,
-    availability: 'Usually responds within 1 hour'
-  };
-  openProfileModal(me, myWork);
-}
-function openProfileById(id){
-  const pro = professionals.find(p => p.id === Number(id));
-  if (!pro) return;
-  const works = [
-    { title: 'Recent Job', description: 'Customer kitchen fix', images:[{ dataUrl: 'https://picsum.photos/400/300?random=11', name: 'job.jpg'}], files: [] },
-    { title: 'Install', description: 'Mounted TV and tidied cables', images:[{ dataUrl: 'https://picsum.photos/400/300?random=12', name: 'tv.jpg'}], files: [] },
-    { title: 'Repair', description: 'Leak fix with warranty', images:[{ dataUrl: 'https://picsum.photos/400/300?random=13', name: 'leak.jpg'}], files: [] }
-  ];
-  openProfileModal(pro, works);
-}
-function openProfileModal(pro, works){
-  const header = document.getElementById('profileModalHeader');
-  const meta = document.getElementById('profileMeta');
-  const grid = document.getElementById('profileWorkGrid');
-  if (!header || !meta || !grid) return;
-
-  const initials = getInitials(pro.name || '', '');
-
-  header.innerHTML = `
-    <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle">
-      ${pro.image ? `<img src="${pro.image}" alt="${pro.name}" class="w-20 h-20 rounded-full object-cover"/>` : initials}
-    </div>
-    <h2 class="text-2xl md:text-3xl font-bold text-text-primary">${pro.name || 'Professional'}</h2>
-    <p class="text-gray-600 mt-2">${pro.service || ''} ${pro.verified ? '<i class="fas fa-check-circle text-secondary ml-1" title="Verified"></i>' : ''}</p>
-  `;
-  meta.innerHTML = `
-    <div class="flex items-center justify-center gap-4">
-      <div><span class="text-yellow-500">★</span> <span class="font-semibold">${pro.rating || '4.9'}</span> <span class="text-gray-400 text-sm">(${pro.reviews || 0} reviews)</span></div>
-      <div class="hidden md:inline-block text-gray-400">•</div>
-      <div class="text-sm"><i class="fas fa-clock mr-1"></i>${pro.availability || 'Fast responder'}</div>
-    </div>
-  `;
-
-  const getSrc = (x)=> x?.url || x?.dataUrl || '';
-  const renderAttachmentThumbs = (work)=>{
-    const imgs = (work.images || []).map((f)=>`
-      <div class="rounded-md overflow-hidden border border-gray-200">
-        <img src="${getSrc(f)}" alt="${f.name}" class="w-full h-24 object-cover"/>
-      </div>
-    `).join('');
-    const files = (work.files || []).map((f)=>`
-      <a href="${f.url || f.dataUrl}" download="${f.name}" class="flex items-center px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">
-        <i class="fas fa-paperclip mr-2"></i>${f.name}
-      </a>
-    `).join('');
-    if (!imgs && !files) return '';
-    return `<div class="grid grid-cols-3 gap-2 mt-2">${imgs}${files}</div>`;
-  };
-
-  grid.innerHTML = (works && works.length)
-    ? works.map((it, idx)=>`
-        <div class="card animate-scale-in" style="animation-delay:${idx*0.05}s">
-          <div class="mb-3">
-            ${it.images?.[0] ? `<img src="${getSrc(it.images[0])}" alt="${it.title}" class="w-full h-40 object-cover rounded-lg"/>` : `<div class="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400"><i class="fas fa-briefcase"></i></div>`}
-          </div>
-          <h4 class="font-bold text-gray-800">${it.title || 'Project'}</h4>
-          <p class="text-sm text-gray-600 mt-1">${it.description || ''}</p>
-          ${renderAttachmentThumbs(it)}
-        </div>
-      `).join('')
-    : `<div class="text-center text-gray-500">No portfolio items yet.</div>`;
-
-  openModal('profileModal');
-}
-
-// ------------ SETTINGS ------------
-function openSettings(){ closeModal('userMenuModal'); switchView('settings'); }
-function photoPreviewChange(){
-  const f = document.getElementById('setPhoto')?.files?.[0];
-  if (!f) return;
-  const r = new FileReader(); r.onload = ()=> document.getElementById('setPhotoPreview').src = r.result; r.readAsDataURL(f);
-}
-async function loadSettingsForm(){
-  const dn = document.getElementById('setDisplayName');
-  const em = document.getElementById('setEmail');
-  const la = document.getElementById('setLang');
-  const ci = document.getElementById('setCity');
-  const co = document.getElementById('setCountry');
-  const tf = document.getElementById('setTwoFA');
-  const ne = document.getElementById('setNotifyEmail');
-  const ns = document.getElementById('setNotifySMS');
-  const np = document.getElementById('setNotifyPush');
-  const pb = document.getElementById('setPublic');
-  const si = document.getElementById('setSearchIndex');
-  const bn = document.getElementById('setBillingNote');
-  const ca = document.getElementById('setConnected');
-  const img = document.getElementById('setPhotoPreview');
-
-  document.getElementById('setPhoto')?.removeEventListener('change', photoPreviewChange);
-  document.getElementById('setPhoto')?.addEventListener('change', photoPreviewChange);
-
-  if (auth?.currentUser && db){
-    const u = auth.currentUser;
-    dn.value = u.displayName || '';
-    em.value = u.email || '';
-    img.src = u.photoURL || '';
-    ca.value = (u.providerData || []).map(p=>p.providerId).join(', ') || 'password';
-    try{
-      const snap = await db.collection('users').doc(u.uid).get();
-      const d = snap.exists ? snap.data() : {};
-      la.value = d.lang || 'en';
-      ci.value = d.address?.city || '';
-      co.value = d.address?.country || '';
-      tf.checked = !!d.twoFactorEnabled;
-      ne.checked = !!d.notifyEmail;
-      ns.checked = !!d.notifySMS;
-      np.checked = !!d.notifyPush;
-      pb.checked = (d.publicProfile !== false);
-      si.checked = !!d.searchIndex;
-      bn.value = d.billingNote || '';
-    }catch(e){ console.warn(e); }
-  } else {
-    dn.value = currentUser?.name || '';
-    em.value = currentUser?.email || '';
-    la.value = currentLanguage || 'en';
-    ca.value = 'demo';
-  }
-
-  initSettingsSpy();
-}
-async function saveSettings(e){
-  e?.preventDefault?.();
-  const u = auth?.currentUser;
-
-  const dn = document.getElementById('setDisplayName').value.trim();
-  const la = document.getElementById('setLang').value;
-  const ci = document.getElementById('setCity').value.trim();
-  const co = document.getElementById('setCountry').value.trim();
-  const tf = document.getElementById('setTwoFA').checked;
-  const ne = document.getElementById('setNotifyEmail').checked;
-  const ns = document.getElementById('setNotifySMS').checked;
-  const np = document.getElementById('setNotifyPush').checked;
-  const pb = document.getElementById('setPublic').checked;
-  const si = document.getElementById('setSearchIndex').checked;
-  const bn = document.getElementById('setBillingNote').value.trim();
-  const photoFile = document.getElementById('setPhoto')?.files?.[0];
-
-  if (u && db){
-    let photoURL = u.photoURL || '';
-    try{
-      if (photoFile && storage){
-        const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = `users/${u.uid}/profilePhoto_${Date.now()}.${ext}`;
-        const ref = storage.ref().child(path);
-        await ref.put(photoFile);
-        photoURL = await ref.getDownloadURL();
-        await u.updateProfile({ photoURL });
-      }
-      if (dn) await u.updateProfile({ displayName: dn });
-
-      const data = pruneUndefined({
-        displayName: dn || u.displayName || '',
-        photoURL,
-        lang: la,
-        twoFactorEnabled: tf,
-        notifyEmail: ne, notifySMS: ns, notifyPush: np,
-        publicProfile: pb, searchIndex: si, billingNote: bn,
-        address: pruneUndefined({ city: ci || undefined, country: co || undefined }),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      await db.collection('users').doc(u.uid).set(data, { merge: true });
-
-      currentUser = { ...(currentUser||{}), name: dn || u.displayName || currentUser?.name, avatar: getInitials(dn || u.displayName, u.email) };
-      showAlert('Saved','Your settings have been updated.');
-      switchView('customer'); updateUserInterface();
-    }catch(err){
-      showAlert('Save failed', err.message || 'Could not save settings.');
-    }
-  } else {
-    currentLanguage = la;
-    currentUser = { ...(currentUser||{}), name: dn || currentUser?.name, avatar: getInitials(dn || currentUser?.name, currentUser?.email) };
-    showAlert('Saved (demo)','Settings saved locally.');
-    switchView('customer'); updateUserInterface();
-  }
-}
-function initSettingsSpy(){
-  const nav = document.querySelectorAll('#settingsNav a');
-  const sections = [...document.querySelectorAll('#settingsForm > section')];
-  function setActive(id){ nav.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`)); }
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if (e.isIntersecting) setActive(e.target.id); });
-  }, { rootMargin: '-40% 0px -55% 0px' });
-  sections.forEach(s => io.observe(s));
-}
-
-// ------------ Add Work (PRIORITY FIX) ------------
-function submitWorkForm(){
-  const form = document.getElementById('workForm');
-  // Use HTML5 validity for consistent UX
-  if (form && !form.reportValidity()) return;
-
-  const title = document.getElementById('workTitle')?.value?.trim();
-  const description = document.getElementById('workDesc')?.value?.trim();
-  if (!title || !description){ showAlert('Missing info', 'Please fill in title and description.'); return; }
-
-  const btn = document.getElementById('workSubmitBtn');
-  if (btn?.dataset.busy === '1') return;
-  if (btn){ btn.dataset.busy = '1'; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding...'; }
-
-  // 1) create local item immediately
-  const tempId = `local-${Date.now()}`;
-  const newItem = {
-    id: tempId,
-    title,
-    description,
-    category: 'Project',
-    images: [...pendingUploads.images],
-    files: [...pendingUploads.files],
-    createdAt: new Date().toISOString(),
-    public: true
-  };
-  myWork.unshift(newItem);
-  saveMyWork();
-  renderWorkPortfolio();
-
-  // 2) close modal + reset
-  closeModal('workUploadModal');
-  resetWorkUploadUI();
-  showAlert('Work Added!', 'Your project has been added to your portfolio.');
-
-  // 3) background sync to Firebase if available
-  (async ()=>{
-    try{
-      const cloud = await saveWorkItemToCloud(tempId, { title, description });
-      if (cloud) showAlert('Synced to Cloud', 'Your portfolio item is public.');
-    }catch(e){
-      console.warn('Cloud sync failed', e);
-      showAlert('Offline mode', 'Saved locally. Will sync when signed in.');
-    }finally{
-      if (btn){ btn.dataset.busy = '0'; btn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add to Portfolio'; }
-      switchView('professional');
-    }
+  // ---- Location (nice-to-have) ----
+  (function initLocation() {
+    const pill = $('#locationPill'), citySpan = $('#locationCity');
+    if (!pill) return;
+    try {
+      navigator.geolocation.getCurrentPosition(
+        () => { citySpan.textContent = 'Nearby'; show(pill); },
+        () => { citySpan.textContent = 'Your area'; show(pill); },
+        { timeout: 1500 }
+      );
+    } catch (_) { show(pill); }
   })();
-}
 
-function wireForms(){
-  // Login/Signup
-  document.getElementById('loginForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); loginUser(); });
-  document.getElementById('signupForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); signupUser(); });
+  // ---- Populate homepage data (unchanged layout) ----
+  const popular = [
+    { name:'Plumbing', icon:'fa-faucet', color:'bg-blue-500' },
+    { name:'Electrical', icon:'fa-bolt', color:'bg-yellow-500' },
+    { name:'HVAC', icon:'fa-fan', color:'bg-cyan-600' },
+    { name:'Handyman', icon:'fa-screwdriver-wrench', color:'bg-emerald-600' },
+    { name:'Carpentry', icon:'fa-hammer', color:'bg-orange-500' },
+    { name:'Cleaning', icon:'fa-broom', color:'bg-indigo-500' },
+  ];
+  const categories = [
+    'Plumbing','Electrical','HVAC','Handyman','Carpentry','Cleaning',
+    'Gardening','Painting','Locksmith','IT Support','Moving','Appliances'
+  ];
+  const pros = [
+    { name:'Amina R.', title:'Master Plumber', rating:4.95, jobs:312 },
+    { name:'Victor K.', title:'Certified Electrician', rating:4.92, jobs:287 },
+    { name:'Lina P.', title:'AC Specialist', rating:4.90, jobs:201 },
+  ];
 
-  // Work form (double safety: submit + explicit button click)
-  const workForm = document.getElementById('workForm');
-  workForm?.addEventListener('submit', (e)=>{ e.preventDefault(); submitWorkForm(); });
-  document.getElementById('workSubmitBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); submitWorkForm(); });
+  function renderPopular() {
+    const c = $('#popularServices'); if (!c) return;
+    c.innerHTML = popular.map(p => `
+      <div class="card card-interactive animate-scale-in text-center" data-action="navigate-service" data-service="${p.name}">
+        <div class="service-icon ${p.color} mx-auto mb-2"><i class="fas ${p.icon}"></i></div>
+        <div class="font-bold">${p.name}</div>
+      </div>`).join('');
+  }
+  function renderCategories() {
+    const c = $('#serviceCategories'); if (!c) return;
+    c.innerHTML = categories.map(n => `
+      <div class="card card-interactive animate-slide-up text-center" data-action="navigate-service" data-service="${n}">
+        <div class="font-bold">${n}</div>
+      </div>`).join('');
+  }
+  function renderFeaturedPros() {
+    const c = $('#featuredProfessionals'); if (!c) return;
+    c.innerHTML = pros.map((p, i) => `
+      <div class="card professional-card animate-slide-up">
+        <div class="flex items-center gap-3">
+          <div class="avatar-container w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold">
+            ${p.name.charAt(0)}
+          </div>
+          <div>
+            <div class="font-bold">${p.name}</div>
+            <div class="text-sm text-gray-500">${p.title}</div>
+          </div>
+          <div class="ml-auto text-sm font-semibold">${p.rating}★ • ${p.jobs}</div>
+        </div>
+        <button class="btn-base btn-outline w-full mt-4" data-action="open-profile" data-index="${i}">
+          View Profile
+        </button>
+      </div>`).join('');
+  }
+  renderPopular(); renderCategories(); renderFeaturedPros();
 
-  document.getElementById('withdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); });
-  document.getElementById('adminWithdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); });
+  // ---- Global click actions (all your buttons) ----
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
 
-  // Settings save
-  document.getElementById('settingsForm')?.addEventListener('submit', saveSettings);
+    if (action === 'go-home') switchView('customer');
+    if (action === 'go-professional') switchView('professional');
 
-  // Safety net: delegate submit too
-  document.addEventListener('submit', (e)=>{
-    const id = e.target?.id;
-    if (!id) return;
-    if (id === 'workForm'){ e.preventDefault(); submitWorkForm(); }
-  }, true);
-}
+    if (action === 'switch-view') switchView(btn.dataset.view);
 
-// ------------ Events ------------
-function handleClicks(e){
-  const el = e.target.closest('[data-action]');
-  if (!el) return;
+    if (action === 'open-modal') openModal(btn.dataset.modal);
+    if (action === 'close-modal') closeModal(btn.dataset.modal);
 
-  const action = el.getAttribute('data-action');
+    if (action === 'swap-modal') { closeModal(btn.dataset.close); setTimeout(()=>openModal(btn.dataset.open), 180); }
 
-  if (['switch-view','go-professional','open-modal','close-modal','swap-modal','navigate-service','search-from-input','search-from-mobile','execute-search','use-current-location','start-reset','logout','select-role','go-home','remove-attachment','open-my-profile','view-pro-profile','open-settings','send-reset-email','delete-account','relogin'].includes(action)) {
+    if (action === 'open-my-profile') showMyProfile();
+    if (action === 'open-settings') { closeModal('userMenuModal'); switchView('settings'); }
+    if (action === 'logout') auth.signOut();
+
+    if (action === 'search-from-input') doSearch($('#searchInput')?.value);
+    if (action === 'search-from-mobile') doSearch($('#mobileSearchInput')?.value);
+    if (action === 'navigate-service') doSearch(btn.dataset.service);
+
+    if (action === 'start-reset') { closeModal('loginModal'); auth.currentUser ? null : openModal('loginModal'); } // noop placeholder
+  });
+
+  function doSearch(q = '') {
+    q = (q||'').trim();
+    if (!q) return;
+    hide($('#customerView'));
+    show($('#algoliaResults'));
+    $('#algoliaResultsList').innerHTML = `
+      <div class="card">Searching for: <b>${q}</b> (placeholder results)</div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- Auth UI (email+password + Google) ----
+  // Select role tiles
+  $$('#signupModal .user-type-card').forEach(card => {
+    card.addEventListener('click', () => {
+      $$('#signupModal .user-type-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      card.querySelector('input[type="radio"]').checked = true;
+    });
+  });
+
+  // Google button render (simple)
+  function renderGoogleBtn(containerId, label) {
+    const c = document.getElementById(containerId);
+    if (!c) return;
+    c.innerHTML = `<button class="btn-base btn-google w-full" data-google="${containerId}">
+      <i class="fab fa-google mr-2"></i>${label || 'Continue with Google'}
+    </button>`;
+  }
+  renderGoogleBtn('googleSignInBtnLogin', 'Continue with Google');
+  renderGoogleBtn('googleSignInBtnSignup', 'Sign up with Google');
+
+  document.addEventListener('click', async (e) => {
+    const g = e.target.closest('[data-google]');
+    if (!g) return;
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const cred = await auth.signInWithPopup(provider);
+      // Ensure user doc exists
+      await ensureUserDoc(cred.user, { role: 'customer' });
+      closeModal('loginModal'); closeModal('signupModal');
+    } catch (err) { alert(err.message); }
+  });
+
+  // Email login
+  $('#loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const email = $('#login-email').value.trim();
+    const pass = $('#login-password').value;
+    try {
+      await auth.setPersistence($('#remember-me').checked
+        ? firebase.auth.Auth.Persistence.LOCAL
+        : firebase.auth.Auth.Persistence.SESSION);
+      await auth.signInWithEmailAndPassword(email, pass);
+      $('#login-message').textContent = '';
+      closeModal('loginModal');
+    } catch (err) {
+      $('#login-message').textContent = err.message;
+    }
+  });
+
+  // Email signup
+  $('#signupForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#fullName').value.trim();
+    const email = $('#emailAddress').value.trim();
+    const pass = $('#password').value;
+    const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
+    const language = $('#signupLanguage').value;
+    try {
+      const { user } = await auth.createUserWithEmailAndPassword(email, pass);
+      await user.updateProfile({ displayName: name });
+      await ensureUserDoc(user, { role, language });
+      closeModal('signupModal');
+      openModal('userMenuModal');
+    } catch (err) { $('#signup-message').textContent = err.message; }
+  });
+
+  async function ensureUserDoc(user, extras={}) {
+    const ref = db.collection('users').doc(user.uid);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      await ref.set({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || 'User',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ...extras
+      });
+    }
   }
 
-  switch(action){
-    case 'go-home':
-      switchView('customer'); break;
-
-    case 'switch-view': {
-      const view = el.getAttribute('data-view');
-      if (view === 'professional') goProfessional(); else switchView(view);
-      break;
+  // Auth state -> update menu/avatar + show Pro nav if role=professional
+  auth.onAuthStateChanged(async (user) => {
+    const avatar = $('#userAvatar');
+    const avatarLg = $('#userAvatarLarge');
+    const nameLg = $('#userNameLarge');
+    const statusLg = $('#userStatusLarge');
+    if (!user) {
+      $('#setEmail') && ($('#setEmail').value = '');
+      hide($('#loggedUserMenu')); show($('#guestUserMenu'));
+      if (nameLg) nameLg.textContent = 'Guest User';
+      if (statusLg) statusLg.textContent = 'Not signed in';
+      avatar.innerHTML = '<i class="fas fa-user"></i>';
+      avatarLg.innerHTML = '<i class="fas fa-user"></i>';
+      return;
     }
 
-    case 'go-professional':
-      goProfessional(); break;
+    // user exists
+    show($('#loggedUserMenu')); hide($('#guestUserMenu'));
+    const letter = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+    avatar.textContent = letter;
+    avatarLg.textContent = letter;
+    if (nameLg) nameLg.textContent = user.displayName || user.email;
+    if (statusLg) statusLg.textContent = user.email;
 
-    case 'open-modal': {
-      const id = el.getAttribute('data-modal'); openModal(id); break;
+    // fill settings header fields
+    $('#setEmail') && ($('#setEmail').value = user.email || '');
+    $('#setDisplayName') && ($('#setDisplayName').value = user.displayName || '');
+
+    // show professional nav if their role is professional
+    const userDoc = await db.collection('users').doc(user.uid).get().catch(()=>null);
+    const role = userDoc?.data()?.role || 'customer';
+    if (role === 'professional') {
+      $('#professionalBtn')?.classList.remove('hidden');
+      $('#mobileProfessional')?.classList.remove('hidden');
+      // Load their portfolio list
+      loadMyPortfolio(user.uid);
+    } else {
+      $('#professionalBtn')?.classList.add('hidden');
+      $('#mobileProfessional')?.classList.add('hidden');
     }
-    case 'close-modal': {
-      const id = el.getAttribute('data-modal'); closeModal(id); break;
+  });
+
+  // ---- Work Upload (Add to Portfolio) ----
+  const dz = $('#workDropZone');
+  const imgInput = $('#workImagesInput');
+  const fileInput = $('#workFilesInput');
+  const previewWrap = $('#workAttachmentList');
+
+  let selectedImages = []; // File[]
+  let selectedFiles = [];  // File[]
+
+  function renderPreviews() {
+    if (!previewWrap) return;
+    const URLs = [];
+    const imgs = selectedImages.map((f, i) => `
+      <div class="card p-2 text-center">
+        <img class="w-full h-28 object-cover rounded-md" alt="" src="${URL.createObjectURL(f)}"/>
+        <div class="mt-2 text-xs truncate">${f.name}</div>
+      </div>`);
+    const files = selectedFiles.map((f, i) => `
+      <div class="card p-2 text-center">
+        <i class="fas fa-file text-2xl text-gray-500"></i>
+        <div class="mt-2 text-xs truncate">${f.name}</div>
+      </div>`);
+    previewWrap.innerHTML = imgs.concat(files).join('');
+  }
+
+  dz?.addEventListener('click', () => imgInput.click());
+  dz?.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz?.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz?.addEventListener('drop', (e) => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/')).slice(0,5);
+    selectedImages = files; renderPreviews();
+  });
+  imgInput?.addEventListener('change', (e) => {
+    selectedImages = Array.from(e.target.files || []).slice(0,5);
+    renderPreviews();
+  });
+  fileInput?.addEventListener('change', (e) => {
+    selectedFiles = Array.from(e.target.files || []).slice(0,5);
+    renderPreviews();
+  });
+
+  // SUBMIT = the reliable way to catch the "Add to Portfolio" button
+  $('#workForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) { closeModal('workUploadModal'); openModal('loginModal'); return; }
+
+    const title = $('#workTitle').value.trim();
+    const desc = $('#workDesc').value.trim();
+    if (!title || !desc) return alert('Please enter a title and description.');
+
+    const submitBtn = $('#workSubmitBtn');
+    const orig = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
+
+    try {
+      // Create doc first to get an ID
+      const docRef = await db.collection('work').add({
+        uid: user.uid,
+        title,
+        desc,
+        images: [],
+        files: [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Upload images
+      const imageURLs = [];
+      for (let i = 0; i < selectedImages.length; i++) {
+        const f = selectedImages[i];
+        const path = `work/${user.uid}/${docRef.id}/image_${i}_${Date.now()}.${(f.name.split('.').pop() || 'jpg')}`;
+        const snap = await storage.ref(path).put(f);
+        const url = await snap.ref.getDownloadURL();
+        imageURLs.push(url);
+      }
+
+      // Upload other files
+      const fileLinks = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const f = selectedFiles[i];
+        const path = `work/${user.uid}/${docRef.id}/file_${i}_${Date.now()}_${f.name}`;
+        const snap = await storage.ref(path).put(f);
+        const url = await snap.ref.getDownloadURL();
+        fileLinks.push({ name: f.name, url });
+      }
+
+      await docRef.update({ images: imageURLs, files: fileLinks });
+
+      // Reset form and previews
+      $('#workForm').reset();
+      selectedImages = []; selectedFiles = []; renderPreviews();
+
+      // Add to UI immediately
+      addWorkCardToGrid({ id: docRef.id, title, desc, images: imageURLs, files: fileLinks });
+
+      closeModal('workUploadModal');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = orig;
     }
-    case 'swap-modal': {
-      const closeId = el.getAttribute('data-close');
-      const openId = el.getAttribute('data-open');
-      closeModal(closeId); setTimeout(()=> openModal(openId), 160);
-      break;
+  });
+
+  function workCardHTML(item) {
+    const cover = item.images?.[0] || '';
+    const imgEl = cover ? `<img class="w-full h-40 object-cover rounded-xl" src="${cover}" alt="">` :
+                          `<div class="w-full h-40 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-image"></i></div>`;
+    return `
+      <div class="card">
+        ${imgEl}
+        <div class="mt-3">
+          <div class="font-bold">${item.title}</div>
+          <div class="text-sm text-gray-600 mt-1">${item.desc}</div>
+        </div>
+      </div>`;
+  }
+
+  function addWorkCardToGrid(item) {
+    const grid = $('#workPortfolio');
+    if (!grid) return;
+    const div = document.createElement('div');
+    div.innerHTML = workCardHTML(item);
+    grid.prepend(div.firstElementChild);
+  }
+
+  async function loadMyPortfolio(uid) {
+    const grid = $('#workPortfolio'); if (!grid) return;
+    const snap = await db.collection('work')
+      .where('uid','==',uid)
+      .orderBy('createdAt','desc')
+      .limit(24)
+      .get();
+    grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
+  }
+
+  // ---- Settings save ----
+  $('#settingsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) { openModal('loginModal'); return; }
+
+    const displayName = $('#setDisplayName').value.trim();
+    const language = $('#setLang').value;
+    const city = $('#setCity').value.trim();
+    const country = $('#setCountry').value.trim();
+    const twoFA = $('#setTwoFA').checked;
+    const notifyEmail = $('#setNotifyEmail').checked;
+    const notifySMS = $('#setNotifySMS').checked;
+    const notifyPush = $('#setNotifyPush').checked;
+    const isPublic = $('#setPublic').checked;
+    const searchIndex = $('#setSearchIndex').checked;
+    const billingNote = $('#setBillingNote').value.trim();
+
+    // upload photo if chosen
+    const photoFile = $('#setPhoto').files?.[0];
+    let photoURL = user.photoURL || '';
+    try {
+      if (photoFile) {
+        const snap = await storage.ref(`users/${user.uid}/avatar_${Date.now()}.${(photoFile.name.split('.').pop()||'jpg')}`).put(photoFile);
+        photoURL = await snap.ref.getDownloadURL();
+        $('#setPhotoPreview').src = photoURL;
+        await user.updateProfile({ photoURL });
+      }
+      if (displayName && displayName !== user.displayName) {
+        await user.updateProfile({ displayName });
+      }
+      await db.collection('users').doc(user.uid).set({
+        displayName, language, city, country,
+        twoFA, notifyEmail, notifySMS, notifyPush,
+        isPublic, searchIndex, billingNote,
+        photoURL
+      }, { merge:true });
+
+      alert('Settings saved');
+      switchView('customer');
+    } catch (err) {
+      alert(err.message);
     }
+  });
 
-    case 'navigate-service': {
-      const s = el.getAttribute('data-service'); navigateToService(s); closeAllModals(); break;
+  // Show selected photo preview
+  $('#setPhoto')?.addEventListener('change', (e) => {
+    const f = e.target.files?.[0];
+    if (f) $('#setPhotoPreview').src = URL.createObjectURL(f);
+  });
+
+  // ---- Withdraw buttons (placeholder) ----
+  $('#withdrawForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Withdraw submitted (demo). Connect your PSP for real payouts.');
+    closeModal('withdrawModal');
+  });
+  $('#adminWithdrawForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Admin withdraw submitted (demo).');
+    closeModal('adminWithdrawModal');
+  });
+
+  // ---- Profile modal (from featured pros or own profile) ----
+  function showMyProfile() {
+    const user = auth.currentUser;
+    const header = $('#profileModalHeader');
+    const meta = $('#profileMeta');
+    const grid = $('#profileWorkGrid');
+
+    if (!user) { openModal('loginModal'); return; }
+
+    header.innerHTML = `
+      <div class="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center text-2xl font-bold animate-bounce-gentle">
+        ${(user.displayName||user.email||'U').charAt(0).toUpperCase()}
+      </div>
+      <h2 class="text-2xl md:text-3xl font-bold mt-2">${user.displayName||user.email}</h2>`;
+    meta.textContent = 'Your public portfolio';
+
+    openModal('profileModal');
+    // load items
+    db.collection('work').where('uid','==',user.uid).orderBy('createdAt','desc').limit(24).get()
+      .then(snap => {
+        grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
+      });
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="open-profile"]');
+    if (!btn) return;
+    const i = +btn.dataset.index || 0;
+    const p = pros[i];
+    const header = $('#profileModalHeader');
+    const meta = $('#profileMeta');
+    const grid = $('#profileWorkGrid');
+    header.innerHTML = `
+      <div class="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-secondary to-secondary-light text-white flex items-center justify-center text-2xl font-bold animate-bounce-gentle">
+        ${p.name.charAt(0)}
+      </div>
+      <h2 class="text-2xl md:text-3xl font-bold mt-2">${p.name}</h2>`;
+    meta.textContent = `${p.title} • ${p.rating}★ • ${p.jobs} jobs`;
+    grid.innerHTML = ''; // example only
+    openModal('profileModal');
+  });
+
+  // Settings left menu active highlight on click
+  $('#settingsNav')?.addEventListener('click', (e) => {
+    const a = e.target.closest('a'); if (!a) return;
+    $$('#settingsNav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+  });
+
+  // Current location -> city (signup)
+  document.querySelector('[data-action="use-current-location"]')?.addEventListener('click', () => {
+    try {
+      navigator.geolocation.getCurrentPosition(() => { $('#signupCity').value = 'Nearby'; }, () => {});
+    } catch (_) {}
+  });
+
+  // Done
+  console.log('QuickFix Pro ready.');
+})();
+
+/*
+Firestore Rules (apply in Firebase Console > Firestore > Rules)
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read: if true; }
+    match /users/{uid} {
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow read: if true;
+      allow update, delete: if request.auth != null && request.auth.uid == uid;
     }
-    case 'search-from-input':
-      executeSearchFromInput(); break;
-    case 'search-from-mobile':
-      executeSearchFromMobile(); break;
-    case 'execute-search': {
-      const q = el.getAttribute('data-query'); executeSearch(q); break;
+    match /work/{workId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow read: if true;
     }
-
-    case 'use-current-location':
-      if (!navigator.geolocation) { showAlert('Location', 'Geolocation not supported.'); return; }
-      navigator.geolocation.getCurrentPosition(async (pos)=>{
-        try{
-          const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=10&addressdetails=1`;
-          const res = await fetch(url, { headers:{ 'Accept':'application/json' } });
-          const data = await res.json();
-          const c = data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || '';
-          const sc = document.getElementById('signupCity');
-          if (sc) sc.value = c;
-          showAlert('Location detected', c || 'City updated.');
-        }catch{
-          showAlert('Location', 'Could not determine your city.');
-        }
-      }, ()=> showAlert('Location', 'Permission denied or unavailable.'), { timeout:5000 });
-      break;
-
-    case 'start-reset':
-      startPasswordReset(); break;
-
-    case 'logout':
-      logoutUser(); closeAllModals(); break;
-
-    case 'select-role': {
-      const role = el.getAttribute('data-role') || 'customer';
-      document.querySelectorAll('.user-type-card').forEach(x => x.classList.remove('selected'));
-      el.classList.add('selected');
-      const radio = document.querySelector(`#role${role === 'professional' ? 'Professional' : 'User'}`);
-      if (radio) radio.checked = true;
-      break;
-    }
-
-    case 'remove-attachment': {
-      const kind = el.getAttribute('data-kind'); const idx = Number(el.getAttribute('data-index'));
-      if (kind === 'image') pendingUploads.images.splice(idx,1);
-      if (kind === 'file')  pendingUploads.files.splice(idx,1);
-      renderAttachmentList();
-      break;
-    }
-
-    case 'open-my-profile':
-      openMyProfile(); break;
-
-    case 'view-pro-profile': {
-      const id = el.getAttribute('data-pro-id'); openProfileById(id); break;
-    }
-
-    case 'open-settings':
-      openSettings(); break;
-
-    case 'send-reset-email':
-      startPasswordReset(); break;
-
-    case 'delete-account':
-      if (!auth?.currentUser){ showAlert('Demo','No account to delete in demo mode.'); return; }
-      auth.currentUser.delete().then(()=> showAlert('Deleted','Account removed.')).catch(err=> showAlert('Delete failed', err.message || 'Re-login may be required.'));
-      break;
-
-    case 'relogin':
-      showAlert('Tip','If an operation requires recent login, log out and sign in again.'); break;
   }
 }
-
-// Close on overlay click only
-function handleOverlayClose(e){
-  if (e.target.classList?.contains('modal-overlay')) closeAllModals();
-}
-
-// ------------ Init ------------
-function initializeApp(){
-  renderPopularServices();
-  renderServiceCategories();
-  renderProfessionals();
-  renderWorkPortfolio();
-  renderRecentProfessionals();
-
-  document.addEventListener('click', handleClicks);
-  document.addEventListener('click', handleOverlayClose);
-  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAllModals(); });
-
-  const si = document.getElementById('searchInput');
-  const msi = document.getElementById('mobileSearchInput');
-  si?.addEventListener('keypress', e => { if (e.key === 'Enter' && si.value.trim()) executeSearchFromInput(); });
-  msi?.addEventListener('keypress', e => { if (e.key === 'Enter' && msi.value.trim()) executeSearchFromMobile(); });
-
-  wireForms();
-  setupWorkUploadUI();
-  myWork = loadMyWork();
-
-  updateUserInterface();
-  switchView('customer'); // first page can animate; others won't on switch
-  detectCityIntoHeader();
-
-  setTimeout(()=> showAlert('Welcome!', 'QuickFix Pro is ready to use.'), 500);
-  console.log('✅ App initialized');
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-  initializeApp();
-}
+*/

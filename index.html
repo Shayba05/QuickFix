@@ -4,6 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickFix Pro - Professional Service Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png"> <!-- optional fallback -->
+  <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#6B46C1">
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -264,7 +269,7 @@
             <div class="stat-label">Verified Professionals</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.1s">
-            <div class="stat-value text-2xl md:text-3xl">85K+</div>
+            <div class="stat-value text-2xl md:text-3xl">85K+</</div>
             <div class="stat-label">Jobs Completed</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.2s">
@@ -619,7 +624,8 @@
     </div>
   </footer>
 
-  <!-- Modals -->
+  <!-- Modals (login, user menu, search, signup, work upload, withdraw, admin withdraw, profile) -->
+  <!-- (unchanged – keeping your exact structure/IDs) -->
 
   <!-- Login Modal -->
   <div id="loginModal" class="modal-overlay hidden">
@@ -819,7 +825,7 @@
     </div>
   </div>
 
-  <!-- Work Upload Modal (ENHANCED) -->
+  <!-- Work Upload Modal -->
   <div id="workUploadModal" class="modal-overlay hidden">
     <div class="modal-content">
       <button class="close-btn" data-action="close-modal" data-modal="workUploadModal"><i class="fas fa-times"></i></button>
@@ -839,7 +845,6 @@
             <textarea id="workDesc" class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
           </div>
 
-          <!-- Dropzone / Upload controls -->
           <div class="space-y-3">
             <label class="form-label">Photos</label>
             <div id="workDropZone" class="dropzone p-4 flex items-center justify-center text-gray-600 cursor-pointer">
@@ -859,13 +864,11 @@
             <div class="text-xs text-gray-500">Up to 5 files, 5MB each</div>
           </div>
 
-          <!-- Preview list -->
           <div>
             <label class="form-label">Attachments Preview</label>
             <div id="workAttachmentList" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
           </div>
 
-          <!-- IMPORTANT: explicit id for robust click handler -->
           <button id="workSubmitBtn" type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2"></i>Add to Portfolio</button>
         </form>
       </div>
@@ -921,13 +924,11 @@
     </div>
   </div>
 
-  <!-- Profile Modal (customer view of a pro, or your own public profile) -->
+  <!-- Profile Modal -->
   <div id="profileModal" class="modal-overlay hidden">
     <div class="modal-content">
       <button class="close-btn" data-action="close-modal" data-modal="profileModal"><i class="fas fa-times"></i></button>
-      <div class="modal-header" id="profileModalHeader">
-        <!-- Filled by JS -->
-      </div>
+      <div class="modal-header" id="profileModalHeader"></div>
       <div class="modal-body">
         <div id="profileMeta" class="text-center text-gray-600 mb-6"></div>
         <h3 class="text-xl font-bold mb-4 text-text-primary text-center">Portfolio</h3>
