@@ -1,12 +1,19 @@
 // =======================
-// QuickFix Pro — stable icons + robust modal/login/signup wiring
-// + Algolia search integration (frontend)
+// QuickFix Pro — revert to your layout
+// + FIXED "Add to Portfolio" (works instantly; background Firebase sync)
+// + Public Profile modal
+// + Settings page with left menu
 // =======================
 
 let isLoggedIn = false;
 let currentUser = null;
 let currentUserRole = 'guest'; // 'guest' | 'customer' | 'professional' | 'admin'
 let currentLanguage = 'en';
+
+// Work items state (per-user, localStorage demo)
+let myWork = [];
+let pendingUploads = { images: [], files: [] };
+let unsubscribeMyWork = null;
 
 // ------------ Static Data ------------
 const serviceCategories = [
@@ -49,7 +56,7 @@ const firebaseConfig = {
   measurementId: "G-XS4LDTFRSH"
 };
 
-let auth, db;
+let auth, db, storage;
 try {
   if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -57,6 +64,7 @@ try {
   }
   auth = firebase?.auth?.();
   db = firebase?.firestore?.();
+  storage = firebase?.storage?.();
   if (db?.enablePersistence) {
     db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
   }
@@ -99,6 +107,25 @@ function formatPrice(p){
   if (typeof p === 'string') return p;
   return '';
 }
+function getUserKey(){
+  const uid = auth?.currentUser?.uid;
+  if (uid) return uid;
+  if (currentUser?.email) return currentUser.email;
+  return 'demo';
+}
+function getWorkStorageKey(){ return `qf_work_${getUserKey()}`; }
+function loadMyWork(){
+  try { return JSON.parse(localStorage.getItem(getWorkStorageKey()) || '[]'); }
+  catch { return []; }
+}
+function saveMyWork(){ try { localStorage.setItem(getWorkStorageKey(), JSON.stringify(myWork)); } catch {} }
+function dataURLtoBlob(dataurl){
+  try{
+    const [h,b] = dataurl.split(','); const mime = h.match(/:(.*?);/)[1]; const bin = atob(b); const u8 = new Uint8Array(bin.length);
+    for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return new Blob([u8], {type:mime});
+  }catch{ return null; }
+}
+function cleanName(n='file'){ return n.replace(/[^\w.\-]+/g,'_').slice(0,80); }
 
 // Firestore profile upsert
 async function upsertUserProfile(user, extra = {}) {
@@ -151,7 +178,7 @@ function showAlert(title, message){
 }
 function dismissAllToasts(){ document.querySelectorAll('.qf-toast').forEach(t => t.remove()); }
 
-// Global error guard so one error doesn’t kill all clicks
+// Global error guard
 window.addEventListener('error', (e) => {
   console.error(e.error || e.message);
   showAlert('Script error', e.message || 'An error occurred.');
@@ -160,7 +187,7 @@ window.addEventListener('error', (e) => {
 // ------------ Views ------------
 function switchView(view){
   // Hide all
-  ['customerView','professionalView','adminView'].forEach(id=>{
+  ['customerView','professionalView','adminView','settingsView'].forEach(id=>{
     const el = document.getElementById(id);
     if (el){
       el.classList.add('hidden');
@@ -171,7 +198,7 @@ function switchView(view){
   const target = document.getElementById(view + 'View');
   if (target){
     target.classList.remove('hidden');
-    target.classList.add('no-anim-view'); // <-- stops re-animations on every switch
+    target.classList.add('no-anim-view');
   }
 
   // Toggle nav button styles
@@ -184,6 +211,9 @@ function switchView(view){
   document.querySelectorAll('.mobile-nav .nav-item').forEach(i=>i.classList.remove('active'));
   const mobileBtn = document.getElementById('mobile' + view.charAt(0).toUpperCase() + view.slice(1));
   mobileBtn?.classList.add('active');
+
+  if (view === 'professional') renderWorkPortfolio();
+  if (view === 'settings') loadSettingsForm();
 }
 
 function goProfessional(){
@@ -206,8 +236,10 @@ function openModal(id){
     if (!el) return;
     el.classList.remove('hidden');
     setTimeout(()=> el.classList.add('show'), 10);
+
     if (id === 'signupModal') renderGoogleSignInButtonSignup();
     if (id === 'loginModal') renderGoogleSignInButtonLogin();
+    if (id === 'workUploadModal') resetWorkUploadUI();
   });
 }
 function closeModal(id){
@@ -217,7 +249,7 @@ function closeModal(id){
   setTimeout(()=> el.classList.add('hidden'), 300);
 }
 function closeAllModals(cb){
-  const ids = ['loginModal','signupModal','userMenuModal','searchModal','workUploadModal','withdrawModal','adminWithdrawModal'];
+  const ids = ['loginModal','signupModal','userMenuModal','searchModal','workUploadModal','withdrawModal','adminWithdrawModal','profileModal'];
   let pending = 0, any=false;
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -289,7 +321,7 @@ function renderProfessionalCard(pro, index = 0){
         <div class="text-right"><div class="text-xs text-gray-500">Starting from</div></div>
       </div>
       <div class="flex space-x-2">
-        <button class="btn-base btn-outline flex-1 text-sm">View Profile</button>
+        <button class="btn-base btn-outline flex-1 text-sm" data-action="view-pro-profile" data-pro-id="${pro.id}">View Profile</button>
         <button class="btn-base btn-primary flex-1 text-sm">Book Now</button>
       </div>
     </div>
@@ -298,12 +330,43 @@ function renderProfessionalCard(pro, index = 0){
 function renderWorkPortfolio(){
   const container = document.getElementById('workPortfolio');
   if (!container) return;
-  const items = [
+
+  const sample = [
     { title:'Modern Kitchen Renovation', category:'Plumbing', duration:'6 hours', cost:'$480', image:'https://picsum.photos/400/300?random=1', rating:'5.0' },
     { title:'Smart Bathroom Installation', category:'Plumbing', duration:'2 days', cost:'$1,250', image:'https://picsum.photos/400/300?random=2', rating:'4.9' },
     { title:'Complete Home Automation', category:'Electrical', duration:'8 hours', cost:'$950', image:'https://picsum.photos/400/300?random=3', rating:'5.0' }
   ];
-  container.innerHTML = items.map((it,idx)=>`
+
+  // Convert myWork into cards (use dataUrl/url for image)
+  const getSrc = (x)=> x?.url || x?.dataUrl || '';
+  const renderAttachmentThumbs = (work)=>{
+    const imgs = (work.images || []).map((f)=>`
+      <div class="rounded-md overflow-hidden border border-gray-200">
+        <img src="${getSrc(f)}" alt="${f.name}" class="w-full h-24 object-cover"/>
+      </div>
+    `).join('');
+    const files = (work.files || []).map((f)=>`
+      <a href="${f.url || f.dataUrl}" download="${f.name}" class="flex items-center px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">
+        <i class="fas fa-paperclip mr-2"></i>${f.name}
+      </a>
+    `).join('');
+    if (!imgs && !files) return '';
+    return `<div class="grid grid-cols-3 gap-2">${imgs}${files}</div>`;
+  };
+
+  const myItems = (myWork || []).map((it, idx)=>`
+    <div class="card card-interactive overflow-hidden hover:border-primary animate-scale-in" style="animation-delay:${idx*0.05}s">
+      ${it.images?.length ? `<img src="${getSrc(it.images[0])}" alt="${it.title}" class="w-full h-32 md:h-40 object-cover mb-3 rounded-lg"/>` : `<div class="w-full h-32 md:h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-gray-400"><i class="fas fa-briefcase"></i></div>`}
+      <div class="flex justify-between items-start mb-2">
+        <h4 class="font-bold text-sm md:text-base truncate mr-2 text-gray-800">${it.title}</h4>
+        <span class="text-xs bg-gradient-to-r from-primary to-primary-light text-white px-2 py-1 rounded-full font-semibold">${it.category || 'Project'}</span>
+      </div>
+      <div class="text-sm text-gray-600 mb-3">${it.description || ''}</div>
+      ${renderAttachmentThumbs(it)}
+    </div>
+  `).join('');
+
+  const base = sample.map((it,idx)=>`
     <div class="card card-interactive overflow-hidden hover:border-primary animate-scale-in" style="animation-delay:${idx*0.1}s">
       <img src="${it.image}" alt="${it.title}" class="w-full h-32 md:h-40 object-cover mb-3 rounded-lg"/>
       <div class="flex justify-between items-start mb-2">
@@ -316,6 +379,8 @@ function renderWorkPortfolio(){
       </div>
     </div>
   `).join('');
+
+  container.innerHTML = (myWork?.length ? myItems : '') + base;
 }
 function renderRecentProfessionals(){
   const container = document.getElementById('recentProfessionals');
@@ -349,7 +414,6 @@ async function searchWithAlgolia(q){
     return null;
   }
 }
-
 function renderAlgoliaResults(hits){
   const wrap = document.getElementById('algoliaResults');
   const list = document.getElementById('algoliaResultsList');
@@ -388,7 +452,6 @@ function renderAlgoliaResults(hits){
 function navigateToService(serviceName){
   showAlert('Search Results', `Found ${Math.floor(Math.random()*50)+10} professionals for "${serviceName}"`);
 }
-
 async function executeSearchFromInput(){
   const el = document.getElementById('searchInput');
   const q = el?.value?.trim();
@@ -401,7 +464,6 @@ async function executeSearchFromInput(){
   }
   navigateToService(q);
 }
-
 async function executeSearchFromMobile(){
   const el = document.getElementById('mobileSearchInput');
   const q = el?.value?.trim();
@@ -415,7 +477,6 @@ async function executeSearchFromMobile(){
   }
   navigateToService(q);
 }
-
 function executeSearch(query){
   if (!query?.trim()) return;
   const hit = popularServices.find(s=> s.name.toLowerCase() === query.toLowerCase());
@@ -432,7 +493,8 @@ async function loginUser(){
   if (!auth) {
     isLoggedIn = true;
     currentUser = { name: email?.split('@')[0] || 'QuickFix User', email, avatar: getInitials('', email) };
-    currentUserRole = 'customer';
+    currentUserRole = 'professional'; // to let you access Pro
+    myWork = loadMyWork();
     updateUserInterface();
     closeModal('loginModal');
     showAlert('Welcome Back!', 'Signed in (demo).');
@@ -483,6 +545,7 @@ async function signupUser(){
     isLoggedIn = true;
     currentUserRole = chosenRole;
     currentUser = { name: fullName || (email?.split('@')[0] ?? 'QuickFix User'), email, avatar: getInitials(fullName, email) };
+    myWork = loadMyWork();
     updateUserInterface();
     closeModal('signupModal');
     showAlert('Account Created!', chosenRole === 'professional' ? 'You can now access the Pro dashboard.' : 'Welcome to QuickFix Pro!');
@@ -526,6 +589,7 @@ async function startPasswordReset(){
 async function logoutUser(){
   if (!auth) {
     isLoggedIn = false; currentUser = null; currentUserRole = 'guest';
+    myWork = [];
     updateUserInterface();
     showAlert('Signed Out', 'You have been signed out (demo).');
     return;
@@ -556,19 +620,35 @@ if (auth){
         email: user.email || '',
         avatar: getInitials(user.displayName, user.email)
       };
+      startMyWorkListener();
     } else {
       isLoggedIn = false; currentUser = null; currentUserRole = 'guest';
+      stopMyWorkListener();
     }
+    myWork = loadMyWork();
     updateUserInterface();
   });
 }
+
+function startMyWorkListener(){
+  stopMyWorkListener();
+  if (!(db && auth?.currentUser)) return; // fall back to local
+  const uid = auth.currentUser.uid;
+  unsubscribeMyWork = db.collection('users').doc(uid).collection('work')
+    .orderBy('createdAt','desc')
+    .onSnapshot(qs=>{
+      myWork = qs.docs.map(d=> ({ id:d.id, ...d.data() }));
+      saveMyWork(); // keep local mirror
+      updateUserInterface();
+    }, err=> console.warn('work listener', err));
+}
+function stopMyWorkListener(){ try{ unsubscribeMyWork && unsubscribeMyWork(); }catch{} unsubscribeMyWork=null; }
 
 // ------------ City (after logo) ------------
 async function detectCityIntoHeader(){
   const pill = document.getElementById('locationPill');
   const cityEl = document.getElementById('locationCity');
   if (!pill || !cityEl) return;
-
   function setCity(text){ cityEl.textContent = text; pill.classList.remove('hidden'); }
 
   if (!navigator.geolocation){ setCity('Your city'); return; }
@@ -673,16 +753,439 @@ function updateUserInterface(){
     guestUserMenu?.classList.remove('hidden');
     loggedUserMenu?.classList.add('hidden');
   }
+
+  // Keep Pro portfolio tiles in sync
+  renderWorkPortfolio();
+  renderPopularServices();
+  renderServiceCategories();
+  renderProfessionals();
+  renderRecentProfessionals();
 }
 
-// ------------ Event Delegation (clicks) ------------
+// ------------ Work Upload UI ------------
+function resetWorkUploadUI(){
+  pendingUploads = { images: [], files: [] };
+  document.getElementById('workForm')?.reset();
+  renderAttachmentList();
+}
+function setupWorkUploadUI(){
+  const dz = document.getElementById('workDropZone');
+  const imgInput = document.getElementById('workImagesInput');
+  const fileInput = document.getElementById('workFilesInput');
+
+  imgInput?.addEventListener('change', (e)=> handleImageFiles(e.target.files));
+  fileInput?.addEventListener('change', (e)=> handleDocFiles(e.target.files));
+
+  if (dz){
+    dz.addEventListener('click', ()=> imgInput?.click());
+    dz.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', ()=> dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e)=>{
+      e.preventDefault(); dz.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files || []).filter(f=> f.type.startsWith('image/'));
+      handleImageFiles(files);
+    });
+  }
+}
+function handleImageFiles(files){
+  const maxImages = 5;
+  const maxSize = 2 * 1024 * 1024; // 2MB
+  const toAdd = [];
+  Array.from(files || []).forEach(f=>{
+    if (!f.type.startsWith('image/')) return;
+    if (f.size > maxSize) { showAlert('Image too large', `${f.name} exceeds 2MB`); return; }
+    if (pendingUploads.images.length + toAdd.length >= maxImages){ return; }
+    toAdd.push(f);
+  });
+  if (!toAdd.length) { renderAttachmentList(); return; }
+  let remaining = toAdd.length;
+  toAdd.forEach(f=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingUploads.images.push({ name:f.name, type:f.type, size:f.size, dataUrl: reader.result, file:f });
+      if (--remaining === 0) renderAttachmentList();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function handleDocFiles(files){
+  const maxFiles = 5;
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  const toAdd = [];
+  Array.from(files || []).forEach(f=>{
+    if (f.size > maxSize) { showAlert('File too large', `${f.name} exceeds 5MB`); return; }
+    if (pendingUploads.files.length + toAdd.length >= maxFiles){ return; }
+    toAdd.push(f);
+  });
+  if (!toAdd.length) { renderAttachmentList(); return; }
+  let remaining = toAdd.length;
+  toAdd.forEach(f=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingUploads.files.push({ name:f.name, type:f.type, size:f.size, dataUrl: reader.result, file:f });
+      if (--remaining === 0) renderAttachmentList();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function renderAttachmentList(){
+  const list = document.getElementById('workAttachmentList');
+  if (!list) return;
+  const imgTiles = pendingUploads.images.map((f,idx)=>`
+    <div class="relative group">
+      <img src="${f.dataUrl}" alt="${f.name}" class="w-full h-28 object-cover rounded-md border border-gray-200"/>
+      <button class="absolute top-1 right-1 bg-white/90 border border-gray-300 rounded-full w-8 h-8 hidden group-hover:flex items-center justify-center shadow"
+              title="Remove" data-action="remove-attachment" data-kind="image" data-index="${idx}">
+        <i class="fas fa-times text-gray-700 text-sm"></i>
+      </button>
+    </div>
+  `).join('');
+  const fileTiles = pendingUploads.files.map((f,idx)=>`
+    <div class="flex items-center p-2 border border-gray-200 rounded-md bg-white">
+      <i class="fas fa-paperclip mr-2 text-gray-600"></i>
+      <span class="text-xs truncate" title="${f.name}">${f.name}</span>
+      <button class="ml-auto text-gray-500 hover:text-gray-800" title="Remove"
+              data-action="remove-attachment" data-kind="file" data-index="${idx}">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+  list.innerHTML = imgTiles + fileTiles;
+}
+
+// ------------ Cloud Uploads (background) ------------
+async function uploadFilesToStorage(basePath, items){
+  if (!storage) return [];
+  const out = [];
+  for (const it of items){
+    try{
+      const fileObj = it.file || dataURLtoBlob(it.dataUrl) || new Blob([]);
+      const safe = `${Date.now()}_${cleanName(it.name || 'file')}`;
+      const ref = storage.ref().child(`${basePath}/${safe}`);
+      await ref.put(fileObj);
+      const url = await ref.getDownloadURL();
+      out.push({ name: it.name || safe, type: it.type, size: it.size, url, path: ref.fullPath });
+    }catch(e){ console.warn('upload error', e); }
+  }
+  return out;
+}
+async function saveWorkItemToCloud(tempLocalId, baseFields){
+  if (!(auth?.currentUser && db && storage)) return null;
+  const uid = auth.currentUser.uid;
+  const workId = db.collection('users').doc(uid).collection('work').doc().id;
+
+  const base = `work/${uid}/${workId}`;
+  const [uploadedImages, uploadedFiles] = await Promise.all([
+    uploadFilesToStorage(`${base}/images`, pendingUploads.images),
+    uploadFilesToStorage(`${base}/files`,  pendingUploads.files)
+  ]);
+
+  const doc = {
+    title: baseFields.title,
+    description: baseFields.description,
+    category: 'Project',
+    images: uploadedImages,
+    files: uploadedFiles,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    public: true
+  };
+  await db.collection('users').doc(uid).collection('work').doc(workId).set(doc);
+
+  const idx = myWork.findIndex(x => x.id === tempLocalId);
+  if (idx >= 0) {
+    myWork[idx] = { id: workId, ...doc };
+    saveMyWork();
+    renderWorkPortfolio();
+  }
+  return { id: workId, ...doc };
+}
+
+// ------------ Profile Modal ------------
+function openMyProfile(){
+  if (!isLoggedIn || (currentUserRole !== 'professional' && currentUserRole !== 'admin')) {
+    showAlert('Unavailable', 'Sign in as a professional to view your public profile.');
+    return;
+  }
+  const me = {
+    name: currentUser?.name || 'My Profile',
+    service: 'Professional',
+    rating: 4.9,
+    reviews: 120,
+    price: '$—',
+    image: null,
+    verified: true,
+    availability: 'Usually responds within 1 hour'
+  };
+  openProfileModal(me, myWork);
+}
+function openProfileById(id){
+  const pro = professionals.find(p => p.id === Number(id));
+  if (!pro) return;
+  const works = [
+    { title: 'Recent Job', description: 'Customer kitchen fix', images:[{ dataUrl: 'https://picsum.photos/400/300?random=11', name: 'job.jpg'}], files: [] },
+    { title: 'Install', description: 'Mounted TV and tidied cables', images:[{ dataUrl: 'https://picsum.photos/400/300?random=12', name: 'tv.jpg'}], files: [] },
+    { title: 'Repair', description: 'Leak fix with warranty', images:[{ dataUrl: 'https://picsum.photos/400/300?random=13', name: 'leak.jpg'}], files: [] }
+  ];
+  openProfileModal(pro, works);
+}
+function openProfileModal(pro, works){
+  const header = document.getElementById('profileModalHeader');
+  const meta = document.getElementById('profileMeta');
+  const grid = document.getElementById('profileWorkGrid');
+  if (!header || !meta || !grid) return;
+
+  const initials = getInitials(pro.name || '', '');
+
+  header.innerHTML = `
+    <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle">
+      ${pro.image ? `<img src="${pro.image}" alt="${pro.name}" class="w-20 h-20 rounded-full object-cover"/>` : initials}
+    </div>
+    <h2 class="text-2xl md:text-3xl font-bold text-text-primary">${pro.name || 'Professional'}</h2>
+    <p class="text-gray-600 mt-2">${pro.service || ''} ${pro.verified ? '<i class="fas fa-check-circle text-secondary ml-1" title="Verified"></i>' : ''}</p>
+  `;
+  meta.innerHTML = `
+    <div class="flex items-center justify-center gap-4">
+      <div><span class="text-yellow-500">★</span> <span class="font-semibold">${pro.rating || '4.9'}</span> <span class="text-gray-400 text-sm">(${pro.reviews || 0} reviews)</span></div>
+      <div class="hidden md:inline-block text-gray-400">•</div>
+      <div class="text-sm"><i class="fas fa-clock mr-1"></i>${pro.availability || 'Fast responder'}</div>
+    </div>
+  `;
+
+  const getSrc = (x)=> x?.url || x?.dataUrl || '';
+  const renderAttachmentThumbs = (work)=>{
+    const imgs = (work.images || []).map((f)=>`
+      <div class="rounded-md overflow-hidden border border-gray-200">
+        <img src="${getSrc(f)}" alt="${f.name}" class="w-full h-24 object-cover"/>
+      </div>
+    `).join('');
+    const files = (work.files || []).map((f)=>`
+      <a href="${f.url || f.dataUrl}" download="${f.name}" class="flex items-center px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-700 hover:bg-gray-50">
+        <i class="fas fa-paperclip mr-2"></i>${f.name}
+      </a>
+    `).join('');
+    if (!imgs && !files) return '';
+    return `<div class="grid grid-cols-3 gap-2 mt-2">${imgs}${files}</div>`;
+  };
+
+  grid.innerHTML = (works && works.length)
+    ? works.map((it, idx)=>`
+        <div class="card animate-scale-in" style="animation-delay:${idx*0.05}s">
+          <div class="mb-3">
+            ${it.images?.[0] ? `<img src="${getSrc(it.images[0])}" alt="${it.title}" class="w-full h-40 object-cover rounded-lg"/>` : `<div class="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400"><i class="fas fa-briefcase"></i></div>`}
+          </div>
+          <h4 class="font-bold text-gray-800">${it.title || 'Project'}</h4>
+          <p class="text-sm text-gray-600 mt-1">${it.description || ''}</p>
+          ${renderAttachmentThumbs(it)}
+        </div>
+      `).join('')
+    : `<div class="text-center text-gray-500">No portfolio items yet.</div>`;
+
+  openModal('profileModal');
+}
+
+// ------------ SETTINGS ------------
+function openSettings(){ closeModal('userMenuModal'); switchView('settings'); }
+function photoPreviewChange(){
+  const f = document.getElementById('setPhoto')?.files?.[0];
+  if (!f) return;
+  const r = new FileReader(); r.onload = ()=> document.getElementById('setPhotoPreview').src = r.result; r.readAsDataURL(f);
+}
+async function loadSettingsForm(){
+  const dn = document.getElementById('setDisplayName');
+  const em = document.getElementById('setEmail');
+  const la = document.getElementById('setLang');
+  const ci = document.getElementById('setCity');
+  const co = document.getElementById('setCountry');
+  const tf = document.getElementById('setTwoFA');
+  const ne = document.getElementById('setNotifyEmail');
+  const ns = document.getElementById('setNotifySMS');
+  const np = document.getElementById('setNotifyPush');
+  const pb = document.getElementById('setPublic');
+  const si = document.getElementById('setSearchIndex');
+  const bn = document.getElementById('setBillingNote');
+  const ca = document.getElementById('setConnected');
+  const img = document.getElementById('setPhotoPreview');
+
+  document.getElementById('setPhoto')?.removeEventListener('change', photoPreviewChange);
+  document.getElementById('setPhoto')?.addEventListener('change', photoPreviewChange);
+
+  if (auth?.currentUser && db){
+    const u = auth.currentUser;
+    dn.value = u.displayName || '';
+    em.value = u.email || '';
+    img.src = u.photoURL || '';
+    ca.value = (u.providerData || []).map(p=>p.providerId).join(', ') || 'password';
+    try{
+      const snap = await db.collection('users').doc(u.uid).get();
+      const d = snap.exists ? snap.data() : {};
+      la.value = d.lang || 'en';
+      ci.value = d.address?.city || '';
+      co.value = d.address?.country || '';
+      tf.checked = !!d.twoFactorEnabled;
+      ne.checked = !!d.notifyEmail;
+      ns.checked = !!d.notifySMS;
+      np.checked = !!d.notifyPush;
+      pb.checked = (d.publicProfile !== false);
+      si.checked = !!d.searchIndex;
+      bn.value = d.billingNote || '';
+    }catch(e){ console.warn(e); }
+  } else {
+    dn.value = currentUser?.name || '';
+    em.value = currentUser?.email || '';
+    la.value = currentLanguage || 'en';
+    ca.value = 'demo';
+  }
+
+  initSettingsSpy();
+}
+async function saveSettings(e){
+  e?.preventDefault?.();
+  const u = auth?.currentUser;
+
+  const dn = document.getElementById('setDisplayName').value.trim();
+  const la = document.getElementById('setLang').value;
+  const ci = document.getElementById('setCity').value.trim();
+  const co = document.getElementById('setCountry').value.trim();
+  const tf = document.getElementById('setTwoFA').checked;
+  const ne = document.getElementById('setNotifyEmail').checked;
+  const ns = document.getElementById('setNotifySMS').checked;
+  const np = document.getElementById('setNotifyPush').checked;
+  const pb = document.getElementById('setPublic').checked;
+  const si = document.getElementById('setSearchIndex').checked;
+  const bn = document.getElementById('setBillingNote').value.trim();
+  const photoFile = document.getElementById('setPhoto')?.files?.[0];
+
+  if (u && db){
+    let photoURL = u.photoURL || '';
+    try{
+      if (photoFile && storage){
+        const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `users/${u.uid}/profilePhoto_${Date.now()}.${ext}`;
+        const ref = storage.ref().child(path);
+        await ref.put(photoFile);
+        photoURL = await ref.getDownloadURL();
+        await u.updateProfile({ photoURL });
+      }
+      if (dn) await u.updateProfile({ displayName: dn });
+
+      const data = pruneUndefined({
+        displayName: dn || u.displayName || '',
+        photoURL,
+        lang: la,
+        twoFactorEnabled: tf,
+        notifyEmail: ne, notifySMS: ns, notifyPush: np,
+        publicProfile: pb, searchIndex: si, billingNote: bn,
+        address: pruneUndefined({ city: ci || undefined, country: co || undefined }),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await db.collection('users').doc(u.uid).set(data, { merge: true });
+
+      currentUser = { ...(currentUser||{}), name: dn || u.displayName || currentUser?.name, avatar: getInitials(dn || u.displayName, u.email) };
+      showAlert('Saved','Your settings have been updated.');
+      switchView('customer'); updateUserInterface();
+    }catch(err){
+      showAlert('Save failed', err.message || 'Could not save settings.');
+    }
+  } else {
+    currentLanguage = la;
+    currentUser = { ...(currentUser||{}), name: dn || currentUser?.name, avatar: getInitials(dn || currentUser?.name, currentUser?.email) };
+    showAlert('Saved (demo)','Settings saved locally.');
+    switchView('customer'); updateUserInterface();
+  }
+}
+function initSettingsSpy(){
+  const nav = document.querySelectorAll('#settingsNav a');
+  const sections = [...document.querySelectorAll('#settingsForm > section')];
+  function setActive(id){ nav.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`)); }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if (e.isIntersecting) setActive(e.target.id); });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => io.observe(s));
+}
+
+// ------------ Add Work (PRIORITY FIX) ------------
+function submitWorkForm(){
+  const form = document.getElementById('workForm');
+  // Use HTML5 validity for consistent UX
+  if (form && !form.reportValidity()) return;
+
+  const title = document.getElementById('workTitle')?.value?.trim();
+  const description = document.getElementById('workDesc')?.value?.trim();
+  if (!title || !description){ showAlert('Missing info', 'Please fill in title and description.'); return; }
+
+  const btn = document.getElementById('workSubmitBtn');
+  if (btn?.dataset.busy === '1') return;
+  if (btn){ btn.dataset.busy = '1'; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding...'; }
+
+  // 1) create local item immediately
+  const tempId = `local-${Date.now()}`;
+  const newItem = {
+    id: tempId,
+    title,
+    description,
+    category: 'Project',
+    images: [...pendingUploads.images],
+    files: [...pendingUploads.files],
+    createdAt: new Date().toISOString(),
+    public: true
+  };
+  myWork.unshift(newItem);
+  saveMyWork();
+  renderWorkPortfolio();
+
+  // 2) close modal + reset
+  closeModal('workUploadModal');
+  resetWorkUploadUI();
+  showAlert('Work Added!', 'Your project has been added to your portfolio.');
+
+  // 3) background sync to Firebase if available
+  (async ()=>{
+    try{
+      const cloud = await saveWorkItemToCloud(tempId, { title, description });
+      if (cloud) showAlert('Synced to Cloud', 'Your portfolio item is public.');
+    }catch(e){
+      console.warn('Cloud sync failed', e);
+      showAlert('Offline mode', 'Saved locally. Will sync when signed in.');
+    }finally{
+      if (btn){ btn.dataset.busy = '0'; btn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add to Portfolio'; }
+      switchView('professional');
+    }
+  })();
+}
+
+function wireForms(){
+  // Login/Signup
+  document.getElementById('loginForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); loginUser(); });
+  document.getElementById('signupForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); signupUser(); });
+
+  // Work form (double safety: submit + explicit button click)
+  const workForm = document.getElementById('workForm');
+  workForm?.addEventListener('submit', (e)=>{ e.preventDefault(); submitWorkForm(); });
+  document.getElementById('workSubmitBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); submitWorkForm(); });
+
+  document.getElementById('withdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); });
+  document.getElementById('adminWithdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); });
+
+  // Settings save
+  document.getElementById('settingsForm')?.addEventListener('submit', saveSettings);
+
+  // Safety net: delegate submit too
+  document.addEventListener('submit', (e)=>{
+    const id = e.target?.id;
+    if (!id) return;
+    if (id === 'workForm'){ e.preventDefault(); submitWorkForm(); }
+  }, true);
+}
+
+// ------------ Events ------------
 function handleClicks(e){
   const el = e.target.closest('[data-action]');
   if (!el) return;
 
   const action = el.getAttribute('data-action');
 
-  if (['switch-view','go-professional','open-modal','close-modal','swap-modal','navigate-service','search-from-input','search-from-mobile','execute-search','use-current-location','start-reset','logout','select-role','go-home'].includes(action)) {
+  if (['switch-view','go-professional','open-modal','close-modal','swap-modal','navigate-service','search-from-input','search-from-mobile','execute-search','use-current-location','start-reset','logout','select-role','go-home','remove-attachment','open-my-profile','view-pro-profile','open-settings','send-reset-email','delete-account','relogin'].includes(action)) {
     e.preventDefault();
   }
 
@@ -754,33 +1257,41 @@ function handleClicks(e){
       if (radio) radio.checked = true;
       break;
     }
+
+    case 'remove-attachment': {
+      const kind = el.getAttribute('data-kind'); const idx = Number(el.getAttribute('data-index'));
+      if (kind === 'image') pendingUploads.images.splice(idx,1);
+      if (kind === 'file')  pendingUploads.files.splice(idx,1);
+      renderAttachmentList();
+      break;
+    }
+
+    case 'open-my-profile':
+      openMyProfile(); break;
+
+    case 'view-pro-profile': {
+      const id = el.getAttribute('data-pro-id'); openProfileById(id); break;
+    }
+
+    case 'open-settings':
+      openSettings(); break;
+
+    case 'send-reset-email':
+      startPasswordReset(); break;
+
+    case 'delete-account':
+      if (!auth?.currentUser){ showAlert('Demo','No account to delete in demo mode.'); return; }
+      auth.currentUser.delete().then(()=> showAlert('Deleted','Account removed.')).catch(err=> showAlert('Delete failed', err.message || 'Re-login may be required.'));
+      break;
+
+    case 'relogin':
+      showAlert('Tip','If an operation requires recent login, log out and sign in again.'); break;
   }
 }
 
 // Close on overlay click only
 function handleOverlayClose(e){
   if (e.target.classList?.contains('modal-overlay')) closeAllModals();
-}
-
-// ------------ Form submits (robust) ------------
-function wireForms(){
-  // Direct wiring
-  document.getElementById('loginForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); loginUser(); });
-  document.getElementById('signupForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); signupUser(); });
-  document.getElementById('workForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('workUploadModal'); showAlert('Work Added!', 'Your project has been added to your portfolio.'); });
-  document.getElementById('withdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); });
-  document.getElementById('adminWithdrawForm')?.addEventListener('submit', (e)=>{ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); });
-
-  // Safety net: delegate submit too
-  document.addEventListener('submit', (e)=>{
-    const id = e.target?.id;
-    if (!id) return;
-    if (id === 'loginForm')   { e.preventDefault(); loginUser(); }
-    if (id === 'signupForm')  { e.preventDefault(); signupUser(); }
-    if (id === 'workForm')    { e.preventDefault(); closeModal('workUploadModal'); showAlert('Work Added!', 'Your project has been added to your portfolio.'); }
-    if (id === 'withdrawForm'){ e.preventDefault(); closeModal('withdrawModal'); showAlert('Withdrawal Initiated', 'Processing within 1–2 business days.'); }
-    if (id === 'adminWithdrawForm'){ e.preventDefault(); closeModal('adminWithdrawModal'); showAlert('Platform Earnings Withdrawn', 'Transferred to your business account.'); }
-  }, true);
 }
 
 // ------------ Init ------------
@@ -801,6 +1312,9 @@ function initializeApp(){
   msi?.addEventListener('keypress', e => { if (e.key === 'Enter' && msi.value.trim()) executeSearchFromMobile(); });
 
   wireForms();
+  setupWorkUploadUI();
+  myWork = loadMyWork();
+
   updateUserInterface();
   switchView('customer'); // first page can animate; others won't on switch
   detectCityIntoHeader();

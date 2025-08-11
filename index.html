@@ -84,7 +84,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
-  <!-- Font Awesome CSS (no JS kit, low flicker) -->
+  <!-- Font Awesome CSS -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preload"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -163,7 +163,6 @@
 
     .service-icon{width:48px;height:48px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center}
 
-    /* ---------- Smoother & faster micro-transitions ---------- */
     :root { --ease-smooth: cubic-bezier(.22,.61,.36,1); --dur-fast: .18s; --dur-med: .22s; }
     .btn-base, .card, .nav-item, .professional-card, .modal-overlay, .modal-content {
       transition-timing-function: var(--ease-smooth);
@@ -175,9 +174,16 @@
       animation-timing-function: var(--ease-smooth) !important;
     }
 
-    /* ---------- Disable animations for a view after navigation ---------- */
     .no-anim-view * { animation: none !important; }
 
+    .dropzone { border:2px dashed #D4D4D8; border-radius:14px; background:#fafafa; }
+    .dropzone.dragover { border-color:#6B46C1; background:#f5f0ff; }
+
+    /* Settings layout */
+    .settings-grid { display:grid; grid-template-columns: 260px 1fr; gap:1rem; }
+    @media (max-width: 1024px) { .settings-grid { grid-template-columns: 1fr; } }
+    .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.6rem .8rem; border-radius:.6rem; font-weight:600; color:#374151; }
+    .settings-nav a.active, .settings-nav a:hover { background:#f3f4f6; color:#111827; }
   </style>
 </head>
 <body>
@@ -296,9 +302,11 @@
       <div class="responsive-container text-center relative z-10">
         <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">Professional Dashboard</h1>
         <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8 animate-slide-up">Manage your business and grow your income</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto animate-slide-up">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto animate-slide-up">
           <button class="btn-base btn-accent" data-action="open-modal" data-modal="workUploadModal"><i class="fas fa-plus mr-2"></i>Add Work</button>
-          <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white"><i class="fas fa-user-edit mr-2"></i>Edit Profile</button>
+          <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white" data-action="open-my-profile">
+            <i class="fas fa-id-card mr-2"></i>View Public Profile
+          </button>
         </div>
       </div>
     </div>
@@ -348,7 +356,6 @@
       <div class="earnings-highlight mb-8 animate-slide-up">
         <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-          <!-- Increased contrast for labels -->
           <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-200 font-semibold tracking-wide">Available Balance</div></div>
           <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-200 font-semibold tracking-wide">This Month</div></div>
           <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-200 font-semibold tracking-wide">Total Jobs</div></div>
@@ -377,6 +384,151 @@
       <div class="card animate-slide-up">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Recent Professional Activity</h3>
         <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings View -->
+  <section id="settingsView" class="hidden min-h-screen pb-20 md:pb-8">
+    <div class="bg-white border-b">
+      <div class="responsive-container py-8">
+        <h2 class="text-3xl md:text-4xl font-black">Settings</h2>
+        <p class="text-gray-600">Manage your profile, security, billing, and more.</p>
+      </div>
+    </div>
+
+    <div class="responsive-container py-8 settings-grid">
+      <!-- Left Menu -->
+      <aside class="card sticky top-20 h-max settings-nav" id="settingsNav">
+        <nav class="space-y-1">
+          <a href="#sec-personal" class="active"><i class="fas fa-user"></i> Personal Info</a>
+          <a href="#sec-security"><i class="fas fa-shield-halved"></i> Security</a>
+          <a href="#sec-notifications"><i class="fas fa-bell"></i> Notifications</a>
+          <a href="#sec-privacy"><i class="fas fa-eye-slash"></i> Privacy</a>
+          <a href="#sec-billing"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+          <a href="#sec-payments"><i class="fas fa-credit-card"></i> Payments</a>
+          <a href="#sec-connections"><i class="fas fa-link"></i> Connected Apps</a>
+          <a href="#sec-danger" class="text-red-600"><i class="fas fa-triangle-exclamation"></i> Danger Zone</a>
+        </nav>
+      </aside>
+
+      <!-- Right Content -->
+      <div>
+        <form id="settingsForm" class="space-y-8">
+          <!-- Personal -->
+          <section id="sec-personal" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Personal Info</h3>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div>
+                <label class="text-sm font-semibold">Display Name</label>
+                <input id="setDisplayName" class="form-input" placeholder="Your name"/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold">Email</label>
+                <input id="setEmail" class="form-input" placeholder="Email" disabled/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold">Language</label>
+                <select id="setLang" class="form-input">
+                  <option value="en">English</option><option value="es">Español</option>
+                  <option value="fr">Français</option><option value="de">Deutsch</option>
+                  <option value="it">Italiano</option><option value="pt">Português</option>
+                  <option value="zh">中文</option><option value="ja">日本語</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-semibold">City</label>
+                <input id="setCity" class="form-input" placeholder="City"/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold">Country</label>
+                <input id="setCountry" class="form-input" placeholder="Country"/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold">Profile Photo</label>
+                <input id="setPhoto" type="file" accept="image/*" class="form-input"/>
+                <div class="mt-2 flex items-center gap-3">
+                  <img id="setPhotoPreview" class="w-14 h-14 rounded-full object-cover border" alt="">
+                  <span class="text-xs text-gray-500">JPG/PNG up to ~2MB</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Security -->
+          <section id="sec-security" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Security</h3>
+            <div class="grid md:grid-cols-3 gap-4">
+              <label class="flex items-center gap-2"><input id="setTwoFA" type="checkbox"> Enable 2-step verification</label>
+              <button type="button" class="btn-base btn-outline w-full" data-action="send-reset-email"><i class="fas fa-key mr-2"></i>Send password reset email</button>
+              <button type="button" class="btn-base btn-outline w-full" data-action="relogin"><i class="fas fa-unlock mr-2"></i>Re-login if required</button>
+            </div>
+          </section>
+
+          <!-- Notifications -->
+          <section id="sec-notifications" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Notifications</h3>
+            <div class="grid md:grid-cols-3 gap-4">
+              <label class="flex items-center gap-2"><input id="setNotifyEmail" type="checkbox"> Email notifications</label>
+              <label class="flex items-center gap-2"><input id="setNotifySMS" type="checkbox"> SMS notifications</label>
+              <label class="flex items-center gap-2"><input id="setNotifyPush" type="checkbox"> Push notifications</label>
+            </div>
+          </section>
+
+          <!-- Privacy -->
+          <section id="sec-privacy" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Privacy</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <label class="flex items-center gap-2"><input id="setPublic" type="checkbox"> Public profile (visible to everyone)</label>
+              <label class="flex items-center gap-2"><input id="setSearchIndex" type="checkbox"> Allow search indexing</label>
+            </div>
+          </section>
+
+          <!-- Billing -->
+          <section id="sec-billing" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Billing</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="text-sm font-semibold">Billing note</label>
+                <input id="setBillingNote" class="form-input" placeholder="Card handled by your PSP"/>
+              </div>
+              <div>
+                <label class="text-sm font-semibold">Connected Accounts</label>
+                <input id="setConnected" class="form-input" disabled/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Payments -->
+          <section id="sec-payments" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Payments</h3>
+            <p class="text-gray-600">Manage payout method and default currency (placeholder).</p>
+          </section>
+
+          <!-- Connections -->
+          <section id="sec-connections" class="card">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Connected Apps</h3>
+            <p class="text-gray-600">Google / Apple / Facebook login status (read-only here).</p>
+          </section>
+
+          <!-- Danger -->
+          <section id="sec-danger" class="card border border-red-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xl md:text-2xl font-bold text-red-600">Danger Zone</h3>
+                <p class="text-gray-600">Permanently delete your account and data.</p>
+              </div>
+              <button type="button" class="btn-base btn-danger" data-action="delete-account"><i class="fas fa-trash mr-2"></i>Delete Account</button>
+            </div>
+          </section>
+
+          <div class="flex justify-end gap-3">
+            <button type="button" class="btn-base btn-outline" data-action="switch-view" data-view="customer">Cancel</button>
+            <button type="submit" class="btn-base btn-primary"><i class="fas fa-save mr-2"></i>Save All Settings</button>
+          </div>
+        </form>
       </div>
     </div>
   </section>
@@ -503,7 +655,6 @@
 
         <div class="text-center mt-6">
           <p class="text-gray-600">Don't have an account?
-            <!-- IMPORTANT: prevent accidental form submit -->
             <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="loginModal" data-open="signupModal">Create account</button>
           </p>
         </div>
@@ -527,10 +678,9 @@
           <div class="text-center pt-4 border-top border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
-          <button class="btn-base btn-outline w-full"><i class="fas fa-user-circle mr-2"></i>My Profile</button>
+          <button class="btn-base btn-outline w-full" data-action="open-settings"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
           <button class="btn-base btn-outline w-full"><i class="fas fa-history mr-2"></i>Booking History</button>
           <button class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2"></i>Payment Methods</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-cog mr-2"></i>Settings & Privacy</button>
           <button class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2"></i>Help & Support</button>
           <div class="pt-4 border-t border-gray-200">
             <button class="btn-base btn-danger w-full" data-action="logout"><i class="fas fa-sign-out-alt mr-2"></i>Sign Out</button>
@@ -662,7 +812,6 @@
         <div class="text-center mt-6">
           <p class="text-gray-600">
             Already have an account?
-            <!-- IMPORTANT: prevent accidental form submit -->
             <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="signupModal" data-open="loginModal">Sign in</button>
           </p>
         </div>
@@ -670,26 +819,54 @@
     </div>
   </div>
 
-  <!-- Work Upload Modal -->
+  <!-- Work Upload Modal (ENHANCED) -->
   <div id="workUploadModal" class="modal-overlay hidden">
     <div class="modal-content">
       <button class="close-btn" data-action="close-modal" data-modal="workUploadModal"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-camera text-white text-2xl"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Add Work</h2>
-        <p class="text-gray-600 mt-2">Upload your latest project</p>
+        <p class="text-gray-600 mt-2">Upload photos or files to showcase on your profile</p>
       </div>
       <div class="modal-body">
         <form class="space-y-6" id="workForm">
           <div class="form-group">
-            <label class="form-label">Project Title</label>
-            <input type="text" class="form-input" placeholder="e.g., Kitchen Plumbing Repair" required/>
+            <label class="form-label" for="workTitle">Project Title</label>
+            <input id="workTitle" type="text" class="form-input" placeholder="e.g., Kitchen Plumbing Repair" required/>
           </div>
           <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
+            <label class="form-label" for="workDesc">Description</label>
+            <textarea id="workDesc" class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
           </div>
-          <button type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2"></i>Add to Portfolio</button>
+
+          <!-- Dropzone / Upload controls -->
+          <div class="space-y-3">
+            <label class="form-label">Photos</label>
+            <div id="workDropZone" class="dropzone p-4 flex items-center justify-center text-gray-600 cursor-pointer">
+              <div class="text-center">
+                <i class="fas fa-images text-xl"></i>
+                <div class="mt-1 text-sm">Drag & drop images here, or click to select</div>
+                <div class="text-xs text-gray-500">Max 5 images, up to 2MB each</div>
+              </div>
+            </div>
+            <input id="workImagesInput" class="hidden" type="file" accept="image/*" multiple>
+          </div>
+
+          <div class="space-y-3">
+            <label class="form-label">Attach Files (optional)</label>
+            <input id="workFilesInput" class="form-input" type="file" multiple
+                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.rtf,.zip,.rar,.heic,.webp,.png,.jpg,.jpeg">
+            <div class="text-xs text-gray-500">Up to 5 files, 5MB each</div>
+          </div>
+
+          <!-- Preview list -->
+          <div>
+            <label class="form-label">Attachments Preview</label>
+            <div id="workAttachmentList" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+
+          <!-- IMPORTANT: explicit id for robust click handler -->
+          <button id="workSubmitBtn" type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2"></i>Add to Portfolio</button>
         </form>
       </div>
     </div>
@@ -730,7 +907,6 @@
       </div>
       <div class="modal-body">
         <div class="earnings-highlight p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <!-- Increased contrast here too -->
           <div class="text-sm text-amber-200 mb-2">Available Earnings</div>
           <div class="text-3xl md:text-4xl font-black">$5,217.48</div>
         </div>
@@ -745,11 +921,27 @@
     </div>
   </div>
 
+  <!-- Profile Modal (customer view of a pro, or your own public profile) -->
+  <div id="profileModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" data-action="close-modal" data-modal="profileModal"><i class="fas fa-times"></i></button>
+      <div class="modal-header" id="profileModalHeader">
+        <!-- Filled by JS -->
+      </div>
+      <div class="modal-body">
+        <div id="profileMeta" class="text-center text-gray-600 mb-6"></div>
+        <h3 class="text-xl font-bold mb-4 text-text-primary text-center">Portfolio</h3>
+        <div id="profileWorkGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDKs (compat) -->
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
   <!-- Algolia client (before main.js) -->
   <script defer src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
