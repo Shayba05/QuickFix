@@ -1,18 +1,17 @@
-/* QuickFix Pro – App Logic (separate file)
- * IMPORTANT: Replace firebaseConfig with your real project keys from Firebase Console.
- * Firestore structure used:
- *   - users/{uid}            (profile & settings)
- *   - work/{workId}          (portfolio items; each has uid, title, desc, images[], files[], createdAt)
+/* QuickFix Pro – App Logic
+ * Firestore structure:
+ *   - users/{uid}
+ *   - work/{workId}  ({ uid,title,desc,images[],files[],createdAt })
  */
 
 (function () {
   // ---- Firebase init ----
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  // IMPORTANT: storageBucket must be *.appspot.com or uploads will hang
   const firebaseConfig = {
     apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
     authDomain: "quickfix-cee4a.firebaseapp.com",
     projectId: "quickfix-cee4a",
-    storageBucket: "quickfix-cee4a.firebasestorage.app",
+    storageBucket: "quickfix-cee4a.appspot.com",
     messagingSenderId: "1075514949479",
     appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
     measurementId: "G-XS4LDTFRSH"
@@ -24,7 +23,7 @@
   const storage = firebase.storage();
   try { firebase.analytics(); } catch (_) {}
 
-  // --- Firestore: network-friendly settings (fixes “client is offline” in many networks) ---
+  // Firestore network-friendly config
   try {
     if (db?.settings) {
       db.settings({
@@ -34,7 +33,7 @@
       });
     }
     if (db?.enablePersistence) {
-      db.enablePersistence({ synchronizeTabs: true }).catch(() => { /* ok if it fails (e.g., multiple tabs) */ });
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     }
   } catch (_) {}
 
@@ -44,6 +43,29 @@
   const show = (el) => el && el.classList.remove('hidden');
   const hide = (el) => el && el.classList.add('hidden');
   const pruneUndefined = (obj) => Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v !== undefined));
+
+  function setLoading(btn, isLoading, loadingLabel, defaultHTML) {
+    if (!btn) return;
+    if (isLoading) {
+      btn.dataset.prevHtml = defaultHTML ?? btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${loadingLabel || 'Working...'}`;
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = defaultHTML ?? btn.dataset.prevHtml ?? 'Done';
+    }
+  }
+
+  const toastEl = $('#toast');
+  function toast(msg, type = 'success', ms = 2200) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.className = '';
+    toastEl.id = 'toast';
+    toastEl.classList.add('show', type);
+    show(toastEl);
+    setTimeout(() => { toastEl.classList.remove('show'); hide(toastEl); }, ms);
+  }
 
   const views = {
     customer: $('#customerView'),
@@ -55,7 +77,6 @@
   function switchView(name) {
     Object.values(views).forEach(hide);
     show(views[name]);
-    // mobile nav active state
     $$('.mobile-nav .nav-item').forEach(i => i.classList.remove('active'));
     if (name === 'customer') $('#mobileCustomer')?.classList.add('active');
     if (name === 'admin') $('#mobileAdmin')?.classList.add('active');
@@ -98,7 +119,7 @@
     } catch (_) { show(pill); }
   })();
 
-  // ---- Populate homepage data (unchanged layout) ----
+  // ---- Populate homepage data ----
   const popular = [
     { name:'Plumbing', icon:'fa-faucet', color:'bg-blue-500' },
     { name:'Electrical', icon:'fa-bolt', color:'bg-yellow-500' },
@@ -153,7 +174,7 @@
   }
   renderPopular(); renderCategories(); renderFeaturedPros();
 
-  // ---- Global click actions (all your buttons) ----
+  // ---- Global click actions ----
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -177,7 +198,10 @@
     if (action === 'search-from-mobile') doSearch($('#mobileSearchInput')?.value);
     if (action === 'navigate-service') doSearch(btn.dataset.service);
 
-    if (action === 'start-reset') { closeModal('loginModal'); auth.currentUser ? null : openModal('loginModal'); } // noop placeholder
+    if (action === 'start-reset') {
+      const email = $('#login-email')?.value?.trim();
+      if (email) auth.sendPasswordResetEmail(email).then(()=>toast('Password reset email sent')).catch(err=>toast(err.message,'error'));
+    }
   });
 
   function doSearch(q = '') {
@@ -190,7 +214,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ---- Auth UI (email+password + Google) ----
+  // ---- Auth UI ----
   // Select role tiles
   $$('#signupModal .user-type-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -200,7 +224,7 @@
     });
   });
 
-  // Google button render (simple)
+  // Google buttons
   function renderGoogleBtn(containerId, label) {
     const c = document.getElementById(containerId);
     if (!c) return;
@@ -217,10 +241,11 @@
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
       const cred = await auth.signInWithPopup(provider);
-      // Ensure user doc exists (no pre-read)
       await ensureUserDoc(cred.user, { role: 'customer' });
+      setRoleUI('customer');
       closeModal('loginModal'); closeModal('signupModal');
-    } catch (err) { alert(err.message); }
+      toast('Signed in with Google');
+    } catch (err) { toast(err.message,'error'); }
   });
 
   // Email login
@@ -228,6 +253,8 @@
     e.preventDefault();
     const email = $('#login-email').value.trim();
     const pass = $('#login-password').value;
+    const btn = $('#loginForm button[type="submit"]');
+    setLoading(btn, true, 'Signing in…');
     try {
       await auth.setPersistence($('#remember-me').checked
         ? firebase.auth.Auth.Persistence.LOCAL
@@ -235,12 +262,16 @@
       await auth.signInWithEmailAndPassword(email, pass);
       $('#login-message').textContent = '';
       closeModal('loginModal');
+      toast('Welcome back!');
     } catch (err) {
       $('#login-message').textContent = err.message;
+      toast(err.message, 'error', 3500);
+    } finally {
+      setLoading(btn, false);
     }
   });
 
-  // Email signup
+  // Email signup (auto-close on success)
   $('#signupForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('#fullName').value.trim();
@@ -248,21 +279,32 @@
     const pass = $('#password').value;
     const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
     const language = $('#signupLanguage').value;
+    const btn = $('#signupSubmitBtn');
+
+    setLoading(btn, true, 'Creating account…');
+
     try {
       const { user } = await auth.createUserWithEmailAndPassword(email, pass);
       await user.updateProfile({ displayName: name });
       await ensureUserDoc(user, { role, language });
+
+      setRoleUI(role);
       closeModal('signupModal');
       openModal('userMenuModal');
-    } catch (err) { $('#signup-message').textContent = err.message; }
+      toast('Account created successfully!');
+    } catch (err) {
+      $('#signup-message').textContent = err.message;
+      toast(err.message, 'error', 4000);
+    } finally {
+      setLoading(btn, false, '', 'Create Account');
+    }
   });
 
-  // --- Create/update user doc without a pre-read (works offline too) ---
+  // Create/update user doc
   async function ensureUserDoc(user, extras = {}) {
     try {
       if (!db || !user?.uid) return;
       const ref = db.collection('users').doc(user.uid);
-
       const base = {
         uid: user.uid,
         email: user.email || '',
@@ -271,69 +313,84 @@
         provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password',
         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
       };
-
       const data = pruneUndefined({ ...base, ...extras });
-
-      await ref.set(
-        { createdAt: firebase.firestore.FieldValue.serverTimestamp(), ...data },
-        { merge: true }
-      );
+      await ref.set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), ...data }, { merge: true });
     } catch (err) {
       console.error('ensureUserDoc error:', err);
-      // Don’t block UX if offline; Firestore will sync later
     }
   }
 
-  // Auth state -> update menu/avatar + show Pro nav if role=professional
+  function setRoleUI(role) {
+    const isPro = role === 'professional';
+    const proBtn = $('#professionalBtn');
+    const proMob = $('#mobileProfessional');
+    if (isPro) { proBtn?.classList.remove('hidden'); proMob?.classList.remove('hidden'); }
+    else { proBtn?.classList.add('hidden'); proMob?.classList.add('hidden'); }
+    const user = auth.currentUser;
+    if (isPro && user) loadMyPortfolio(user.uid);
+  }
+
+  // Auth state
   auth.onAuthStateChanged(async (user) => {
     const avatar = $('#userAvatar');
     const avatarLg = $('#userAvatarLarge');
     const nameLg = $('#userNameLarge');
     const statusLg = $('#userStatusLarge');
+
     if (!user) {
       $('#setEmail') && ($('#setEmail').value = '');
       hide($('#loggedUserMenu')); show($('#guestUserMenu'));
       if (nameLg) nameLg.textContent = 'Guest User';
       if (statusLg) statusLg.textContent = 'Not signed in';
       avatar.innerHTML = '<i class="fas fa-user"></i>';
-      avatarLg.innerHTML = '<i class="fas fa-user"></i>';
+      if (avatarLg) avatarLg.innerHTML = '<i class="fas fa-user"></i>';
       return;
     }
 
-    // user exists
     show($('#loggedUserMenu')); hide($('#guestUserMenu'));
     const letter = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
     avatar.textContent = letter;
-    avatarLg.textContent = letter;
+    if (avatarLg) avatarLg.textContent = letter;
     if (nameLg) nameLg.textContent = user.displayName || user.email;
     if (statusLg) statusLg.textContent = user.email;
 
-    // fill settings header fields
     $('#setEmail') && ($('#setEmail').value = user.email || '');
     $('#setDisplayName') && ($('#setDisplayName').value = user.displayName || '');
+    if (user.photoURL) $('#setPhotoPreview').src = user.photoURL;
 
-    // show professional nav if their role is professional
-    const userDoc = await db.collection('users').doc(user.uid).get().catch(()=>null);
-    const role = userDoc?.data()?.role || 'customer';
-    if (role === 'professional') {
-      $('#professionalBtn')?.classList.remove('hidden');
-      $('#mobileProfessional')?.classList.remove('hidden');
-      // Load their portfolio list
-      loadMyPortfolio(user.uid);
-    } else {
-      $('#professionalBtn')?.classList.add('hidden');
-      $('#mobileProfessional')?.classList.add('hidden');
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      const role = doc?.data()?.role || 'customer';
+      // preload settings switches
+      const d = doc?.data() || {};
+      if ($('#setLang')) $('#setLang').value = d.language || 'en';
+      if ($('#setCity')) $('#setCity').value = d.city || '';
+      if ($('#setCountry')) $('#setCountry').value = d.country || '';
+      if ($('#setTwoFA')) $('#setTwoFA').checked = !!d.twoFA;
+      if ($('#setNotifyEmail')) $('#setNotifyEmail').checked = !!d.notifyEmail;
+      if ($('#setNotifySMS')) $('#setNotifySMS').checked = !!d.notifySMS;
+      if ($('#setNotifyPush')) $('#setNotifyPush').checked = !!d.notifyPush;
+      if ($('#setPublic')) $('#setPublic').checked = !!d.isPublic;
+      if ($('#setSearchIndex')) $('#setSearchIndex').checked = !!d.searchIndex;
+      if ($('#setBillingNote')) $('#setBillingNote').value = d.billingNote || '';
+
+      setRoleUI(role);
+    } catch {
+      setRoleUI('customer');
     }
   });
 
-  // ---- Work Upload (Add to Portfolio) ----
+  // ---- Work Upload (with progress) ----
   const dz = $('#workDropZone');
   const imgInput = $('#workImagesInput');
   const fileInput = $('#workFilesInput');
   const previewWrap = $('#workAttachmentList');
+  const progressWrap = $('#workProgress');
+  const progressBar = $('#workProgressBar');
+  const progressText = $('#workProgressText');
 
-  let selectedImages = []; // File[]
-  let selectedFiles = [];  // File[]
+  let selectedImages = [];
+  let selectedFiles = [];
 
   function renderPreviews() {
     if (!previewWrap) return;
@@ -367,7 +424,37 @@
     renderPreviews();
   });
 
-  // SUBMIT = the reliable way to catch the "Add to Portfolio" button
+  function updateProgress(pct, text) {
+    if (!progressWrap) return;
+    show(progressWrap);
+    progressBar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    progressText.textContent = text || `${Math.round(pct)}%`;
+  }
+  function hideProgress() {
+    if (!progressWrap) return;
+    progressBar.style.width = '0%';
+    progressText.textContent = 'Preparing…';
+    hide(progressWrap);
+  }
+
+  function uploadWithProgress(ref, file, onUpdate) {
+    return new Promise((resolve, reject) => {
+      const task = ref.put(file);
+      let last = 0;
+      task.on('state_changed',
+        (snap) => {
+          if (onUpdate) {
+            const inc = snap.bytesTransferred - last;
+            last = snap.bytesTransferred;
+            onUpdate(inc, snap.totalBytes);
+          }
+        },
+        (err) => reject(err),
+        async () => resolve(await task.snapshot.ref.getDownloadURL())
+      );
+    });
+  }
+
   $('#workForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -375,59 +462,67 @@
 
     const title = $('#workTitle').value.trim();
     const desc = $('#workDesc').value.trim();
-    if (!title || !desc) return alert('Please enter a title and description.');
+    if (!title || !desc) return toast('Please enter a title and description.', 'error');
 
-    const submitBtn = $('#workSubmitBtn');
-    const orig = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
+    const btn = $('#workSubmitBtn');
+    setLoading(btn, true, 'Uploading…');
 
     try {
-      // Create doc first to get an ID
       const docRef = await db.collection('work').add({
-        uid: user.uid,
-        title,
-        desc,
-        images: [],
-        files: [],
+        uid: user.uid, title, desc,
+        images: [], files: [],
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Upload images
-      const imageURLs = [];
-      for (let i = 0; i < selectedImages.length; i++) {
-        const f = selectedImages[i];
-        const path = `work/${user.uid}/${docRef.id}/image_${i}_${Date.now()}.${(f.name.split('.').pop() || 'jpg')}`;
-        const snap = await storage.ref(path).put(f);
-        const url = await snap.ref.getDownloadURL();
-        imageURLs.push(url);
-      }
+      const allFiles = [...selectedImages, ...selectedFiles];
+      const totalBytes = allFiles.reduce((s,f)=>s+(f.size||0),0) || 1;
+      let sent = 0;
+      updateProgress(2, 'Starting…');
 
-      // Upload other files
+      const imageURLs = [];
       const fileLinks = [];
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const f = selectedFiles[i];
+
+      const uploads = [];
+
+      selectedImages.forEach((f, i) => {
+        const path = `work/${user.uid}/${docRef.id}/image_${i}_${Date.now()}.${(f.name.split('.').pop() || 'jpg')}`;
+        const ref = storage.ref(path);
+        uploads.push(
+          uploadWithProgress(ref, f, (inc) => {
+            sent += inc;
+            updateProgress((sent/totalBytes)*100, `Uploading images… ${Math.round((sent/totalBytes)*100)}%`);
+          }).then(url => imageURLs.push(url))
+        );
+      });
+
+      selectedFiles.forEach((f, i) => {
         const path = `work/${user.uid}/${docRef.id}/file_${i}_${Date.now()}_${f.name}`;
-        const snap = await storage.ref(path).put(f);
-        const url = await snap.ref.getDownloadURL();
-        fileLinks.push({ name: f.name, url });
-      }
+        const ref = storage.ref(path);
+        uploads.push(
+          uploadWithProgress(ref, f, (inc) => {
+            sent += inc;
+            updateProgress((sent/totalBytes)*100, `Uploading files… ${Math.round((sent/totalBytes)*100)}%`);
+          }).then(url => fileLinks.push({ name: f.name, url }))
+        );
+      });
+
+      await Promise.all(uploads);
+      updateProgress(100, 'Finalizing…');
 
       await docRef.update({ images: imageURLs, files: fileLinks });
 
-      // Reset form and previews
       $('#workForm').reset();
       selectedImages = []; selectedFiles = []; renderPreviews();
+      hideProgress();
 
-      // Add to UI immediately
       addWorkCardToGrid({ id: docRef.id, title, desc, images: imageURLs, files: fileLinks });
 
       closeModal('workUploadModal');
+      toast('Added to your portfolio!');
     } catch (err) {
-      alert(err.message);
+      toast(err.message, 'error', 4000);
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = orig;
+      setLoading(btn, false);
     }
   });
 
@@ -464,11 +559,14 @@
     grid.innerHTML = (snap.docs || []).map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
   }
 
-  // ---- Settings save ----
+  // ---- Settings save (spinner + toast, stays on page) ----
   $('#settingsForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
     if (!user) { openModal('loginModal'); return; }
+
+    const btn = $('#settingsSaveBtn');
+    setLoading(btn, true, 'Saving…');
 
     const displayName = $('#setDisplayName').value.trim();
     const language = $('#setLang').value;
@@ -482,9 +580,9 @@
     const searchIndex = $('#setSearchIndex').checked;
     const billingNote = $('#setBillingNote').value.trim();
 
-    // upload photo if chosen
     const photoFile = $('#setPhoto').files?.[0];
     let photoURL = auth.currentUser.photoURL || '';
+
     try {
       if (photoFile) {
         const snap = await storage.ref(`users/${user.uid}/avatar_${Date.now()}.${(photoFile.name.split('.').pop()||'jpg')}`).put(photoFile);
@@ -495,6 +593,7 @@
       if (displayName && displayName !== user.displayName) {
         await user.updateProfile({ displayName });
       }
+
       await db.collection('users').doc(user.uid).set(pruneUndefined({
         displayName, language, city, country,
         twoFA, notifyEmail, notifySMS, notifyPush,
@@ -502,32 +601,51 @@
         photoURL
       }), { merge:true });
 
-      alert('Settings saved');
-      switchView('customer');
+      toast('Settings saved');
     } catch (err) {
-      alert(err.message);
+      toast(err.message, 'error');
+    } finally {
+      setLoading(btn, false, '', '<i class="fas fa-save mr-2"></i>Save All Settings');
     }
   });
 
-  // Show selected photo preview
+  // Photo preview
   $('#setPhoto')?.addEventListener('change', (e) => {
     const f = e.target.files?.[0];
     if (f) $('#setPhotoPreview').src = URL.createObjectURL(f);
   });
 
-  // ---- Withdraw buttons (placeholder) ----
-  $('#withdrawForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    alert('Withdraw submitted (demo). Connect your PSP for real payouts.');
-    closeModal('withdrawModal');
+  // Extra Settings actions
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="send-reset-email"]');
+    if (btn) {
+      const user = auth.currentUser;
+      if (!user?.email) return toast('Sign in first', 'error');
+      auth.sendPasswordResetEmail(user.email)
+        .then(()=>toast('Password reset email sent'))
+        .catch(err=>toast(err.message,'error'));
+    }
   });
-  $('#adminWithdrawForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    alert('Admin withdraw submitted (demo).');
-    closeModal('adminWithdrawModal');
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="relogin"]');
+    if (btn) {
+      auth.signOut().then(()=>{ toast('Please sign in again'); openModal('loginModal'); });
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="delete-account"]');
+    if (btn) {
+      const user = auth.currentUser;
+      if (!user) return openModal('loginModal');
+      if (!confirm('Delete your account and data? This action cannot be undone.')) return;
+      db.collection('users').doc(user.uid).delete().catch(()=>{});
+      user.delete()
+        .then(()=>{ toast('Account deleted'); switchView('customer'); })
+        .catch(err=>toast(err.message,'error'));
+    }
   });
 
-  // ---- Profile modal (from featured pros or own profile) ----
+  // ---- Profile modal ----
   function showMyProfile() {
     const user = auth.currentUser;
     const header = $('#profileModalHeader');
@@ -544,7 +662,6 @@
     meta.textContent = 'Your public portfolio';
 
     openModal('profileModal');
-    // load items
     db.collection('work').where('uid','==',user.uid).orderBy('createdAt','desc').limit(24).get()
       .then(snap => {
         grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
@@ -566,16 +683,39 @@
       </div>
       <h2 class="text-2xl md:text-3xl font-bold mt-2">${p.name}</h2>`;
     meta.textContent = `${p.title} • ${p.rating}★ • ${p.jobs} jobs`;
-    grid.innerHTML = ''; // example only
+    grid.innerHTML = '';
     openModal('profileModal');
   });
 
-  // Settings left menu active highlight on click
+  // ---- Settings left menu: clickable + smooth + auto-highlight ----
+  const settingsSections = ['sec-personal','sec-security','sec-notifications','sec-privacy','sec-billing','sec-payments','sec-connections','sec-danger'];
   $('#settingsNav')?.addEventListener('click', (e) => {
     const a = e.target.closest('a'); if (!a) return;
+    const href = a.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    history.replaceState(null,'',href); // keep URL hash in sync
+    target.scrollIntoView({ behavior:'smooth', block:'start' });
     $$('#settingsNav a').forEach(x => x.classList.remove('active'));
     a.classList.add('active');
   });
+
+  if (IntersectionObserver) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          $$('#settingsNav a').forEach(x => x.classList.toggle('active', x.getAttribute('href') === `#${id}`));
+        }
+      });
+    }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0.1 });
+    settingsSections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
 
   // Current location -> city (signup)
   document.querySelector('[data-action="use-current-location"]')?.addEventListener('click', () => {
@@ -584,27 +724,5 @@
     } catch (_) {}
   });
 
-  // Done
   console.log('QuickFix Pro ready.');
 })();
-
-/*
-Firestore Rules (apply in Firebase Console > Firestore > Rules)
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} { allow read: if true; }
-    match /users/{uid} {
-      allow create: if request.auth != null && request.auth.uid == uid;
-      allow read: if true;
-      allow update, delete: if request.auth != null && request.auth.uid == uid;
-    }
-    match /work/{workId} {
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
-      allow read: if true;
-    }
-  }
-}
-*/

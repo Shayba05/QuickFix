@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickFix Pro - Professional Service Platform</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png"> <!-- optional fallback -->
   <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#6B46C1">
@@ -102,6 +101,7 @@
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%); color:#1F2937; font-size:1.125rem; line-height:1.7; }
 
     .responsive-container{width:100%;margin:0 auto;padding:0 1rem}
@@ -189,6 +189,12 @@
     @media (max-width: 1024px) { .settings-grid { grid-template-columns: 1fr; } }
     .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.6rem .8rem; border-radius:.6rem; font-weight:600; color:#374151; }
     .settings-nav a.active, .settings-nav a:hover { background:#f3f4f6; color:#111827; }
+
+    /* Toast */
+    #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:.8rem 1rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:10000}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+    #toast.success{background:#059669}
+    #toast.error{background:#DC2626}
   </style>
 </head>
 <body>
@@ -269,7 +275,7 @@
             <div class="stat-label">Verified Professionals</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.1s">
-            <div class="stat-value text-2xl md:text-3xl">85K+</</div>
+            <div class="stat-value text-2xl md:text-3xl">85K+</div>
             <div class="stat-label">Jobs Completed</div>
           </div>
           <div class="card animate-scale-in" style="animation-delay:.2s">
@@ -531,7 +537,7 @@
 
           <div class="flex justify-end gap-3">
             <button type="button" class="btn-base btn-outline" data-action="switch-view" data-view="customer">Cancel</button>
-            <button type="submit" class="btn-base btn-primary"><i class="fas fa-save mr-2"></i>Save All Settings</button>
+            <button type="submit" class="btn-base btn-primary" id="settingsSaveBtn"><i class="fas fa-save mr-2"></i>Save All Settings</button>
           </div>
         </form>
       </div>
@@ -623,9 +629,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- Modals (login, user menu, search, signup, work upload, withdraw, admin withdraw, profile) -->
-  <!-- (unchanged – keeping your exact structure/IDs) -->
 
   <!-- Login Modal -->
   <div id="loginModal" class="modal-overlay hidden">
@@ -869,6 +872,14 @@
             <div id="workAttachmentList" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
           </div>
 
+          <!-- Upload progress -->
+          <div id="workProgress" class="hidden">
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div id="workProgressBar" class="h-3 rounded-full" style="width:0%; background:linear-gradient(135deg,#6B46C1 0%,#8B5CF6 100%)"></div>
+            </div>
+            <div id="workProgressText" class="mt-2 text-sm text-gray-600 text-center">Preparing…</div>
+          </div>
+
           <button id="workSubmitBtn" type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2"></i>Add to Portfolio</button>
         </form>
       </div>
@@ -936,6 +947,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden"></div>
 
   <!-- Firebase SDKs (compat) -->
   <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
