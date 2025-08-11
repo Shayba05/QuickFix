@@ -7,15 +7,16 @@
 
 (function () {
   // ---- Firebase init ----
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    // measurementId: "G-XXXXXXX" // optional
-  };
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
+  authDomain: "quickfix-cee4a.firebaseapp.com",
+  projectId: "quickfix-cee4a",
+  storageBucket: "quickfix-cee4a.firebasestorage.app",
+  messagingSenderId: "1075514949479",
+  appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
+  measurementId: "G-XS4LDTFRSH"
+};
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
