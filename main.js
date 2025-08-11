@@ -7,16 +7,16 @@
 
 (function () {
   // ---- Firebase init ----
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
-  authDomain: "quickfix-cee4a.firebaseapp.com",
-  projectId: "quickfix-cee4a",
-  storageBucket: "quickfix-cee4a.firebasestorage.app",
-  messagingSenderId: "1075514949479",
-  appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
-  measurementId: "G-XS4LDTFRSH"
-};
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
+    authDomain: "quickfix-cee4a.firebaseapp.com",
+    projectId: "quickfix-cee4a",
+    storageBucket: "quickfix-cee4a.firebasestorage.app",
+    messagingSenderId: "1075514949479",
+    appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
+    measurementId: "G-XS4LDTFRSH"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -24,11 +24,26 @@ const firebaseConfig = {
   const storage = firebase.storage();
   try { firebase.analytics(); } catch (_) {}
 
+  // --- Firestore: network-friendly settings (fixes “client is offline” in many networks) ---
+  try {
+    if (db?.settings) {
+      db.settings({
+        ignoreUndefinedProperties: true,
+        experimentalForceLongPolling: true,
+        useFetchStreams: false
+      });
+    }
+    if (db?.enablePersistence) {
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => { /* ok if it fails (e.g., multiple tabs) */ });
+    }
+  } catch (_) {}
+
   // ---- Helpers ----
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
   const show = (el) => el && el.classList.remove('hidden');
   const hide = (el) => el && el.classList.add('hidden');
+  const pruneUndefined = (obj) => Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v !== undefined));
 
   const views = {
     customer: $('#customerView'),
@@ -202,7 +217,7 @@ const firebaseConfig = {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
       const cred = await auth.signInWithPopup(provider);
-      // Ensure user doc exists
+      // Ensure user doc exists (no pre-read)
       await ensureUserDoc(cred.user, { role: 'customer' });
       closeModal('loginModal'); closeModal('signupModal');
     } catch (err) { alert(err.message); }
@@ -242,17 +257,30 @@ const firebaseConfig = {
     } catch (err) { $('#signup-message').textContent = err.message; }
   });
 
-  async function ensureUserDoc(user, extras={}) {
-    const ref = db.collection('users').doc(user.uid);
-    const snap = await ref.get();
-    if (!snap.exists) {
-      await ref.set({
+  // --- Create/update user doc without a pre-read (works offline too) ---
+  async function ensureUserDoc(user, extras = {}) {
+    try {
+      if (!db || !user?.uid) return;
+      const ref = db.collection('users').doc(user.uid);
+
+      const base = {
         uid: user.uid,
-        email: user.email,
+        email: user.email || '',
         displayName: user.displayName || 'User',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        ...extras
-      });
+        photoURL: user.photoURL || '',
+        provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password',
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      const data = pruneUndefined({ ...base, ...extras });
+
+      await ref.set(
+        { createdAt: firebase.firestore.FieldValue.serverTimestamp(), ...data },
+        { merge: true }
+      );
+    } catch (err) {
+      console.error('ensureUserDoc error:', err);
+      // Don’t block UX if offline; Firestore will sync later
     }
   }
 
@@ -309,13 +337,12 @@ const firebaseConfig = {
 
   function renderPreviews() {
     if (!previewWrap) return;
-    const URLs = [];
-    const imgs = selectedImages.map((f, i) => `
+    const imgs = selectedImages.map((f) => `
       <div class="card p-2 text-center">
         <img class="w-full h-28 object-cover rounded-md" alt="" src="${URL.createObjectURL(f)}"/>
         <div class="mt-2 text-xs truncate">${f.name}</div>
       </div>`);
-    const files = selectedFiles.map((f, i) => `
+    const files = selectedFiles.map((f) => `
       <div class="card p-2 text-center">
         <i class="fas fa-file text-2xl text-gray-500"></i>
         <div class="mt-2 text-xs truncate">${f.name}</div>
@@ -432,8 +459,9 @@ const firebaseConfig = {
       .where('uid','==',uid)
       .orderBy('createdAt','desc')
       .limit(24)
-      .get();
-    grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
+      .get()
+      .catch(() => ({ docs: [] }));
+    grid.innerHTML = (snap.docs || []).map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
   }
 
   // ---- Settings save ----
@@ -456,7 +484,7 @@ const firebaseConfig = {
 
     // upload photo if chosen
     const photoFile = $('#setPhoto').files?.[0];
-    let photoURL = user.photoURL || '';
+    let photoURL = auth.currentUser.photoURL || '';
     try {
       if (photoFile) {
         const snap = await storage.ref(`users/${user.uid}/avatar_${Date.now()}.${(photoFile.name.split('.').pop()||'jpg')}`).put(photoFile);
@@ -467,12 +495,12 @@ const firebaseConfig = {
       if (displayName && displayName !== user.displayName) {
         await user.updateProfile({ displayName });
       }
-      await db.collection('users').doc(user.uid).set({
+      await db.collection('users').doc(user.uid).set(pruneUndefined({
         displayName, language, city, country,
         twoFA, notifyEmail, notifySMS, notifyPush,
         isPublic, searchIndex, billingNote,
         photoURL
-      }, { merge:true });
+      }), { merge:true });
 
       alert('Settings saved');
       switchView('customer');
@@ -520,7 +548,8 @@ const firebaseConfig = {
     db.collection('work').where('uid','==',user.uid).orderBy('createdAt','desc').limit(24).get()
       .then(snap => {
         grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
-      });
+      })
+      .catch(() => { grid.innerHTML = ''; });
   }
 
   document.addEventListener('click', (e) => {
