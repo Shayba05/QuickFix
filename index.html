@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickFix Pro - Professional Service Platform</title>
 
-  <!-- If you don't have these files locally yet, remove these lines or add the files to the project root -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="alternate icon" type="image/png" sizes="32x32" href="favicon-32.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <meta name="theme-color" content="#6B46C1">
-
   <!-- Tailwind (CDN for development) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -45,40 +39,6 @@
             'gray-700': '#3F3F46',
             'gray-800': '#27272A',
             'gray-900': '#18181B'
-          },
-          fontSize: {
-            xs: ['0.875rem', { lineHeight: '1.5' }],
-            sm: ['1rem', { lineHeight: '1.6' }],
-            base: ['1.125rem', { lineHeight: '1.7' }],
-            lg: ['1.25rem', { lineHeight: '1.7' }],
-            xl: ['1.5rem', { lineHeight: '1.7' }],
-            '2xl': ['1.875rem', { lineHeight: '1.6' }],
-            '3xl': ['2.25rem', { lineHeight: '1.5' }],
-            '4xl': ['2.75rem', { lineHeight: '1.4' }],
-            '5xl': ['3.25rem', { lineHeight: '1.3' }],
-            '6xl': ['3.75rem', { lineHeight: '1.2' }]
-          },
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-          screens: { xs:'475px', sm:'640px', md:'768px', lg:'1024px', xl:'1280px', '2xl':'1536px' },
-          animation: {
-            'fade-in':'fadeIn 0.5s ease-out',
-            'slide-up':'slideUp 0.4s ease-out',
-            'slide-in':'slideIn 0.3s ease-out',
-            'scale-in':'scaleIn 0.2s ease-out',
-            'bounce-gentle':'bounceGentle 0.6s ease-out',
-            shimmer:'shimmer 2s linear infinite',
-            float:'float 3s ease-in-out infinite',
-            'pulse-gentle':'pulseGentle 2s cubic-bezier(0.4,0,0.6,1) infinite'
-          },
-          keyframes: {
-            fadeIn:{'0%':{opacity:0},'100%':{opacity:1}},
-            slideUp:{'0%':{opacity:0,transform:'translateY(10px)'},'100%':{opacity:1,transform:'translateY(0)'}},
-            slideIn:{'0%':{opacity:0,transform:'translateX(-10px)'},'100%':{opacity:1,transform:'translateX(0)'}},
-            scaleIn:{'0%':{opacity:0,transform:'scale(0.9)'},'100%':{opacity:1,transform:'scale(1)'}},
-            bounceGentle:{'0%,20%,53%,80%,100%':{transform:'translate3d(0,0,0)'},'40%,43%':{transform:'translate3d(0,-3px,0)'},'70%':{transform:'translate3d(0,-2px,0)'},'90%':{transform:'translate3d(0,-1px,0)'}},
-            shimmer:{'0%':{transform:'translateX(-100%)'},'100%':{transform:'translateX(100%)'}},
-            float:{'0%,100%':{transform:'translateY(0px)'},'50%':{transform:'translateY(-3px)'}},
-            pulseGentle:{'0%,100%':{opacity:1},'50%':{opacity:.8}}
           }
         }
       }
@@ -91,15 +51,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 
   <!-- Font Awesome CSS -->
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preload"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        as="style"
-        onload="this.onload=null;this.rel='stylesheet'">
-  <noscript>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  </noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -157,6 +109,9 @@
     @media(min-width:768px){.form-input{padding:1.25rem;font-size:1.125rem}}
     .form-input:focus{outline:none;border-color:#6B46C1;box-shadow:0 0 0 4px rgba(107,70,193,.1);transform:translateY(-2px)}
 
+    .form-label{display:block;font-weight:600;margin-bottom:.5rem;color:#374151;font-size:.95rem}
+    .form-group{margin-bottom:1.5rem}
+
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1)}
     .modal-overlay.show{opacity:1}
     .modal-content{background:#fff;border-radius:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.9) translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1)}
@@ -171,26 +126,420 @@
 
     .service-icon{width:48px;height:48px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center}
 
-    :root { --ease-smooth: cubic-bezier(.22,.61,.36,1); --dur-fast: .18s; --dur-med: .22s; }
-    .btn-base, .card, .nav-item, .professional-card, .modal-overlay, .modal-content {
-      transition-timing-function: var(--ease-smooth);
-      transition-duration: var(--dur-med);
-    }
-    .btn-base:hover { transition-duration: var(--dur-fast); }
-    .animate-fade-in, .animate-slide-up, .animate-slide-in, .animate-scale-in {
-      animation-duration: var(--dur-med) !important;
-      animation-timing-function: var(--ease-smooth) !important;
-    }
-
-    .no-anim-view * { animation: none !important; }
-
-    .dropzone { border:2px dashed #D4D4D8; border-radius:14px; background:#fafafa; }
-    .dropzone.dragover { border-color:#6B46C1; background:#f5f0ff; }
-
-    .settings-grid { display:grid; grid-template-columns: 260px 1fr; gap:1rem; }
+    .settings-grid { display:grid; grid-template-columns: 260px 1fr; gap:2rem; }
     @media (max-width: 1024px) { .settings-grid { grid-template-columns: 1fr; } }
-    .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.6rem .8rem; border-radius:.6rem; font-weight:600; color:#374151; }
+    .settings-nav { position: sticky; top: 6rem; height: fit-content; }
+    .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.8rem 1rem; border-radius:.8rem; font-weight:600; color:#374151; text-decoration: none; transition: all .2s ease; }
     .settings-nav a.active, .settings-nav a:hover { background:#f3f4f6; color:#111827; }
+
+    .stat-value{font-weight:800;color:#6B46C1;margin-bottom:.5rem}
+    .stat-label{font-weight:500;color:#6B7280;font-size:.875rem}
+
+    .earnings-highlight{
+      background:linear-gradient(135deg,#F59E0B 0%,#FBBF24 100%);
+      color:#fff;
+      border-radius:16px;
+      padding:2rem;
+      text-align:center;
+    }
+
+    .progress-fill{transition:width .3s ease}
+
+    .info-card {
+      background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .info-card:hover::before {
+      left: 100%;
+    }
+
+    .info-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+      border-color: #6B46C1;
+    }
+
+    .info-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    /* Enhanced Settings Styles */
+    .editable-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #f8fafc;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .editable-field:hover {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      transform: translateY(-1px);
+    }
+
+    .editable-field.editing {
+      background: #fff;
+      border-color: #6B46C1;
+      box-shadow: 0 0 0 4px rgba(107, 70, 193, 0.1);
+    }
+
+    .field-value {
+      flex: 1;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .field-value.empty {
+      color: #9CA3AF;
+      font-style: italic;
+    }
+
+    .field-actions {
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .editable-field:hover .field-actions {
+      opacity: 1;
+    }
+
+    .editable-field.editing .field-actions {
+      opacity: 1;
+    }
+
+    .edit-btn {
+      padding: 0.25rem 0.5rem;
+      background: #6B46C1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      background: #553C9A;
+      transform: scale(1.05);
+    }
+
+    .save-btn {
+      background: #059669;
+    }
+
+    .save-btn:hover {
+      background: #047857;
+    }
+
+    .cancel-btn {
+      background: #6B7280;
+    }
+
+    .cancel-btn:hover {
+      background: #4B5563;
+    }
+
+    .setting-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .setting-item:hover {
+      border-color: #6B46C1;
+      box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+    }
+
+    .setting-toggle {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .setting-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #6B46C1;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+
+    .edit-form {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .edit-form.active {
+      display: block;
+    }
+
+    .photo-upload {
+      text-align: center;
+      padding: 2rem;
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .photo-upload:hover {
+      border-color: #6B46C1;
+      background: #f8fafc;
+    }
+
+    .photo-upload.drag-over {
+      border-color: #6B46C1;
+      background: #f0f4ff;
+    }
+
+    /* Help & Support Styles */
+    .help-nav {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #e2e8f0;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    .help-nav-item {
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      background: #f8fafc;
+      color: #6b7280;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      border: 2px solid transparent;
+    }
+
+    .help-nav-item.active {
+      background: #6B46C1;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+    }
+
+    .help-nav-item:hover {
+      border-color: #6B46C1;
+      color: #6B46C1;
+    }
+
+    .help-nav-item.active:hover {
+      color: white;
+      border-color: transparent;
+    }
+
+    .faq-item {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+      border-color: #6B46C1;
+      box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+    }
+
+    .faq-question {
+      padding: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #374151;
+      transition: all 0.3s ease;
+    }
+
+    .faq-question:hover {
+      background: #f8fafc;
+      color: #6B46C1;
+    }
+
+    .faq-question.active {
+      background: #f0f4ff;
+      color: #6B46C1;
+    }
+
+    .faq-answer {
+      padding: 0 1.5rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
+    .faq-answer.active {
+      padding: 0 1.5rem 1.5rem;
+      max-height: 200px;
+    }
+
+    .faq-icon {
+      transition: transform 0.3s ease;
+      color: #6b7280;
+    }
+
+    .faq-question.active .faq-icon {
+      transform: rotate(180deg);
+      color: #6B46C1;
+    }
+
+    .contact-option {
+      background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .contact-option::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .contact-option:hover::before {
+      left: 100%;
+    }
+
+    .contact-option:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+      border-color: #6B46C1;
+    }
+
+    .contact-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    .search-highlight {
+      background: yellow;
+      padding: 0 0.25rem;
+      border-radius: 0.25rem;
+    }
+
+    .help-section {
+      display: none;
+    }
+
+    .help-section.active {
+      display: block;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-online {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-busy {
+      background: #fed7d7;
+      color: #c53030;
+    }
+
+    .status-away {
+      background: #fef3c7;
+      color: #92400e;
+    }
 
     #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:.8rem 1rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:10000}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
@@ -209,7 +558,7 @@
     <div class="responsive-container">
       <div class="flex items-center justify-between h-12 md:h-14">
         <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2 pl-1 pr-2 py-1 rounded-md cursor-pointer" data-action="go-home" tabindex="0" role="button" aria-label="Go home">
+          <div class="flex items-center space-x-2 pl-1 pr-2 py-1 rounded-md cursor-pointer" onclick="goHome()" tabindex="0" role="button" aria-label="Go home">
             <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
               <i class="fas fa-tools text-white text-sm md:text-base" aria-hidden="true"></i>
             </div>
@@ -226,18 +575,18 @@
 
         <div class="flex items-center space-x-2">
           <div class="hidden lg:flex items-center space-x-2">
-            <button id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" data-action="switch-view" data-view="customer">
+            <button id="customerBtn" class="nav-btn btn-base btn-primary text-sm px-4 py-2.5" onclick="switchView('customer')">
               <i class="fas fa-home mr-1.5" aria-hidden="true"></i>Customer
             </button>
-            <button id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5 hidden" data-action="go-professional">
+            <button id="professionalBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5 hidden" onclick="switchView('professional')">
               <i class="fas fa-briefcase mr-1.5" aria-hidden="true"></i>Professional
             </button>
-            <button id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" data-action="switch-view" data-view="admin">
+            <button id="adminBtn" class="nav-btn btn-base btn-outline text-sm px-4 py-2.5" onclick="switchView('admin')">
               <i class="fas fa-crown mr-1.5" aria-hidden="true"></i>Admin
             </button>
           </div>
 
-          <button id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" data-action="open-modal" data-modal="userMenuModal" aria-haspopup="dialog">
+          <button id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal')" aria-haspopup="dialog">
             <div id="userAvatar" class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
               <i class="fas fa-user" aria-hidden="true"></i>
             </div>
@@ -251,40 +600,81 @@
   <main id="customerView" class="min-h-screen pb-20 md:pb-8">
     <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light text-white py-8 md:py-12 relative overflow-hidden">
       <div class="responsive-container text-center relative z-10">
-        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-4 animate-fade-in">Fix It Fast</h1>
-        <h2 class="text-lg md:text-2xl font-bold text-purple-100 mb-6 md:mb-8 animate-slide-up">Find Expert Professionals</h2>
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-4">Fix It Fast</h1>
+        <h2 class="text-lg md:text-2xl font-bold text-purple-100 mb-6 md:mb-8">Find Expert Professionals</h2>
 
-        <div class="relative max-w-md md:max-w-2xl mx-auto animate-slide-up">
+        <div class="relative max-w-md md:max-w-2xl mx-auto">
           <input id="searchInput" type="text" placeholder="What needs fixing? (e.g., 'leaky tap', 'IKEA assembly')" class="form-input pr-16 text-gray-900 text-base md:text-lg shadow-2xl"/>
-          <button id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" data-action="search-from-input" aria-label="Search">
+          <button id="searchBtn" class="absolute right-2 top-2 md:top-3 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-accent to-accent-light rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all" onclick="doSearch(document.getElementById('searchInput').value)" aria-label="Search">
             <i class="fas fa-search text-white text-lg md:text-xl" aria-hidden="true"></i>
           </button>
         </div>
       </div>
     </div>
 
+    <!-- How It Works Section -->
+    <div class="responsive-container py-8 md:py-12">
+      <h2 class="text-2xl md:text-3xl font-black text-center mb-8 text-text-primary">How QuickFix Pro Works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-blue-500 to-blue-600">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-text-primary">1. Search & Browse</h3>
+          <p class="text-gray-600">Find qualified professionals in your area. Browse profiles, read reviews, and compare services.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-green-500 to-green-600">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-text-primary">2. Book Service</h3>
+          <p class="text-gray-600">Schedule your appointment at a convenient time. Get instant confirmation and professional details.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-purple-500 to-purple-600">
+            <i class="fas fa-star"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-text-primary">3. Get It Fixed</h3>
+          <p class="text-gray-600">Professional arrives on time. Pay securely after completion. Rate your experience.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="responsive-container py-6 md:py-8">
-      <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-text-primary animate-slide-up">Popular Services</h2>
+      <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-text-primary">Popular Services</h2>
       <div id="popularServices" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4"></div>
     </div>
 
-    <div class="bg-white py-6 md:py-10 my-4 md:my-8">
+    <!-- Trust Stats Section -->
+    <div class="bg-white py-8 md:py-12 my-6 md:my-8">
       <div class="responsive-container">
-        <h2 class="text-xl md:text-2xl font-black text-center mb-6 md:mb-8 text-text-primary animate-slide-up">Trusted Worldwide</h2>
-        <div id="trustStats" class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          <div class="card animate-scale-in">
+        <h2 class="text-2xl md:text-3xl font-black text-center mb-8 text-text-primary">Trusted Worldwide</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div class="info-card">
+            <div class="info-icon bg-gradient-to-br from-primary to-primary-light">
+              <i class="fas fa-users"></i>
+            </div>
             <div class="stat-value text-2xl md:text-3xl">12K+</div>
             <div class="stat-label">Verified Professionals</div>
           </div>
-          <div class="card animate-scale-in" style="animation-delay:.1s">
+          <div class="info-card">
+            <div class="info-icon bg-gradient-to-br from-secondary to-secondary-light">
+              <i class="fas fa-check-circle"></i>
+            </div>
             <div class="stat-value text-2xl md:text-3xl">85K+</div>
             <div class="stat-label">Jobs Completed</div>
           </div>
-          <div class="card animate-scale-in" style="animation-delay:.2s">
+          <div class="info-card">
+            <div class="info-icon bg-gradient-to-br from-accent to-accent-light">
+              <i class="fas fa-star"></i>
+            </div>
             <div class="stat-value text-2xl md:text-3xl">4.9★</div>
             <div class="stat-label">Average Rating</div>
           </div>
-          <div class="card animate-scale-in" style="animation-delay:.3s">
+          <div class="info-card">
+            <div class="info-icon bg-gradient-to-br from-info to-blue-600">
+              <i class="fas fa-headset"></i>
+            </div>
             <div class="stat-value text-2xl md:text-3xl">24/7</div>
             <div class="stat-label">Support Available</div>
           </div>
@@ -292,13 +682,62 @@
       </div>
     </div>
 
+    <!-- Why Choose Us Section -->
+    <div class="responsive-container py-8 md:py-12">
+      <h2 class="text-2xl md:text-3xl font-black text-center mb-8 text-text-primary">Why Choose QuickFix Pro?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-red-500 to-red-600">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Vetted Professionals</h3>
+          <p class="text-gray-600">All professionals are background-checked, licensed, and insured for your peace of mind.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-yellow-500 to-yellow-600">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Fast Response</h3>
+          <p class="text-gray-600">Get connected with professionals in minutes. Many offer same-day service availability.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-green-500 to-green-600">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Fair Pricing</h3>
+          <p class="text-gray-600">Transparent pricing with no hidden fees. Compare quotes and choose what works for you.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-purple-500 to-purple-600">
+            <i class="fas fa-thumbs-up"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Quality Guarantee</h3>
+          <p class="text-gray-600">All work is guaranteed. If you're not satisfied, we'll make it right or refund your money.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-indigo-500 to-indigo-600">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Easy Booking</h3>
+          <p class="text-gray-600">Book services easily through our app or website. Track progress and communicate directly.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon bg-gradient-to-br from-pink-500 to-pink-600">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 text-text-primary">Customer Care</h3>
+          <p class="text-gray-600">Our dedicated support team is here to help 24/7. We're committed to your satisfaction.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="responsive-container py-6 md:py-10">
-      <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">All Services</h2>
+      <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary">All Services</h2>
       <div id="serviceCategories" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4"></div>
     </div>
 
     <div class="responsive-container py-6 md:py-10">
-      <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary animate-slide-up">Top Professionals</h2>
+      <h2 class="text-xl md:text-2xl font-black mb-4 md:mb-8 text-center text-text-primary">Top Professionals</h2>
       <div id="featuredProfessionals" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
     </div>
   </main>
@@ -313,11 +752,11 @@
   <section id="professionalView" class="min-h-screen pb-20 md:pb-8 hidden">
     <div class="bg-gradient-to-br from-secondary via-secondary-dark to-secondary-light text-white py-12 md:py-20 relative overflow-hidden">
       <div class="responsive-container text-center relative z-10">
-        <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in">Professional Dashboard</h1>
-        <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8 animate-slide-up">Manage your business and grow your income</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto animate-slide-up">
-          <button class="btn-base btn-accent" data-action="open-modal" data-modal="workUploadModal"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Add Work</button>
-          <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white" data-action="open-my-profile">
+        <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6">Professional Dashboard</h1>
+        <p class="text-lg md:text-xl text-emerald-100 mb-6 md:mb-8">Manage your business and grow your income</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+          <button class="btn-base btn-accent" onclick="openModal('workUploadModal')"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Add Work</button>
+          <button class="btn-base bg-white text-secondary border-2 border-white hover:bg-secondary hover:text-white" onclick="showMyProfile()">
             <i class="fas fa-id-card mr-2" aria-hidden="true"></i>View Public Profile
           </button>
         </div>
@@ -325,31 +764,31 @@
     </div>
 
     <div class="responsive-container py-8 md:py-12">
-      <div class="card mb-6 md:mb-8 animate-slide-up">
+      <div class="card mb-6 md:mb-8">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
           <div>
             <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Available Balance</h3>
-            <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold animate-pulse-gentle">Ready to withdraw</span>
+            <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold">Ready to withdraw</span>
           </div>
-          <button class="btn-base btn-secondary" data-action="open-modal" data-modal="withdrawModal"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Funds</button>
+          <button class="btn-base btn-secondary" onclick="openModal('withdrawModal')"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Funds</button>
         </div>
         <div class="text-center md:text-left">
-          <div class="text-4xl md:text-6xl font-black text-secondary mb-4 animate-bounce-gentle">$2,847.50</div>
+          <div class="text-4xl md:text-6xl font-black text-secondary mb-4">$2,847.50</div>
           <p class="text-gray-600 text-base md:text-lg">This month: <span class="text-secondary font-bold">+$1,234</span> | Total earned: <span class="font-bold">$18,432</span></p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <div class="card text-center animate-scale-in"><div class="stat-value text-2xl md:text-3xl">8</div><div class="stat-label mb-2">Jobs This Week</div><div class="text-emerald-600 font-bold text-sm">+2 from last week</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.1s"><div class="stat-value text-2xl md:text-3xl">4.95★</div><div class="stat-label mb-2">Rating</div><div class="text-emerald-600 font-bold text-sm">234 reviews</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.2s"><div class="stat-value text-2xl md:text-3xl">&lt; 30min</div><div class="stat-label mb-2">Response Time</div><div class="text-emerald-600 font-bold text-sm">Excellent</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.3s"><div class="stat-value text-2xl md:text-3xl">68%</div><div class="stat-label mb-2">Repeat Rate</div><div class="text-emerald-600 font-bold text-sm">Above average</div></div>
+        <div class="card text-center"><div class="stat-value text-2xl md:text-3xl">8</div><div class="stat-label mb-2">Jobs This Week</div><div class="text-emerald-600 font-bold text-sm">+2 from last week</div></div>
+        <div class="card text-center"><div class="stat-value text-2xl md:text-3xl">4.95★</div><div class="stat-label mb-2">Rating</div><div class="text-emerald-600 font-bold text-sm">234 reviews</div></div>
+        <div class="card text-center"><div class="stat-value text-2xl md:text-3xl">&lt; 30min</div><div class="stat-label mb-2">Response Time</div><div class="text-emerald-600 font-bold text-sm">Excellent</div></div>
+        <div class="card text-center"><div class="stat-value text-2xl md:text-3xl">68%</div><div class="stat-label mb-2">Repeat Rate</div><div class="text-emerald-600 font-bold text-sm">Above average</div></div>
       </div>
 
-      <div class="card animate-slide-up">
+      <div class="card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-4 md:mb-0">Recent Work</h3>
-          <button class="btn-base btn-primary" data-action="open-modal" data-modal="workUploadModal"><i class="fas fa-camera mr-2" aria-hidden="true"></i>Add Photos</button>
+          <button class="btn-base btn-primary" onclick="openModal('workUploadModal')"><i class="fas fa-camera mr-2" aria-hidden="true"></i>Add Photos</button>
         </div>
         <div id="workPortfolio" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"></div>
       </div>
@@ -360,31 +799,31 @@
   <section id="adminView" class="min-h-screen pb-20 md:pb-8 hidden">
     <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 md:py-20 relative overflow-hidden">
       <div class="responsive-container text-center relative z-10">
-        <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6 animate-fade-in"><i class="fas fa-crown mr-4 text-accent animate-bounce-gentle" aria-hidden="true"></i>Admin Dashboard</h1>
-        <p class="text-lg md:text-xl text-gray-300 animate-slide-up">Platform management and analytics</p>
+        <h1 class="text-3xl md:text-5xl font-black mb-4 md:mb-6"><i class="fas fa-crown mr-4 text-accent" aria-hidden="true"></i>Admin Dashboard</h1>
+        <p class="text-lg md:text-xl text-gray-300">Platform management and analytics</p>
       </div>
     </div>
 
     <div class="responsive-container py-8 md:py-12">
-      <div class="earnings-highlight mb-8 animate-slide-up">
+      <div class="earnings-highlight mb-8">
         <h3 class="text-2xl md:text-3xl font-bold mb-4">Platform Earnings (1.5% Commission)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-center">
-          <div class="animate-scale-in"><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-200 font-semibold tracking-wide">Available Balance</div></div>
-          <div class="animate-scale-in" style="animation-delay:.1s"><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-200 font-semibold tracking-wide">This Month</div></div>
-          <div class="animate-scale-in" style="animation-delay:.2s"><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-200 font-semibold tracking-wide">Total Jobs</div></div>
-          <div class="animate-scale-in" style="animation-delay:.3s"><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-200 font-semibold tracking-wide">Total Earned</div></div>
+          <div><div class="text-3xl md:text-4xl font-black mb-2">$5,217.48</div><div class="text-amber-200 font-semibold tracking-wide">Available Balance</div></div>
+          <div><div class="text-3xl md:text-4xl font-black mb-2">$1,834.92</div><div class="text-amber-200 font-semibold tracking-wide">This Month</div></div>
+          <div><div class="text-3xl md:text-4xl font-black mb-2">347,832</div><div class="text-amber-200 font-semibold tracking-wide">Total Jobs</div></div>
+          <div><div class="text-3xl md:text-4xl font-black mb-2">$52,168</div><div class="text-amber-200 font-semibold tracking-wide">Total Earned</div></div>
         </div>
-        <button class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8 animate-bounce-gentle" data-action="open-modal" data-modal="adminWithdrawModal"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Platform Earnings</button>
+        <button class="btn-base bg-white text-accent hover:bg-accent hover:text-white text-lg font-bold px-8" onclick="openModal('adminWithdrawModal')"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Platform Earnings</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <div class="card text-center animate-scale-in"><div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float"><i class="fas fa-dollar-sign text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-primary">$347K</div><div class="stat-label mb-2">Total Revenue</div><div class="text-emerald-600 font-bold text-sm">+18.2% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.1s"><div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay:.5s"><i class="fas fa-users text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-secondary">1,847</div><div class="stat-label mb-2">Active Professionals</div><div class="text-emerald-600 font-bold text-sm">+12.3% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.2s"><div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-float" style="animation-delay:1s"><i class="fas fa-briefcase text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-accent">4,291</div><div class="stat-label mb-2">Jobs This Month</div><div class="text-emerald-600 font-bold text-sm">+22.1% this month</div></div>
-        <div class="card text-center animate-scale-in" style="animation-delay:.3s"><div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-gentle"><i class="fas fa-clock text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-red-600">31</div><div class="stat-label mb-2">Pending Approvals</div><div class="text-red-600 font-bold text-sm">Requires attention</div></div>
+        <div class="card text-center"><div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-dollar-sign text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-primary">$347K</div><div class="stat-label mb-2">Total Revenue</div><div class="text-emerald-600 font-bold text-sm">+18.2% this month</div></div>
+        <div class="card text-center"><div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-users text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-secondary">1,847</div><div class="stat-label mb-2">Active Professionals</div><div class="text-emerald-600 font-bold text-sm">+12.3% this month</div></div>
+        <div class="card text-center"><div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-briefcase text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-accent">4,291</div><div class="stat-label mb-2">Jobs This Month</div><div class="text-emerald-600 font-bold text-sm">+22.1% this month</div></div>
+        <div class="card text-center"><div class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-clock text-white text-2xl" aria-hidden="true"></i></div><div class="stat-value text-2xl md:text-3xl text-red-600">31</div><div class="stat-label mb-2">Pending Approvals</div><div class="text-red-600 font-bold text-sm">Requires attention</div></div>
       </div>
 
-      <div class="card mb-8 animate-slide-up">
+      <div class="card mb-8">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Service Distribution</h3>
         <div class="space-y-4">
           <div class="flex items-center justify-between"><span class="font-medium flex items-center"><div class="w-4 h-4 bg-primary rounded mr-3"></div>Plumbing</span><div class="flex items-center"><div class="w-32 h-3 bg-gray-200 rounded mr-3"><div class="h-full bg-primary rounded progress-fill" style="width:75%"></div></div><span class="font-bold text-primary w-16 text-right">1,247</span></div></div>
@@ -394,144 +833,1173 @@
         </div>
       </div>
 
-      <div class="card animate-slide-up">
+      <div class="card">
         <h3 class="text-xl md:text-2xl font-bold mb-6 text-text-primary">Recent Professional Activity</h3>
         <div id="recentProfessionals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
     </div>
   </section>
 
-  <!-- Settings View -->
+  <!-- Enhanced Settings View -->
   <section id="settingsView" class="hidden min-h-screen pb-20 md:pb-8">
-    <div class="bg-white border-b">
-      <div class="responsive-container py-8">
-        <h2 class="text-3xl md:text-4xl font-black">Settings</h2>
-        <p class="text-gray-600">Manage your profile, security, billing, and more.</p>
+    <div class="bg-gradient-to-br from-primary to-primary-light text-white py-8 md:py-12">
+      <div class="responsive-container text-center">
+        <h2 class="text-3xl md:text-4xl font-black mb-4">Settings & Profile</h2>
+        <p class="text-purple-100 text-lg">Customize your experience and manage your account</p>
+        <div class="mt-6">
+          <button class="btn-base bg-white text-primary hover:bg-gray-100 mr-4" onclick="enableQuickEdit()">
+            <i class="fas fa-edit mr-2"></i>Quick Edit Mode
+          </button>
+          <button class="btn-base btn-outline border-white text-white hover:bg-white hover:text-primary" onclick="previewProfile()">
+            <i class="fas fa-eye mr-2"></i>Preview Profile
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="responsive-container py-8 settings-grid">
-      <aside class="card sticky top-20 h-max settings-nav" id="settingsNav">
+      <aside class="card settings-nav" id="settingsNav">
         <nav class="space-y-1">
-          <a href="#sec-personal" class="active" data-action="goto-settings"><i class="fas fa-user" aria-hidden="true"></i> Personal Info</a>
-          <a href="#sec-security" data-action="goto-settings"><i class="fas fa-shield-halved" aria-hidden="true"></i> Security</a>
-          <a href="#sec-notifications" data-action="goto-settings"><i class="fas fa-bell" aria-hidden="true"></i> Notifications</a>
-          <a href="#sec-privacy" data-action="goto-settings"><i class="fas fa-eye-slash" aria-hidden="true"></i> Privacy</a>
-          <a href="#sec-billing" data-action="goto-settings"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Billing</a>
-          <a href="#sec-payments" data-action="goto-settings"><i class="fas fa-credit-card" aria-hidden="true"></i> Payments</a>
-          <a href="#sec-connections" data-action="goto-settings"><i class="fas fa-link" aria-hidden="true"></i> Connected Apps</a>
-          <a href="#sec-danger" class="text-red-600" data-action="goto-settings"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Danger Zone</a>
+          <a href="#sec-personal" class="active" onclick="gotoSettings(event, '#sec-personal')"><i class="fas fa-user" aria-hidden="true"></i> Personal Info</a>
+          <a href="#sec-contact" onclick="gotoSettings(event, '#sec-contact')"><i class="fas fa-address-book" aria-hidden="true"></i> Contact</a>
+          <a href="#sec-preferences" onclick="gotoSettings(event, '#sec-preferences')"><i class="fas fa-sliders-h" aria-hidden="true"></i> Preferences</a>
+          <a href="#sec-security" onclick="gotoSettings(event, '#sec-security')"><i class="fas fa-shield-halved" aria-hidden="true"></i> Security</a>
+          <a href="#sec-notifications" onclick="gotoSettings(event, '#sec-notifications')"><i class="fas fa-bell" aria-hidden="true"></i> Notifications</a>
+          <a href="#sec-privacy" onclick="gotoSettings(event, '#sec-privacy')"><i class="fas fa-eye-slash" aria-hidden="true"></i> Privacy</a>
+          <a href="#sec-billing" onclick="gotoSettings(event, '#sec-billing')"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Billing</a>
+          <a href="#sec-danger" class="text-red-600" onclick="gotoSettings(event, '#sec-danger')"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Danger Zone</a>
         </nav>
       </aside>
 
       <div>
-        <form id="settingsForm" class="space-y-8" novalidate>
-          <section id="sec-personal" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Personal Info</h3>
-            <div class="grid md:grid-cols-3 gap-4">
+        <!-- Personal Information Section -->
+        <section id="sec-personal" class="card mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl md:text-2xl font-bold">Personal Information</h3>
+            <button class="btn-base btn-outline btn-sm" onclick="editAllPersonal()">
+              <i class="fas fa-edit mr-1"></i>Edit All
+            </button>
+          </div>
+
+          <!-- Profile Photo -->
+          <div class="editable-field" onclick="editPhoto()">
+            <div class="flex items-center">
+              <img id="displayPhotoPreview" class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 mr-4" 
+                   src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIyNCIgeT0iMjQiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iIzlDQTNBRiI+CjxwYXRoIGQ9Ik0xNiA3YTQgNCAwIDEgMSAwIDggNCA0IDAgMCAxIDAtOHpNMTIgMTQuNWE0IDQgMCAwIDAtNCA0djFhMiAyIDAgMCAwIDIgMmgxNmEyIDIgMCAwIDAgMi0ydi0xYTQgNCAwIDAgMC00LTRIMTJ6Ii8+Cjwvc3ZnPgo8L3N2Zz4=" 
+                   alt="Profile photo">
               <div>
-                <label class="text-sm font-semibold">Display Name</label>
-                <input id="setDisplayName" class="form-input" placeholder="Your name"/>
-              </div>
-              <div>
-                <label class="text-sm font-semibold">Email</label>
-                <input id="setEmail" class="form-input" placeholder="Email" disabled/>
-              </div>
-              <div>
-                <label class="text-sm font-semibold">Language</label>
-                <select id="setLang" class="form-input">
-                  <option value="en">English</option><option value="es">Español</option>
-                  <option value="fr">Français</option><option value="de">Deutsch</option>
-                  <option value="it">Italiano</option><option value="pt">Português</option>
-                  <option value="zh">中文</option><option value="ja">日本語</option>
-                </select>
+                <div class="font-semibold text-sm text-gray-600">Profile Photo</div>
+                <div class="field-value" id="photoStatus">Click to change photo</div>
               </div>
             </div>
-            <div class="grid md:grid-cols-3 gap-4 mt-4">
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editPhoto()">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Photo Upload Form -->
+          <div id="photoUploadForm" class="edit-form">
+            <div class="photo-upload" onclick="triggerPhotoUpload()" ondrop="handlePhotoDrop(event)" ondragover="handlePhotoDragOver(event)" ondragleave="handlePhotoDragLeave(event)">
+              <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(event)">
+              <i class="fas fa-camera text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-600 mb-2">Drop a photo here or click to select</p>
+              <p class="text-sm text-gray-500">JPG, PNG up to 5MB</p>
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelPhotoEdit()">Cancel</button>
+              <button class="edit-btn save-btn" onclick="savePhoto()" disabled id="savePhotoBtn">Save Photo</button>
+            </div>
+          </div>
+
+          <!-- Display Name -->
+          <div class="editable-field" onclick="editField('displayName')" data-field="displayName">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Display Name</div>
+              <div class="field-value" id="displayNameValue">Not set</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('displayName')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Display Name Edit Form -->
+          <div id="displayNameForm" class="edit-form">
+            <input type="text" id="displayNameInput" class="form-input" placeholder="Enter your display name">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('displayName')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('displayName')">Save</button>
+            </div>
+          </div>
+
+          <!-- Email (Read-only) -->
+          <div class="editable-field opacity-75">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Email Address</div>
+              <div class="field-value" id="emailDisplay">Not signed in</div>
+            </div>
+            <div class="text-xs text-gray-500">
+              <i class="fas fa-lock mr-1"></i>Managed by authentication
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <div class="editable-field" onclick="editField('bio')" data-field="bio">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Bio / About</div>
+              <div class="field-value" id="bioValue">Tell us about yourself...</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('bio')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bio Edit Form -->
+          <div id="bioForm" class="edit-form">
+            <textarea id="bioInput" class="form-input" rows="4" placeholder="Tell us about yourself..."></textarea>
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('bio')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('bio')">Save</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contact Information Section -->
+        <section id="sec-contact" class="card mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl md:text-2xl font-bold">Contact Information</h3>
+            <button class="btn-base btn-outline btn-sm" onclick="editAllContact()">
+              <i class="fas fa-edit mr-1"></i>Edit All
+            </button>
+          </div>
+
+          <!-- Phone -->
+          <div class="editable-field" onclick="editField('phone')" data-field="phone">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Phone Number</div>
+              <div class="field-value" id="phoneValue">Not provided</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('phone')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Phone Edit Form -->
+          <div id="phoneForm" class="edit-form">
+            <input type="tel" id="phoneInput" class="form-input" placeholder="Enter your phone number">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('phone')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('phone')">Save</button>
+            </div>
+          </div>
+
+          <!-- Street Address -->
+          <div class="editable-field" onclick="editField('streetAddress')" data-field="streetAddress">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Street Address</div>
+              <div class="field-value" id="streetAddressValue">Not provided</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('streetAddress')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Street Address Edit Form -->
+          <div id="streetAddressForm" class="edit-form">
+            <input type="text" id="streetAddressInput" class="form-input" placeholder="Enter your street address">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('streetAddress')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('streetAddress')">Save</button>
+            </div>
+          </div>
+
+          <!-- City -->
+          <div class="editable-field" onclick="editField('city')" data-field="city">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">City</div>
+              <div class="field-value" id="cityValue">Not provided</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('city')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="edit-btn" onclick="event.stopPropagation(); useCurrentLocation()" title="Use current location">
+                <i class="fas fa-location-arrow"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- City Edit Form -->
+          <div id="cityForm" class="edit-form">
+            <input type="text" id="cityInput" class="form-input" placeholder="Enter your city">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('city')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('city')">Save</button>
+            </div>
+          </div>
+
+          <!-- State -->
+          <div class="editable-field" onclick="editField('state')" data-field="state">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">State / Province</div>
+              <div class="field-value" id="stateValue">Not provided</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('state')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- State Edit Form -->
+          <div id="stateForm" class="edit-form">
+            <input type="text" id="stateInput" class="form-input" placeholder="Enter your state/province">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('state')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('state')">Save</button>
+            </div>
+          </div>
+
+          <!-- Postal Code -->
+          <div class="editable-field" onclick="editField('postalCode')" data-field="postalCode">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Postal Code</div>
+              <div class="field-value" id="postalCodeValue">Not provided</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('postalCode')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Postal Code Edit Form -->
+          <div id="postalCodeForm" class="edit-form">
+            <input type="text" id="postalCodeInput" class="form-input" placeholder="Enter your postal code">
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('postalCode')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('postalCode')">Save</button>
+            </div>
+          </div>
+
+          <!-- Country -->
+          <div class="editable-field" onclick="editField('country')" data-field="country">
+            <div>
+              <div class="font-semibold text-sm text-gray-600 mb-1">Country</div>
+              <div class="field-value" id="countryValue">Not selected</div>
+            </div>
+            <div class="field-actions">
+              <button class="edit-btn" onclick="event.stopPropagation(); editField('country')">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Country Edit Form -->
+          <div id="countryForm" class="edit-form">
+            <select id="countryInput" class="form-input">
+              <option value="">Select your country</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AU">Australia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="IT">Italy</option>
+              <option value="ES">Spain</option>
+              <option value="NL">Netherlands</option>
+              <option value="SE">Sweden</option>
+              <option value="NO">Norway</option>
+              <option value="DK">Denmark</option>
+              <option value="FI">Finland</option>
+              <option value="IE">Ireland</option>
+              <option value="BE">Belgium</option>
+              <option value="CH">Switzerland</option>
+              <option value="AT">Austria</option>
+              <option value="PT">Portugal</option>
+              <option value="LU">Luxembourg</option>
+              <option value="IS">Iceland</option>
+            </select>
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="edit-btn cancel-btn" onclick="cancelEdit('country')">Cancel</button>
+              <button class="edit-btn save-btn" onclick="saveField('country')">Save</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Preferences Section -->
+        <section id="sec-preferences" class="card mb-8">
+          <h3 class="text-xl md:text-2xl font-bold mb-6">Preferences</h3>
+          
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-semibold">City</label>
-                <input id="setCity" class="form-input" placeholder="City"/>
+                <h4 class="font-semibold">Language</h4>
+                <p class="text-sm text-gray-600">Choose your preferred language</p>
               </div>
+              <select id="languageSelect" class="form-input w-auto" onchange="savePreference('language', this.value)">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-semibold">Country</label>
-                <input id="setCountry" class="form-input" placeholder="Country"/>
+                <h4 class="font-semibold">Currency</h4>
+                <p class="text-sm text-gray-600">Choose your preferred currency</p>
               </div>
+              <select id="currencySelect" class="form-input w-auto" onchange="savePreference('currency', this.value)">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="CAD">CAD (C$)</option>
+                <option value="AUD">AUD (A$)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
               <div>
-                <label class="text-sm font-semibold">Profile Photo</label>
-                <input id="setPhoto" type="file" accept="image/*" class="form-input"/>
-                <div class="mt-2 flex items-center gap-3">
-                  <img id="setPhotoPreview" class="w-14 h-14 rounded-full object-cover border" alt="" loading="lazy">
-                  <span class="text-xs text-gray-500">JPG/PNG up to ~2MB</span>
+                <h4 class="font-semibold">Dark Mode</h4>
+                <p class="text-sm text-gray-600">Use dark theme interface</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="darkModeToggle" type="checkbox" onchange="saveToggle('darkMode', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Security Section -->
+        <section id="sec-security" class="card mb-8">
+          <h3 class="text-xl md:text-2xl font-bold mb-6">Security Settings</h3>
+          
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Two-Factor Authentication</h4>
+                <p class="text-sm text-gray-600">Add an extra layer of security to your account</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="twoFAToggle" type="checkbox" onchange="saveToggle('twoFA', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Login Notifications</h4>
+                <p class="text-sm text-gray-600">Get notified when someone logs into your account</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="loginNotificationsToggle" type="checkbox" onchange="saveToggle('loginNotifications', this.checked)" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Password Reset</h4>
+                <p class="text-sm text-gray-600">Send a password reset link to your email</p>
+              </div>
+              <button class="btn-base btn-outline" onclick="sendPasswordReset()">
+                <i class="fas fa-key mr-2"></i>Reset Password
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="sec-notifications" class="card mb-8">
+          <h3 class="text-xl md:text-2xl font-bold mb-6">Notification Preferences</h3>
+          
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Email Notifications</h4>
+                <p class="text-sm text-gray-600">Receive updates via email</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="emailNotificationsToggle" type="checkbox" onchange="saveToggle('emailNotifications', this.checked)" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">SMS Notifications</h4>
+                <p class="text-sm text-gray-600">Receive updates via text message</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="smsNotificationsToggle" type="checkbox" onchange="saveToggle('smsNotifications', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Marketing Emails</h4>
+                <p class="text-sm text-gray-600">Receive promotional offers and updates</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="marketingEmailsToggle" type="checkbox" onchange="saveToggle('marketingEmails', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Privacy Section -->
+        <section id="sec-privacy" class="card mb-8">
+          <h3 class="text-xl md:text-2xl font-bold mb-6">Privacy Settings</h3>
+          
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Profile Visibility</h4>
+                <p class="text-sm text-gray-600">Who can see your profile information</p>
+              </div>
+              <select id="profileVisibilitySelect" class="form-input w-auto" onchange="savePreference('profileVisibility', this.value)">
+                <option value="public">Public</option>
+                <option value="customers">Customers Only</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Data Sharing</h4>
+                <p class="text-sm text-gray-600">Allow anonymous usage data collection</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="dataSharingToggle" type="checkbox" onchange="saveToggle('dataSharing', this.checked)" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Download My Data</h4>
+                <p class="text-sm text-gray-600">Request a copy of your personal data</p>
+              </div>
+              <button class="btn-base btn-outline" onclick="downloadUserData()">
+                <i class="fas fa-download mr-2"></i>Request Data
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Billing Section -->
+        <section id="sec-billing" class="card mb-8">
+          <h3 class="text-xl md:text-2xl font-bold mb-6">Billing Information</h3>
+          
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Payment Methods</h4>
+                <p class="text-sm text-gray-600">Manage your saved payment methods</p>
+              </div>
+              <button class="btn-base btn-outline" onclick="managePaymentMethods()">
+                <i class="fas fa-credit-card mr-2"></i>Manage
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Billing History</h4>
+                <p class="text-sm text-gray-600">View past transactions and invoices</p>
+              </div>
+              <button class="btn-base btn-outline" onclick="viewBillingHistory()">
+                <i class="fas fa-history mr-2"></i>View History
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold">Auto-Pay</h4>
+                <p class="text-sm text-gray-600">Automatically pay invoices when due</p>
+              </div>
+              <label class="setting-toggle">
+                <input id="autoPayToggle" type="checkbox" onchange="saveToggle('autoPay', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Danger Zone Section -->
+        <section id="sec-danger" class="card border-2 border-red-200 bg-red-50 mb-8">
+          <h3 class="text-xl md:text-2xl font-bold text-red-600 mb-6">Danger Zone</h3>
+          
+          <div class="setting-item bg-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold text-red-800">Deactivate Account</h4>
+                <p class="text-sm text-gray-600">Temporarily disable your account. You can reactivate it later.</p>
+              </div>
+              <button class="btn-base btn-outline text-red-600 border-red-600 hover:bg-red-600 hover:text-white" onclick="deactivateAccount()">
+                <i class="fas fa-pause mr-2"></i>Deactivate
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-item bg-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-semibold text-red-800">Delete Account</h4>
+                <p class="text-sm text-gray-600">Permanently delete your account and all associated data. This action cannot be undone.</p>
+              </div>
+              <button class="btn-base btn-danger" onclick="deleteAccount()">
+                <i class="fas fa-trash mr-2"></i>Delete Account
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Save Actions -->
+        <div class="card bg-gradient-to-r from-primary to-primary-light text-white">
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+              <h4 class="font-bold text-lg">Changes Auto-Saved</h4>
+              <p class="text-purple-100">Your settings are automatically saved as you make changes</p>
+            </div>
+            <div class="flex gap-3">
+              <button class="btn-base bg-white text-primary hover:bg-gray-100" onclick="switchView('customer')">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Help & Support View -->
+  <section id="helpView" class="hidden min-h-screen pb-20 md:pb-8">
+    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-8 md:py-12">
+      <div class="responsive-container text-center">
+        <h2 class="text-3xl md:text-4xl font-black mb-4">Help & Support</h2>
+        <p class="text-blue-100 text-lg mb-6">We're here to help you succeed with QuickFix Pro</p>
+        
+        <!-- Support Status Banner -->
+        <div class="bg-white bg-opacity-10 rounded-lg p-4 max-w-md mx-auto">
+          <div class="flex items-center justify-center gap-3">
+            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            <span class="font-semibold">Support Team Online</span>
+            <span class="status-badge status-online">Available</span>
+          </div>
+          <p class="text-sm text-blue-100 mt-2">Average response time: 2-5 minutes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="responsive-container py-8">
+      <!-- Help Search -->
+      <div class="card mb-8">
+        <div class="text-center mb-6">
+          <h3 class="text-xl font-bold mb-2">Search for Help</h3>
+          <p class="text-gray-600">Find answers to common questions and issues</p>
+        </div>
+        <div class="relative max-w-2xl mx-auto">
+          <input type="text" id="helpSearchInput" placeholder="Search help articles, FAQs..." class="form-input pr-12" onkeyup="searchHelp(this.value)">
+          <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <i class="fas fa-search"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Navigation -->
+      <div class="help-nav">
+        <div class="help-nav-item active" onclick="showHelpSection('overview')">
+          <i class="fas fa-home mr-2"></i>Overview
+        </div>
+        <div class="help-nav-item" onclick="showHelpSection('faq')">
+          <i class="fas fa-question-circle mr-2"></i>FAQ
+        </div>
+        <div class="help-nav-item" onclick="showHelpSection('contact')">
+          <i class="fas fa-headset mr-2"></i>Contact Support
+        </div>
+        <div class="help-nav-item" onclick="showHelpSection('guides')">
+          <i class="fas fa-book mr-2"></i>User Guides
+        </div>
+        <div class="help-nav-item" onclick="showHelpSection('troubleshooting')">
+          <i class="fas fa-tools mr-2"></i>Troubleshooting
+        </div>
+        <div class="help-nav-item" onclick="showHelpSection('feedback')">
+          <i class="fas fa-comment mr-2"></i>Feedback
+        </div>
+      </div>
+
+      <!-- Overview Section -->
+      <div id="overviewSection" class="help-section active">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="contact-option" onclick="showHelpSection('contact')">
+            <div class="contact-icon bg-gradient-to-br from-green-500 to-green-600">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Live Chat</h3>
+            <p class="text-gray-600 mb-4">Get instant help from our support team</p>
+            <span class="status-badge status-online">Online Now</span>
+          </div>
+          
+          <div class="contact-option" onclick="showHelpSection('contact')">
+            <div class="contact-icon bg-gradient-to-br from-blue-500 to-blue-600">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Email Support</h3>
+            <p class="text-gray-600 mb-4">Send us your questions anytime</p>
+            <span class="status-badge status-online">24/7 Available</span>
+          </div>
+          
+          <div class="contact-option" onclick="showHelpSection('contact')">
+            <div class="contact-icon bg-gradient-to-br from-purple-500 to-purple-600">
+              <i class="fas fa-phone"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Phone Support</h3>
+            <p class="text-gray-600 mb-4">Call us for urgent issues</p>
+            <span class="status-badge status-away">9AM - 6PM PST</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="card">
+            <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+            <div class="space-y-3">
+              <a href="#" onclick="showHelpSection('faq')" class="flex items-center text-primary hover:text-primary-dark">
+                <i class="fas fa-arrow-right mr-2"></i>Frequently Asked Questions
+              </a>
+              <a href="#" onclick="showHelpSection('guides')" class="flex items-center text-primary hover:text-primary-dark">
+                <i class="fas fa-arrow-right mr-2"></i>Getting Started Guide
+              </a>
+              <a href="#" onclick="showHelpSection('troubleshooting')" class="flex items-center text-primary hover:text-primary-dark">
+                <i class="fas fa-arrow-right mr-2"></i>Account Issues
+              </a>
+              <a href="#" onclick="showHelpSection('troubleshooting')" class="flex items-center text-primary hover:text-primary-dark">
+                <i class="fas fa-arrow-right mr-2"></i>Booking Problems
+              </a>
+              <a href="#" onclick="showHelpSection('troubleshooting')" class="flex items-center text-primary hover:text-primary-dark">
+                <i class="fas fa-arrow-right mr-2"></i>Payment Issues
+              </a>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-xl font-bold mb-4">System Status</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span>Platform Status</span>
+                <div class="flex items-center">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-600 font-semibold">Operational</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Payment System</span>
+                <div class="flex items-center">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-600 font-semibold">Operational</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Notifications</span>
+                <div class="flex items-center">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-600 font-semibold">Operational</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Mobile App</span>
+                <div class="flex items-center">
+                  <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-600 font-semibold">Operational</span>
                 </div>
               </div>
             </div>
-          </section>
-
-          <section id="sec-security" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Security</h3>
-            <div class="grid md:grid-cols-3 gap-4">
-              <label class="flex items-center gap-2"><input id="setTwoFA" type="checkbox"> Enable 2-step verification</label>
-              <button type="button" class="btn-base btn-outline w-full" data-action="send-reset-email"><i class="fas fa-key mr-2" aria-hidden="true"></i>Send password reset email</button>
-              <button type="button" class="btn-base btn-outline w-full" data-action="relogin"><i class="fas fa-unlock mr-2" aria-hidden="true"></i>Re-login if required</button>
-            </div>
-          </section>
-
-          <section id="sec-notifications" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Notifications</h3>
-            <div class="grid md:grid-cols-3 gap-4">
-              <label class="flex items-center gap-2"><input id="setNotifyEmail" type="checkbox"> Email notifications</label>
-              <label class="flex items-center gap-2"><input id="setNotifySMS" type="checkbox"> SMS notifications</label>
-              <label class="flex items-center gap-2"><input id="setNotifyPush" type="checkbox"> Push notifications</label>
-            </div>
-          </section>
-
-          <section id="sec-privacy" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Privacy</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-              <label class="flex items-center gap-2"><input id="setPublic" type="checkbox"> Public profile (visible to everyone)</label>
-              <label class="flex items-center gap-2"><input id="setSearchIndex" type="checkbox"> Allow search indexing</label>
-            </div>
-          </section>
-
-          <section id="sec-billing" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Billing</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label class="text-sm font-semibold">Billing note</label>
-                <input id="setBillingNote" class="form-input" placeholder="Card handled by your PSP"/>
-              </div>
-              <div>
-                <label class="text-sm font-semibold">Connected Accounts</label>
-                <input id="setConnected" class="form-input" disabled/>
-              </div>
-            </div>
-          </section>
-
-          <section id="sec-payments" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Payments</h3>
-            <p class="text-gray-600">Manage payout method and default currency (placeholder).</p>
-          </section>
-
-          <section id="sec-connections" class="card">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Connected Apps</h3>
-            <p class="text-gray-600">Google / Apple / Facebook login status (read-only here).</p>
-          </section>
-
-          <section id="sec-danger" class="card border border-red-200">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xl md:text-2xl font-bold text-red-600">Danger Zone</h3>
-                <p class="text-gray-600">Permanently delete your account and data.</p>
-              </div>
-              <button type="button" class="btn-base btn-danger" data-action="delete-account"><i class="fas fa-trash mr-2" aria-hidden="true"></i>Delete Account</button>
-            </div>
-          </section>
-
-          <div class="flex justify-end gap-3">
-            <button type="button" class="btn-base btn-outline" data-action="switch-view" data-view="customer">Cancel</button>
-            <button type="submit" class="btn-base btn-primary" id="settingsSaveBtn"><i class="fas fa-save mr-2" aria-hidden="true"></i>Save All Settings</button>
           </div>
-        </form>
+        </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <div id="faqSection" class="help-section">
+        <div class="card mb-6">
+          <h3 class="text-2xl font-bold mb-6">Frequently Asked Questions</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <button class="btn-base btn-outline" onclick="filterFAQ('all')">All Questions</button>
+            <button class="btn-base btn-outline" onclick="filterFAQ('account')">Account & Billing</button>
+            <button class="btn-base btn-outline" onclick="filterFAQ('booking')">Booking & Services</button>
+            <button class="btn-base btn-outline" onclick="filterFAQ('professional')">For Professionals</button>
+          </div>
+
+          <div id="faqContainer">
+            <!-- Account & Billing FAQ -->
+            <div class="faq-item" data-category="account">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I create an account?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Click the "Sign Up" button, enter your details, and choose whether you're a customer or professional. You'll receive a confirmation email to verify your account.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="account">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I update my payment method?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Go to Settings → Billing Information → Payment Methods to add, edit, or remove payment methods. All payments are processed securely.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="account">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>Can I delete my account?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Yes, you can delete your account in Settings → Danger Zone. This action is permanent and cannot be undone. All your data will be removed.
+              </div>
+            </div>
+
+            <!-- Booking & Services FAQ -->
+            <div class="faq-item" data-category="booking">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I book a service?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Search for the service you need, browse professional profiles, read reviews, and click "Book Now" on your preferred professional. You can schedule at a time that works for you.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="booking">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>What if I need to cancel or reschedule?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                You can cancel or reschedule up to 24 hours before your appointment without penalty. Go to your booking history and select the appropriate option.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="booking">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>Are all professionals verified?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Yes, all professionals undergo background checks, license verification, and insurance validation before joining our platform. Your safety is our priority.
+              </div>
+            </div>
+
+            <!-- Professional FAQ -->
+            <div class="faq-item" data-category="professional">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I become a professional on QuickFix Pro?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Sign up with a professional account, complete your profile, upload licenses and insurance documents, and pass our verification process. You can start receiving bookings once approved.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="professional">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>What fees does QuickFix Pro charge?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                We charge a small commission fee of 1.5% on completed jobs. There are no monthly fees or hidden charges. You keep the majority of what you earn.
+              </div>
+            </div>
+
+            <div class="faq-item" data-category="professional">
+              <div class="faq-question" onclick="toggleFAQ(this)">
+                <span>How do I get paid?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </div>
+              <div class="faq-answer">
+                Payments are processed automatically after job completion. Funds are available for withdrawal within 24-48 hours. You can withdraw to your bank account or keep earnings in your QuickFix wallet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Support Section -->
+      <div id="contactSection" class="help-section">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card">
+              <h3 class="text-2xl font-bold mb-6">Contact Our Support Team</h3>
+              <form onsubmit="submitSupportTicket(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" class="form-input" placeholder="Enter your full name" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" placeholder="your@email.com" required>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Issue Category</label>
+                  <select class="form-input" required>
+                    <option value="">Select a category</option>
+                    <option value="account">Account & Login Issues</option>
+                    <option value="booking">Booking & Services</option>
+                    <option value="payment">Payment & Billing</option>
+                    <option value="technical">Technical Problems</option>
+                    <option value="professional">Professional Services</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Priority Level</label>
+                  <select class="form-input" required>
+                    <option value="low">Low - General inquiry</option>
+                    <option value="medium">Medium - Non-urgent issue</option>
+                    <option value="high">High - Urgent problem</option>
+                    <option value="critical">Critical - Service impacted</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Subject</label>
+                  <input type="text" class="form-input" placeholder="Brief description of your issue" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Describe Your Issue</label>
+                  <textarea class="form-input" rows="6" placeholder="Please provide as much detail as possible about your issue..." required></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                  <button type="button" class="btn-base btn-outline" onclick="clearSupportForm()">Clear Form</button>
+                  <button type="submit" class="btn-base btn-primary">
+                    <i class="fas fa-paper-plane mr-2"></i>Submit Ticket
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="card">
+              <h4 class="font-bold mb-4">Quick Contact</h4>
+              <div class="space-y-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-comments text-green-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold">Live Chat</p>
+                    <p class="text-sm text-gray-600">Available now</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-envelope text-blue-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold">Email</p>
+                    <p class="text-sm text-gray-600">support@quickfixpro.com</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-phone text-purple-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold">Phone</p>
+                    <p class="text-sm text-gray-600">1-800-QUICKFIX</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button class="btn-base btn-secondary w-full mt-4" onclick="startLiveChat()">
+                <i class="fas fa-comments mr-2"></i>Start Live Chat
+              </button>
+            </div>
+
+            <div class="card">
+              <h4 class="font-bold mb-4">Response Times</h4>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-sm">Live Chat</span>
+                  <span class="text-sm font-semibold text-green-600">2-5 minutes</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm">Email Support</span>
+                  <span class="text-sm font-semibold text-blue-600">2-4 hours</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm">Phone Support</span>
+                  <span class="text-sm font-semibold text-purple-600">Immediate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Guides Section -->
+      <div id="guidesSection" class="help-section">
+        <div class="card">
+          <h3 class="text-2xl font-bold mb-6">User Guides & Tutorials</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="info-card" onclick="openGuide('getting-started')">
+              <div class="info-icon bg-gradient-to-br from-green-500 to-green-600">
+                <i class="fas fa-play"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Getting Started</h4>
+              <p class="text-gray-600">Learn the basics of using QuickFix Pro</p>
+            </div>
+
+            <div class="info-card" onclick="openGuide('booking-service')">
+              <div class="info-icon bg-gradient-to-br from-blue-500 to-blue-600">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Booking a Service</h4>
+              <p class="text-gray-600">Step-by-step guide to booking professionals</p>
+            </div>
+
+            <div class="info-card" onclick="openGuide('professional-setup')">
+              <div class="info-icon bg-gradient-to-br from-purple-500 to-purple-600">
+                <i class="fas fa-briefcase"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Professional Setup</h4>
+              <p class="text-gray-600">How to set up your professional profile</p>
+            </div>
+
+            <div class="info-card" onclick="openGuide('payment-billing')">
+              <div class="info-icon bg-gradient-to-br from-yellow-500 to-yellow-600">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Payment & Billing</h4>
+              <p class="text-gray-600">Understanding payments and billing</p>
+            </div>
+
+            <div class="info-card" onclick="openGuide('safety-security')">
+              <div class="info-icon bg-gradient-to-br from-red-500 to-red-600">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Safety & Security</h4>
+              <p class="text-gray-600">Tips for safe and secure service experiences</p>
+            </div>
+
+            <div class="info-card" onclick="openGuide('mobile-app')">
+              <div class="info-icon bg-gradient-to-br from-indigo-500 to-indigo-600">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-2">Mobile App</h4>
+              <p class="text-gray-600">Using QuickFix Pro on your phone</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Troubleshooting Section -->
+      <div id="troubleshootingSection" class="help-section">
+        <div class="card">
+          <h3 class="text-2xl font-bold mb-6">Troubleshooting Common Issues</h3>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h4 class="text-lg font-bold mb-4">Account Issues</h4>
+              <div class="space-y-4">
+                <div class="border-l-4 border-blue-500 pl-4">
+                  <h5 class="font-semibold">Can't log in to my account</h5>
+                  <p class="text-sm text-gray-600">Try resetting your password, check your email for verification, or clear your browser cache.</p>
+                </div>
+                <div class="border-l-4 border-blue-500 pl-4">
+                  <h5 class="font-semibold">Email verification not received</h5>
+                  <p class="text-sm text-gray-600">Check spam folder, ensure correct email address, or request a new verification email.</p>
+                </div>
+                <div class="border-l-4 border-blue-500 pl-4">
+                  <h5 class="font-semibold">Profile information won't save</h5>
+                  <p class="text-sm text-gray-600">Ensure all required fields are filled, check internet connection, and try refreshing the page.</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-bold mb-4">Booking Problems</h4>
+              <div class="space-y-4">
+                <div class="border-l-4 border-green-500 pl-4">
+                  <h5 class="font-semibold">Can't find available professionals</h5>
+                  <p class="text-sm text-gray-600">Try expanding your search radius, checking different time slots, or browsing different service categories.</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                  <h5 class="font-semibold">Booking confirmation not received</h5>
+                  <p class="text-sm text-gray-600">Check your email and SMS notifications, verify contact information in your profile.</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                  <h5 class="font-semibold">Professional didn't show up</h5>
+                  <p class="text-sm text-gray-600">Contact support immediately for assistance and potential refund or rebooking.</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-bold mb-4">Payment Issues</h4>
+              <div class="space-y-4">
+                <div class="border-l-4 border-yellow-500 pl-4">
+                  <h5 class="font-semibold">Payment failed or declined</h5>
+                  <p class="text-sm text-gray-600">Verify card details, check account balance, or try a different payment method.</p>
+                </div>
+                <div class="border-l-4 border-yellow-500 pl-4">
+                  <h5 class="font-semibold">Refund not received</h5>
+                  <p class="text-sm text-gray-600">Refunds typically take 3-5 business days. Check with your bank or contact support if delayed.</p>
+                </div>
+                <div class="border-l-4 border-yellow-500 pl-4">
+                  <h5 class="font-semibold">Incorrect charge amount</h5>
+                  <p class="text-sm text-gray-600">Review booking details and contact support with transaction ID for investigation.</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-bold mb-4">Technical Problems</h4>
+              <div class="space-y-4">
+                <div class="border-l-4 border-purple-500 pl-4">
+                  <h5 class="font-semibold">App or website running slowly</h5>
+                  <p class="text-sm text-gray-600">Clear browser cache, check internet connection, or try using a different browser.</p>
+                </div>
+                <div class="border-l-4 border-purple-500 pl-4">
+                  <h5 class="font-semibold">Features not working properly</h5>
+                  <p class="text-sm text-gray-600">Try refreshing the page, disable browser extensions, or contact technical support.</p>
+                </div>
+                <div class="border-l-4 border-purple-500 pl-4">
+                  <h5 class="font-semibold">Mobile app crashes</h5>
+                  <p class="text-sm text-gray-600">Update to latest version, restart your device, or reinstall the app.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <div id="feedbackSection" class="help-section">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card">
+            <h3 class="text-2xl font-bold mb-6">Share Your Feedback</h3>
+            <p class="text-gray-600 mb-6">Help us improve QuickFix Pro by sharing your thoughts and suggestions.</p>
+            
+            <form onsubmit="submitFeedback(event)">
+              <div class="form-group">
+                <label class="form-label">Feedback Type</label>
+                <select class="form-input" required>
+                  <option value="">Select feedback type</option>
+                  <option value="suggestion">Feature Suggestion</option>
+                  <option value="improvement">Improvement Idea</option>
+                  <option value="bug">Bug Report</option>
+                  <option value="compliment">Compliment</option>
+                  <option value="complaint">Complaint</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Rate Your Experience</label>
+                <div class="flex gap-2">
+                  <button type="button" class="btn-base btn-outline btn-sm" onclick="setRating(1)">1⭐</button>
+                  <button type="button" class="btn-base btn-outline btn-sm" onclick="setRating(2)">2⭐</button>
+                  <button type="button" class="btn-base btn-outline btn-sm" onclick="setRating(3)">3⭐</button>
+                  <button type="button" class="btn-base btn-outline btn-sm" onclick="setRating(4)">4⭐</button>
+                  <button type="button" class="btn-base btn-outline btn-sm" onclick="setRating(5)">5⭐</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Your Feedback</label>
+                <textarea class="form-input" rows="6" placeholder="Share your thoughts, suggestions, or report issues..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn-base btn-primary w-full">
+                <i class="fas fa-paper-plane mr-2"></i>Submit Feedback
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3 class="text-2xl font-bold mb-6">Recent Updates</h3>
+            <div class="space-y-4">
+              <div class="border-l-4 border-green-500 pl-4">
+                <h4 class="font-semibold">New Feature: Real-time Chat</h4>
+                <p class="text-sm text-gray-600 mb-1">Chat directly with professionals during service</p>
+                <span class="text-xs text-gray-500">2 days ago</span>
+              </div>
+              
+              <div class="border-l-4 border-blue-500 pl-4">
+                <h4 class="font-semibold">Improved: Faster Search Results</h4>
+                <p class="text-sm text-gray-600 mb-1">Search performance improved by 40%</p>
+                <span class="text-xs text-gray-500">1 week ago</span>
+              </div>
+              
+              <div class="border-l-4 border-purple-500 pl-4">
+                <h4 class="font-semibold">New: Professional Verification Badges</h4>
+                <p class="text-sm text-gray-600 mb-1">Enhanced trust with verification status</p>
+                <span class="text-xs text-gray-500">2 weeks ago</span>
+              </div>
+            </div>
+
+            <h4 class="text-lg font-bold mt-6 mb-4">Roadmap</h4>
+            <div class="space-y-3">
+              <div class="flex items-center">
+                <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                <span class="text-sm">Enhanced mobile app experience</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                <span class="text-sm">AI-powered professional matching</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span class="text-sm">Video consultation features</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -539,100 +2007,42 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav mobile-only">
     <div class="flex">
-      <div class="nav-item active" id="mobileCustomer" data-action="switch-view" data-view="customer">
+      <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer')">
         <i class="fas fa-home" aria-hidden="true"></i>
         <span>Home</span>
       </div>
-      <div class="nav-item hidden" id="mobileProfessional" data-action="go-professional">
+      <div class="nav-item hidden" id="mobileProfessional" onclick="switchView('professional')">
         <i class="fas fa-briefcase" aria-hidden="true"></i>
         <span>Pro</span>
       </div>
-      <div class="nav-item" data-action="open-modal" data-modal="searchModal">
+      <div class="nav-item" onclick="openModal('searchModal')">
         <i class="fas fa-search" aria-hidden="true"></i>
         <span>Search</span>
       </div>
-      <div class="nav-item" id="mobileAdmin" data-action="switch-view" data-view="admin">
+      <div class="nav-item" id="mobileAdmin" onclick="switchView('admin')">
         <i class="fas fa-crown" aria-hidden="true"></i>
         <span>Admin</span>
       </div>
-      <div class="nav-item" data-action="open-modal" data-modal="userMenuModal">
+      <div class="nav-item" onclick="openModal('userMenuModal')">
         <i class="fas fa-user" aria-hidden="true"></i>
         <span>Profile</span>
       </div>
     </div>
   </nav>
 
-  <!-- Footer -->
-  <footer class="bg-gray-900 text-white py-8 md:py-12 mt-8 md:mt-12">
-    <div class="responsive-container">
-      <div class="text-center mb-6 md:mb-8 animate-slide-up">
-        <div class="flex items-center justify-center space-x-3 mb-4">
-          <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center animate-float"><i class="fas fa-tools text-white text-xl md:text-2xl" aria-hidden="true"></i></div>
-          <h3 class="text-2xl md:text-3xl font-black">QuickFix Pro</h3>
-        </div>
-        <p class="text-gray-300 font-medium text-lg">Professional services made simple and accessible</p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
-        <div class="animate-slide-up">
-          <h4 class="text-lg font-bold mb-4">Services</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Plumbing</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Electrical</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">HVAC</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Handyman</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Construction</span></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.1s">
-          <h4 class="text-lg font-bold mb-4">Company</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Careers</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Blog</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Press</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Investors</span></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.2s">
-          <h4 class="text-lg font-bold mb-4">Support</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Help Center</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Contact Us</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Safety</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Trust & Safety</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Insurance</span></li>
-          </ul>
-        </div>
-        <div class="animate-slide-up" style="animation-delay:.3s">
-          <h4 class="text-lg font-bold mb-4">Legal</h4>
-          <ul class="space-y-3 text-gray-300">
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">GDPR</span></li>
-            <li><span class="hover:text-white transition-colors hover:translate-x-1 inline-block">Accessibility</span></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="text-center text-gray-400 text-sm md:text-base animate-fade-in">
-        <p>© 2024 QuickFix Pro. All rights reserved. | Platform commission: 1.5% per completed job</p>
-      </div>
-    </div>
-  </footer>
-
+  <!-- All Modals -->
+  
   <!-- Login Modal -->
   <div id="loginModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
     <div class="modal-content" role="document">
-      <button class="close-btn" data-action="close-modal" data-modal="loginModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <button class="close-btn" onclick="closeModal('loginModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
       <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-sign-in-alt text-white text-2xl" aria-hidden="true"></i></div>
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-sign-in-alt text-white text-2xl" aria-hidden="true"></i></div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Welcome Back</h2>
         <p class="text-gray-600 mt-2">Sign in to your QuickFix Pro account</p>
       </div>
       <div class="modal-body">
-        <form class="space-y-6" id="loginForm" novalidate>
+        <form class="space-y-6" id="loginForm" onsubmit="handleLogin(event)" novalidate>
           <div class="form-group">
             <label for="login-email" class="form-label">Email Address</label>
             <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required/>
@@ -646,17 +2056,16 @@
               <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary rounded"/>
               <span class="text-sm text-gray-600">Remember me</span>
             </label>
-            <a href="#" data-action="start-reset" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
+            <a href="#" onclick="startPasswordReset()" class="text-sm text-primary hover:text-primary-dark font-semibold transition-colors">Forgot password?</a>
           </div>
           <button type="submit" class="btn-base btn-primary w-full" id="loginSubmitBtn">Sign In Securely</button>
         </form>
 
-        <div id="googleSignInBtnLogin" class="text-center mt-6"></div>
         <div id="login-message" class="text-center text-red-600 mt-3" aria-live="polite"></div>
 
         <div class="text-center mt-6">
           <p class="text-gray-600">Don't have an account?
-            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="loginModal" data-open="signupModal">Create account</button>
+            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" onclick="swapModal('loginModal', 'signupModal')">Create account</button>
           </p>
         </div>
       </div>
@@ -666,51 +2075,25 @@
   <!-- User Menu Modal -->
   <div id="userMenuModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
     <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="userMenuModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <button class="close-btn" onclick="closeModal('userMenuModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
       <div class="modal-header">
-        <div id="userAvatarLarge" class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold animate-bounce-gentle"><i class="fas fa-user" aria-hidden="true"></i></div>
+        <div id="userAvatarLarge" class="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold"><i class="fas fa-user" aria-hidden="true"></i></div>
         <h2 id="userNameLarge" class="text-2xl md:text-3xl font-bold text-text-primary">Guest User</h2>
         <p id="userStatusLarge" class="text-gray-600 mt-2">Not signed in</p>
       </div>
       <div class="modal-body">
         <div id="guestUserMenu" class="space-y-4">
-          <button class="btn-base btn-primary w-full" data-action="swap-modal" data-close="userMenuModal" data-open="loginModal"><i class="fas fa-sign-in-alt mr-2" aria-hidden="true"></i>Sign In</button>
-          <button class="btn-base btn-outline w-full" data-action="swap-modal" data-close="userMenuModal" data-open="signupModal"><i class="fas fa-user-plus mr-2" aria-hidden="true"></i>Create Account</button>
+          <button class="btn-base btn-primary w-full" onclick="swapModal('userMenuModal', 'loginModal')"><i class="fas fa-sign-in-alt mr-2" aria-hidden="true"></i>Sign In</button>
+          <button class="btn-base btn-outline w-full" onclick="swapModal('userMenuModal', 'signupModal')"><i class="fas fa-user-plus mr-2" aria-hidden="true"></i>Create Account</button>
           <div class="text-center pt-4 border-top border-gray-200"><p class="text-sm text-gray-600">Join thousands of satisfied customers and professionals</p></div>
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
-          <button class="btn-base btn-outline w-full" data-action="open-settings"><i class="fas fa-cog mr-2" aria-hidden="true"></i>Settings & Privacy</button>
+          <button class="btn-base btn-outline w-full" onclick="openSettings()"><i class="fas fa-cog mr-2" aria-hidden="true"></i>Settings & Privacy</button>
           <button class="btn-base btn-outline w-full"><i class="fas fa-history mr-2" aria-hidden="true"></i>Booking History</button>
           <button class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2" aria-hidden="true"></i>Payment Methods</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-headset mr-2" aria-hidden="true"></i>Help & Support</button>
+          <button class="btn-base btn-outline w-full" onclick="openHelpSupport()"><i class="fas fa-headset mr-2" aria-hidden="true"></i>Help & Support</button>
           <div class="pt-4 border-t border-gray-200">
-            <button class="btn-base btn-danger w-full" data-action="logout"><i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i>Sign Out</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mobile Search Modal -->
-  <div id="searchModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
-    <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="searchModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <div class="modal-header">
-        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Find Services</h2>
-        <p class="text-gray-600 mt-2">Search for professionals near you</p>
-      </div>
-      <div class="modal-body">
-        <div class="relative mb-6">
-          <input id="mobileSearchInput" type="text" placeholder="What needs fixing?" class="form-input pr-12"/>
-          <button type="button" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center" data-action="search-from-mobile" aria-label="Search"><i class="fas fa-search text-white" aria-hidden="true"></i></button>
-        </div>
-        <div class="mt-8">
-          <h3 class="font-bold mb-4">Popular Searches</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="IKEA assembly">IKEA Assembly</button>
-            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="Leaky tap">Leaky Tap</button>
-            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="TV mounting">TV Mounting</button>
-            <button type="button" class="btn-base btn-outline text-sm" data-action="navigate-service" data-service="AC repair">AC Repair</button>
+            <button class="btn-base btn-danger w-full" onclick="handleLogout()"><i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i>Sign Out</button>
           </div>
         </div>
       </div>
@@ -720,9 +2103,9 @@
   <!-- Signup Modal -->
   <div id="signupModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
     <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="signupModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <button class="close-btn" onclick="closeModal('signupModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
       <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4">
           <i class="fas fa-user-plus text-white text-2xl" aria-hidden="true"></i>
         </div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
@@ -730,7 +2113,7 @@
       </div>
 
       <div class="modal-body">
-        <form class="space-y-6" id="signupForm" novalidate>
+        <form class="space-y-6" id="signupForm" onsubmit="handleSignup(event)" novalidate>
           <div class="form-group">
             <label class="form-label" for="fullName">Full Name</label>
             <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required />
@@ -749,11 +2132,11 @@
           <div class="form-group">
             <label class="form-label">Account Type</label>
             <div class="grid grid-cols-2 gap-3">
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer selected" data-action="select-role" data-role="customer">
+              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer selected" onclick="selectRole('customer')">
                 <input type="radio" name="accountRole" id="roleUser" value="customer" class="hidden" checked>
                 <span class="font-semibold"><i class="fas fa-user mr-2" aria-hidden="true"></i>User</span>
               </label>
-              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" data-action="select-role" data-role="professional">
+              <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" onclick="selectRole('professional')">
                 <input type="radio" name="accountRole" id="roleProfessional" value="professional" class="hidden">
                 <span class="font-semibold"><i class="fas fa-briefcase mr-2" aria-hidden="true"></i>Professional</span>
               </label>
@@ -761,176 +2144,79 @@
             <p class="text-xs text-gray-500 mt-2">Users can browse and book pros. Professionals can list services and access the Pro dashboard.</p>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="signupLanguage">Preferred Language</label>
-            <select id="signupLanguage" class="form-input">
-              <option value="en" selected>English</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="it">Italiano</option>
-              <option value="pt">Português</option>
-              <option value="zh">中文</option>
-              <option value="ja">日本語</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="signupDob">Date of Birth</label>
-            <input id="signupDob" type="date" class="form-input"/>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="form-label" for="signupAddress">Address</label>
-              <input id="signupAddress" type="text" class="form-input" placeholder="Street & number"/>
-            </div>
-            <div>
-              <label class="form-label" for="signupCity">City</label>
-              <input id="signupCity" type="text" class="form-input" placeholder="City"/>
-            </div>
-            <div>
-              <label class="form-label" for="signupCountry">Country</label>
-              <input id="signupCountry" type="text" class="form-input" placeholder="Country"/>
-            </div>
-            <div>
-              <label class="form-label" for="signupPostal">Postal Code</label>
-              <input id="signupPostal" type="text" class="form-input" placeholder="Postal code"/>
-            </div>
-          </div>
-          <button type="button" class="btn-base btn-outline w-full" data-action="use-current-location"><i class="fas fa-location-arrow mr-2" aria-hidden="true"></i>Use current location for City</button>
-
           <button type="submit" class="btn-base btn-secondary w-full" id="signupSubmitBtn">Create Account</button>
           <div id="signup-message" class="text-center text-red-600" aria-live="polite"></div>
         </form>
 
-        <div id="googleSignInBtnSignup" class="text-center mt-6"></div>
-
         <div class="text-center mt-6">
           <p class="text-gray-600">
             Already have an account?
-            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" data-action="swap-modal" data-close="signupModal" data-open="loginModal">Sign in</button>
+            <button type="button" class="text-primary font-bold hover:text-primary-dark transition-colors" onclick="swapModal('signupModal', 'loginModal')">Sign in</button>
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Work Upload Modal -->
-  <div id="workUploadModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+  <!-- Search Modal -->
+  <div id="searchModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
     <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="workUploadModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <button class="close-btn" onclick="closeModal('searchModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
       <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-camera text-white text-2xl" aria-hidden="true"></i></div>
-        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Add Work</h2>
-        <p class="text-gray-600 mt-2">Upload photos or files to showcase on your profile</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Find Services</h2>
+        <p class="text-gray-600 mt-2">Search for professionals near you</p>
       </div>
       <div class="modal-body">
-        <form class="space-y-6" id="workForm" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="workTitle">Project Title</label>
-            <input id="workTitle" type="text" class="form-input" placeholder="e.g., Kitchen Plumbing Repair" required/>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="workDesc">Description</label>
-            <textarea id="workDesc" class="form-input" rows="3" placeholder="Describe the work completed..." required></textarea>
-          </div>
-
-          <div class="space-y-3">
-            <label class="form-label">Photos</label>
-            <div id="workDropZone" class="dropzone p-4 flex items-center justify-center text-gray-600 cursor-pointer" role="button" tabindex="0" aria-label="Add photos">
-              <div class="text-center">
-                <i class="fas fa-images text-xl" aria-hidden="true"></i>
-                <div class="mt-1 text-sm">Drag & drop images here, or click to select</div>
-                <div class="text-xs text-gray-500">Max 5 images, up to 2MB each</div>
-              </div>
-            </div>
-            <input id="workImagesInput" class="hidden" type="file" accept="image/*" multiple>
-          </div>
-
-          <div class="space-y-3">
-            <label class="form-label">Attach Files (optional)</label>
-            <input id="workFilesInput" class="form-input" type="file" multiple
-                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.rtf,.zip,.rar,.heic,.webp,.png,.jpg,.jpeg">
-            <div class="text-xs text-gray-500">Up to 5 files, 5MB each</div>
-          </div>
-
-          <div>
-            <label class="form-label">Attachments Preview</label>
-            <div id="workAttachmentList" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div id="workProgress" class="hidden" aria-live="polite">
-            <div class="w-full bg-gray-200 rounded-full h-3">
-              <div id="workProgressBar" class="h-3 rounded-full" style="width:0%; background:linear-gradient(135deg,#6B46C1 0%,#8B5CF6 100%)"></div>
-            </div>
-            <div id="workProgressText" class="mt-2 text-sm text-gray-600 text-center">Preparing…</div>
-          </div>
-
-          <button id="workSubmitBtn" type="submit" class="btn-base btn-primary w-full"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Add to Portfolio</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Withdraw Modals -->
-  <div id="withdrawModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
-    <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="withdrawModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-university text-white text-2xl" aria-hidden="true"></i></div>
-        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Withdraw Funds</h2>
-        <p class="text-gray-600 mt-2">Transfer to your bank account</p>
-      </div>
-      <div class="modal-body">
-        <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <div class="text-sm text-gray-600 mb-2">Available Balance</div>
-          <div class="text-3xl md:text-4xl font-black text-secondary">$2,847.50</div>
+        <div class="relative mb-6">
+          <input id="mobileSearchInput" type="text" placeholder="What needs fixing?" class="form-input pr-12"/>
+          <button type="button" class="absolute right-2 top-2 md:top-3 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center" onclick="doSearch(document.getElementById('mobileSearchInput').value)" aria-label="Search"><i class="fas fa-search text-white" aria-hidden="true"></i></button>
         </div>
-        <form class="space-y-6" id="withdrawForm">
-          <div class="form-group">
-            <label class="form-label">Withdrawal Amount</label>
-            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="10" max="2847.50" required/>
+        <div class="mt-8">
+          <h3 class="font-bold mb-4">Popular Searches</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" class="btn-base btn-outline text-sm" onclick="doSearch('IKEA assembly')">IKEA Assembly</button>
+            <button type="button" class="btn-base btn-outline text-sm" onclick="doSearch('Leaky tap')">Leaky Tap</button>
+            <button type="button" class="btn-base btn-outline text-sm" onclick="doSearch('TV mounting')">TV Mounting</button>
+            <button type="button" class="btn-base btn-outline text-sm" onclick="doSearch('AC repair')">AC Repair</button>
           </div>
-          <button type="submit" class="btn-base btn-secondary w-full"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Funds</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div id="adminWithdrawModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
-    <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="adminWithdrawModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <div class="modal-header">
-        <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle"><i class="fas fa-crown text-white text-2xl" aria-hidden="true"></i></div>
-        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Platform Earnings</h2>
-        <p class="text-gray-600 mt-2">Withdraw platform commission</p>
-      </div>
-      <div class="modal-body">
-        <div class="earnings-highlight p-4 md:p-6 rounded-lg mb-6 text-center animate-scale-in">
-          <div class="text-sm text-amber-200 mb-2">Available Earnings</div>
-          <div class="text-3xl md:text-4xl font-black">$5,217.48</div>
         </div>
-        <form class="space-y-6" id="adminWithdrawForm">
-          <div class="form-group">
-            <label class="form-label">Withdrawal Amount</label>
-            <input type="number" class="form-input" placeholder="Enter amount" step="0.01" min="100" max="5217.48" required/>
-          </div>
-          <button type="submit" class="btn-base btn-accent w-full"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Platform Earnings</button>
-        </form>
       </div>
     </div>
   </div>
 
-  <!-- Profile Modal -->
-  <div id="profileModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+  <!-- Other Modals -->
+  <div id="workUploadModal" class="modal-overlay hidden">
     <div class="modal-content">
-      <button class="close-btn" data-action="close-modal" data-modal="profileModal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <div class="modal-header" id="profileModalHeader"></div>
+      <button class="close-btn" onclick="closeModal('workUploadModal')"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2>Upload Work</h2>
+      </div>
       <div class="modal-body">
-        <div id="profileMeta" class="text-center text-gray-600 mb-6"></div>
-        <h3 class="text-xl font-bold mb-4 text-text-primary text-center">Portfolio</h3>
-        <div id="profileWorkGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <p>Work upload form would go here...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="withdrawModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('withdrawModal')"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2>Withdraw Funds</h2>
+      </div>
+      <div class="modal-body">
+        <p>Withdrawal form would go here...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminWithdrawModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('adminWithdrawModal')"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2>Admin Withdraw</h2>
+      </div>
+      <div class="modal-body">
+        <p>Admin withdrawal form would go here...</p>
       </div>
     </div>
   </div>
@@ -938,17 +2224,12 @@
   <!-- Toast -->
   <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
-  <!-- Firebase SDKs (compat) -->
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
-  <!-- Algolia client (before main.js) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
-
-  <!-- App JS -->
-  <script defer src="main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

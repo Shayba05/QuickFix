@@ -1,857 +1,1226 @@
-/* QuickFix Pro – App Logic (resilient Firestore + no stuck spinners)
- * - Firestore transport forced to long-poll; no persistence while debugging
- * - All Firestore calls are timeboxed or fire-and-forget so UI never hangs
- * - Signup/Login still close modals + toast even if Firestore is offline
- * - Uploads: fail fast, clear progress UI, readable errors
- */
+// QuickFix Pro - Enhanced JavaScript with Help & Support
+console.log('QuickFix Pro starting...');
 
-(function () {
-  const init = () => {
-    // ---- Firebase init ----
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
-      authDomain: "quickfix-cee4a.firebaseapp.com",
-      projectId: "quickfix-cee4a",
-      storageBucket: "quickfix-cee4a.appspot.com",
-      messagingSenderId: "1075514949479",
-      appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
-      measurementId: "G-XS4LDTFRSH"
-    };
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBYlkzJFlUWEACtLZ_scg_XWSt5fkv0cGM",
+  authDomain: "quickfix-cee4a.firebaseapp.com",
+  projectId: "quickfix-cee4a",
+  storageBucket: "quickfix-cee4a.appspot.com",
+  messagingSenderId: "1075514949479",
+  appId: "1:1075514949479:web:83906b6cd54eeaa48cb9c2",
+  measurementId: "G-XS4LDTFRSH"
+};
 
-    // You’re using the v8 compat style in code. That’s fine as long as the compat bundle is loaded.
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-    try { firebase.analytics(); } catch (_) {}
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-    // Cap Firebase Storage automatic retries so "Uploading…" doesn't hang forever
-    try {
-      storage.setMaxUploadRetryTime(15000);
-      storage.setMaxOperationRetryTime(15000);
-    } catch (_) {}
+// Global variables
+let currentUser = null;
+let userSettings = {};
+let selectedPhoto = null;
+let currentHelpSection = 'overview';
+let selectedRating = 0;
 
-    // ---------- Firestore: force safe transport & avoid persistence while debugging ----------
-    try {
-      if (db?.settings) {
-        db.settings({
-          ignoreUndefinedProperties: true,
-          // These two avoid the flaky streaming transport that’s 400’ing on your network
-          experimentalAutoDetectLongPolling: true,
-          experimentalForceLongPolling: true,
-          useFetchStreams: false
-        });
-      }
+// Helper functions
+function $(selector) {
+  return document.querySelector(selector);
+}
 
-      // IMPORTANT: while you’re seeing 400s, don’t enable persistence (it can mask connection issues).
-      // If you previously had it on, clear the tab and hard-reload.
-      // If you later want it back: db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    } catch (_) {}
+function $$(selector) {
+  return Array.from(document.querySelectorAll(selector));
+}
 
-    // ---- Helpers ----
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-    const show = (el) => el && el.classList.remove('hidden');
-    const hide = (el) => el && el.classList.add('hidden');
-    const pruneUndefined = (obj) => Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v !== undefined));
+function show(element) {
+  if (element) element.classList.remove('hidden');
+}
 
-    const withTimeout = (promise, ms = 8000, label = 'Operation timed out') =>
-      Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error(label)), ms))]);
+function hide(element) {
+  if (element) element.classList.add('hidden');
+}
 
-    function setLoading(btn, isLoading, loadingLabel, defaultHTML) {
-      if (!btn) return;
-      if (isLoading) {
-        if (btn.dataset.busy === '1') return;
-        btn.dataset.busy = '1';
-        btn.dataset.prevHtml = defaultHTML ?? btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${loadingLabel || 'Working...'}`;
-      } else {
-        btn.dataset.busy = '0';
-        btn.disabled = false;
-        btn.innerHTML = defaultHTML ?? btn.dataset.prevHtml ?? 'Done';
-      }
-    }
+function toast(message, type = 'success', duration = 3000) {
+  console.log(`Toast: ${message} (${type})`);
+  const toastEl = $('#toast');
+  if (!toastEl) return;
+  
+  toastEl.textContent = message;
+  toastEl.className = '';
+  toastEl.id = 'toast';
+  toastEl.classList.add('show', type);
+  show(toastEl);
+  
+  setTimeout(() => {
+    toastEl.classList.remove('show');
+    hide(toastEl);
+  }, duration);
+}
 
-    const toastEl = $('#toast');
-    function toast(msg, type = 'success', ms = 2400) {
-      if (!toastEl) { console.log(`[toast:${type}]`, msg); return; }
-      toastEl.textContent = msg;
-      toastEl.className = '';
-      toastEl.id = 'toast';
-      toastEl.classList.add('show', type);
-      show(toastEl);
-      setTimeout(() => { toastEl.classList.remove('show'); hide(toastEl); }, ms);
-    }
+// Main functions - WORKING!
+function goHome() {
+  console.log('Go home clicked');
+  switchView('customer');
+}
 
-    // Human-friendly Firebase error text
-    function mapFirebaseError(err) {
-      const code = String(err?.code || '').toLowerCase();
-      if (code.includes('storage/unauthorized')) return 'Not allowed to upload: check Firebase Storage rules.';
-      if (code.includes('permission-denied'))    return 'Permission denied by Firestore/Storage rules.';
-      if (code.includes('retry-limit-exceeded')) return 'Network unstable; please try again.';
-      if (code.includes('unavailable'))          return 'Couldn’t reach Firestore. Network/proxy is blocking it.';
-      if (code.includes('canceled'))             return 'Upload canceled.';
-      return err?.message || 'Operation failed';
-    }
+function switchView(viewName) {
+  console.log('Switch view:', viewName);
+  
+  // Hide all views
+  $$('#customerView, #professionalView, #adminView, #settingsView, #helpView, #algoliaResults').forEach(hide);
+  
+  // Show target view
+  const targetView = $(`#${viewName}View`);
+  if (targetView) {
+    show(targetView);
+  }
+  
+  // Update mobile nav
+  $$('.mobile-nav .nav-item').forEach(item => item.classList.remove('active'));
+  if (viewName === 'customer') $('#mobileCustomer')?.classList.add('active');
+  if (viewName === 'admin') $('#mobileAdmin')?.classList.add('active');
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    // --- NEW: quick preflight reachability check for Firestore ---
-    async function canReachFirestore() {
-      try {
-        await withTimeout(db.collection('_ping').limit(1).get(), 8000, 'firestore-timeout');
-        return true;
-      } catch (_) { return false; }
-    }
+function openModal(modalId) {
+  console.log('Open modal:', modalId);
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('show');
+  });
+}
 
-    // Extra visibility while debugging
-    window.addEventListener('offline', () => toast('You are offline. Check your connection.', 'error', 3000));
-    window.addEventListener('online', () => toast('Back online', 'success', 1500));
-    console.info('[QuickFix] navigator.onLine =', navigator.onLine);
+function closeModal(modalId) {
+  console.log('Close modal:', modalId);
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  
+  modal.classList.remove('show');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 200);
+}
 
-    const views = {
-      customer: $('#customerView'),
-      professional: $('#professionalView'),
-      admin: $('#adminView'),
-      settings: $('#settingsView'),
-    };
+function swapModal(closeModalId, openModalId) {
+  console.log('Swap modal:', closeModalId, '->', openModalId);
+  closeModal(closeModalId);
+  setTimeout(() => {
+    openModal(openModalId);
+  }, 200);
+}
 
-    function switchView(name) {
-      Object.values(views).forEach(hide);
-      show(views[name]);
-      $$('.mobile-nav .nav-item').forEach(i => i.classList.remove('active'));
-      if (name === 'customer') $('#mobileCustomer')?.classList.add('active');
-      if (name === 'admin') $('#mobileAdmin')?.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+function doSearch(query) {
+  console.log('Search:', query);
+  query = (query || '').trim();
+  if (!query) return;
+  
+  hide($('#customerView'));
+  show($('#algoliaResults'));
+  $('#algoliaResultsList').innerHTML = `
+    <div class="card">
+      <h3 class="font-bold mb-2">Search Results for: "${query}"</h3>
+      <p class="text-gray-600">This is a placeholder for search results. In a real app, this would show professionals and services matching your search.</p>
+    </div>`;
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    function openModal(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        el.classList.add('show');
-        const focusable = el.querySelector('input, select, textarea, button');
-        if (focusable) focusable.focus({ preventScroll: true });
-      });
-    }
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove('show');
-      setTimeout(() => el.classList.add('hidden'), 180);
-    }
+function selectRole(role) {
+  console.log('Select role:', role);
+  $$('.user-type-card').forEach(card => card.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  event.currentTarget.querySelector('input[type="radio"]').checked = true;
+}
 
-    document.addEventListener('click', (e) => {
-      const overlay = e.target.closest('.modal-overlay');
-      const content = e.target.closest('.modal-content');
-      if (overlay && !content && overlay.classList.contains('show')) {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.classList.add('hidden'), 180);
-      }
+function openSettings() {
+  console.log('Open settings');
+  closeModal('userMenuModal');
+  switchView('settings');
+}
+
+function openHelpSupport() {
+  console.log('Open help & support');
+  closeModal('userMenuModal');
+  switchView('help');
+}
+
+function handleLogout() {
+  console.log('Logout clicked');
+  auth.signOut()
+    .then(() => {
+      toast('Signed out successfully');
+      closeModal('userMenuModal');
+    })
+    .catch((error) => {
+      console.error('Logout error:', error);
+      toast('Error signing out', 'error');
     });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.show').forEach(m => {
-          m.classList.remove('show'); setTimeout(() => m.classList.add('hidden'), 180);
-        });
-      }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  console.log('Login form submitted');
+  
+  const email = $('#login-email').value.trim();
+  const password = $('#login-password').value;
+  
+  if (!email || !password) {
+    toast('Please enter email and password', 'error');
+    return;
+  }
+  
+  const btn = $('#loginSubmitBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+  btn.disabled = true;
+  
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      toast('Welcome back!');
+      closeModal('loginModal');
+    })
+    .catch((error) => {
+      console.error('Login error:', error);
+      toast(error.message || 'Login failed', 'error');
+      $('#login-message').textContent = error.message || 'Login failed';
+    })
+    .finally(() => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     });
+}
 
-    // ---- Location ----
-    (function initLocation() {
-      const pill = $('#locationPill'), citySpan = $('#locationCity');
-      if (!pill) return;
-      try {
-        navigator.geolocation.getCurrentPosition(
-          () => { citySpan.textContent = 'Nearby'; show(pill); },
-          () => { citySpan.textContent = 'Your area'; show(pill); },
-          { timeout: 1500 }
-        );
-      } catch (_) { show(pill); }
-    })();
-
-    // ---- Homepage data ----
-    const popular = [
-      { name:'Plumbing', icon:'fa-faucet', color:'bg-blue-500' },
-      { name:'Electrical', icon:'fa-bolt', color:'bg-yellow-500' },
-      { name:'HVAC', icon:'fa-fan', color:'bg-cyan-600' },
-      { name:'Handyman', icon:'fa-screwdriver-wrench', color:'bg-emerald-600' },
-      { name:'Carpentry', icon:'fa-hammer', color:'bg-orange-500' },
-      { name:'Cleaning', icon:'fa-broom', color:'bg-indigo-500' },
-    ];
-    const categories = [
-      'Plumbing','Electrical','HVAC','Handyman','Carpentry','Cleaning',
-      'Gardening','Painting','Locksmith','IT Support','Moving','Appliances'
-    ];
-    const pros = [
-      { name:'Amina R.', title:'Master Plumber', rating:4.95, jobs:312 },
-      { name:'Victor K.', title:'Certified Electrician', rating:4.92, jobs:287 },
-      { name:'Lina P.', title:'AC Specialist', rating:4.90, jobs:201 },
-    ];
-
-    function renderPopular() {
-      const c = $('#popularServices'); if (!c) return;
-      c.innerHTML = popular.map(p => `
-        <div class="card card-interactive animate-scale-in text-center" data-action="navigate-service" data-service="${p.name}">
-          <div class="service-icon ${p.color} mx-auto mb-2"><i class="fas ${p.icon}" aria-hidden="true"></i></div>
-          <div class="font-bold">${p.name}</div>
-        </div>`).join('');
-    }
-    function renderCategories() {
-      const c = $('#serviceCategories'); if (!c) return;
-      c.innerHTML = categories.map(n => `
-        <div class="card card-interactive animate-slide-up text-center" data-action="navigate-service" data-service="${n}">
-          <div class="font-bold">${n}</div>
-        </div>`).join('');
-    }
-    function renderFeaturedPros() {
-      const c = $('#featuredProfessionals'); if (!c) return;
-      c.innerHTML = pros.map((p, i) => `
-        <div class="card professional-card animate-slide-up">
-          <div class="flex items-center gap-3">
-            <div class="avatar-container w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold" aria-hidden="true">
-              ${p.name.charAt(0)}
-            </div>
-            <div>
-              <div class="font-bold">${p.name}</div>
-              <div class="text-sm text-gray-500">${p.title}</div>
-            </div>
-            <div class="ml-auto text-sm font-semibold">${p.rating}★ • ${p.jobs}</div>
-          </div>
-          <button class="btn-base btn-outline w-full mt-4" data-action="open-profile" data-index="${i}">
-            View Profile
-          </button>
-        </div>`).join('');
-    }
-    renderPopular(); renderCategories(); renderFeaturedPros();
-
-    // ---- Global actions ----
-    document.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action;
-
-      if (action === 'go-home') switchView('customer');
-      if (action === 'go-professional') switchView('professional');
-      if (action === 'switch-view') switchView(btn.dataset.view);
-      if (action === 'open-modal') openModal(btn.dataset.modal);
-      if (action === 'close-modal') closeModal(btn.dataset.modal);
-      if (action === 'swap-modal') { closeModal(btn.dataset.close); setTimeout(()=>openModal(btn.dataset.open), 180); }
-
-      if (action === 'open-my-profile') showMyProfile();
-      if (action === 'open-settings') { closeModal('userMenuModal'); switchView('settings'); }
-      if (action === 'logout') { await auth.signOut().catch(()=>{}); toast('Signed out'); }
-
-      if (action === 'search-from-input') doSearch($('#searchInput')?.value);
-      if (action === 'search-from-mobile') doSearch($('#mobileSearchInput')?.value);
-      if (action === 'navigate-service') doSearch(btn.dataset.service);
-
-      if (action === 'start-reset') {
-        const email = $('#login-email')?.value?.trim();
-        if (!email) return toast('Enter your email first', 'error');
-        try { await withTimeout(auth.sendPasswordResetEmail(email), 12000, 'Reset email timed out'); toast('Password reset email sent'); }
-        catch (err) { toast(err.message || 'Failed to send reset email', 'error', 4000); }
-      }
-
-      if (action === 'use-current-location') {
-        try {
-          navigator.geolocation.getCurrentPosition(
-            () => { const i = $('#signupCity'); if (i) i.value = 'Nearby'; },
-            () => toast('Couldn’t get location (permission denied)', 'error', 3000),
-            { timeout: 1500 }
-          );
-        } catch (_) {}
-      }
-
-      if (action === 'send-reset-email') {
-        const user = auth.currentUser;
-        if (!user?.email) return toast('Sign in first', 'error');
-        try { await withTimeout(auth.sendPasswordResetEmail(user.email), 12000); toast('Password reset email sent'); }
-        catch (err) { toast(err.message || 'Failed to send reset email', 'error'); }
-      }
-      if (action === 'relogin') {
-        await auth.signOut().catch(()=>{});
-        toast('Please sign in again');
-        openModal('loginModal');
-      }
-      if (action === 'delete-account') {
-        const user = auth.currentUser;
-        if (!user) return openModal('loginModal');
-        if (!confirm('Delete your account and data? This action cannot be undone.')) return;
-        try {
-          // Fire-and-forget deletes so UI doesn’t hang if Firestore is offline
-          db.collection('users').doc(user.uid).delete().catch(()=>{});
-          await withTimeout(user.delete(), 12000);
-          toast('Account deleted'); switchView('customer');
-        } catch (err) {
-          toast(err.message || 'Failed to delete account', 'error', 4000);
-        }
-      }
-
-      if (action === 'goto-settings') {
-        const href = btn.getAttribute('href') || '';
-        if (!href.startsWith('#')) return;
-        const target = document.querySelector(href);
-        if (!target) return;
-        e.preventDefault();
-        history.replaceState(null,'',href);
-        target.scrollIntoView({ behavior:'smooth', block:'start' });
-        $$('#settingsNav a').forEach(x => x.classList.remove('active'));
-        btn.classList.add('active');
-      }
-    });
-
-    function doSearch(q = '') {
-      q = (q||'').trim();
-      if (!q) return;
-      hide($('#customerView'));
-      show($('#algoliaResults'));
-      $('#algoliaResultsList').innerHTML = `
-        <div class="card">Searching for: <b>${q}</b> (placeholder results)</div>`;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ---- Role cards ----
-    $$('#signupModal .user-type-card').forEach(card => {
-      card.addEventListener('click', () => {
-        $$('#signupModal .user-type-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        card.querySelector('input[type="radio"]').checked = true;
-      });
-    });
-
-    // ---- Google buttons ----
-    function renderGoogleBtn(containerId, label) {
-      const c = document.getElementById(containerId);
-      if (!c) return;
-      c.innerHTML = `<button class="btn-base btn-google w-full" data-google="${containerId}">
-        <i class="fab fa-google mr-2" aria-hidden="true"></i>${label || 'Continue with Google'}
-      </button>`;
-    }
-    renderGoogleBtn('googleSignInBtnLogin', 'Continue with Google');
-    renderGoogleBtn('googleSignInBtnSignup', 'Sign up with Google');
-
-    document.addEventListener('click', async (e) => {
-      const g = e.target.closest('[data-google]');
-      if (!g) return;
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const prev = g.innerHTML;
-      g.disabled = true; g.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Connecting…`;
-      try {
-        const cred = await withTimeout(auth.signInWithPopup(provider), 20000, 'Google sign-in timed out');
-
-        // Don’t block UI on Firestore. Do it in background.
-        ensureUserDoc(cred.user, { role: 'customer' });
-        setRoleUI('customer');
-
-        closeModal('signupModal');
-        closeModal('loginModal');
-        toast('Account created.');
-      } catch (err) {
-        const msg = (err && (err.message || err.code)) || 'Google sign-in failed';
-        if (String(msg).toLowerCase().includes('origin') || String(msg).includes('unauthorized')) {
-          toast('Google sign-in not allowed for this domain. Add your site to Firebase Auth authorized domains & OAuth client.', 'error', 6000);
-        } else {
-          toast(msg, 'error', 4500);
-        }
-      } finally {
-        g.disabled = false; g.innerHTML = prev;
-      }
-    });
-
-    // ---- Email login ----
-    $('#loginForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!navigator.onLine) return toast('You are offline', 'error');
-      const email = $('#login-email').value.trim();
-      const pass = $('#login-password').value;
-      if (!email || !pass) return toast('Email and password required', 'error');
-      const btn = $('#loginSubmitBtn');
-      setLoading(btn, true, 'Signing in…', 'Sign In Securely');
-      try {
-        await auth.setPersistence($('#remember-me').checked
-          ? firebase.auth.Auth.Persistence.LOCAL
-          : firebase.auth.Auth.Persistence.SESSION);
-        await withTimeout(auth.signInWithEmailAndPassword(email, pass), 20000, 'Sign-in timed out');
-
-        $('#login-message').textContent = '';
-        closeModal('loginModal');
-        toast('Welcome back!');
-      } catch (err) {
-        $('#login-message').textContent = err.message || 'Sign-in failed';
-        toast(err.message || 'Sign-in failed', 'error', 3500);
-      } finally {
-        setLoading(btn, false, '', 'Sign In Securely');
-      }
-    });
-
-    // ---- Email signup (non-blocking Firestore) ----
-    $('#signupForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!navigator.onLine) return toast('You are offline', 'error');
-
-      const form = e.currentTarget;
-      if (form.reportValidity && !form.reportValidity()) return;
-
-      const name = $('#fullName').value.trim();
-      const email = $('#emailAddress').value.trim();
-      const pass = $('#password').value;
-      const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
-      const language = $('#signupLanguage').value;
-      const btn = $('#signupSubmitBtn');
-
-      setLoading(btn, true, 'Creating account…', 'Create Account');
-
-      try {
-        const { user } = await withTimeout(
-          auth.createUserWithEmailAndPassword(email, pass),
-          20000, 'Sign-up timed out'
-        );
-
-        if (name) {
-          try { await withTimeout(user.updateProfile({ displayName: name }), 8000); } catch (_) {}
-        }
-
-        // Fire-and-forget; don’t block the button
-        ensureUserDoc(user, { role, language });
-
-        setRoleUI(role);
-        closeModal('signupModal');
-        toast('Account created.');
-
-        const msg = $('#signup-message');
-        if (msg) msg.textContent = '';
-        form.reset();
-      } catch (err) {
-        $('#signup-message').textContent = err.message || 'Sign-up failed';
-        toast(err.message || 'Sign-up failed', 'error', 4000);
-      } finally {
-        setLoading(btn, false, '', 'Create Account');
-      }
-    });
-
-    // Fire-and-forget user doc write so UI never waits on Firestore connectivity
-    function ensureUserDoc(user, extras = {}) {
-      try {
-        if (!db || !user?.uid) return;
-        const ref = db.collection('users').doc(user.uid);
-        const base = {
+function handleSignup(event) {
+  event.preventDefault();
+  console.log('Signup form submitted');
+  
+  const name = $('#fullName').value.trim();
+  const email = $('#emailAddress').value.trim();
+  const password = $('#password').value;
+  const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
+  
+  if (!name || !email || !password) {
+    toast('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  const btn = $('#signupSubmitBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating account...';
+  btn.disabled = true;
+  
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(({ user }) => {
+      // Update profile
+      return user.updateProfile({ displayName: name }).then(() => {
+        // Save user data to Firestore
+        return db.collection('users').doc(user.uid).set({
           uid: user.uid,
-          email: user.email || '',
-          displayName: user.displayName || 'User',
-          photoURL: user.photoURL || '',
-          provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password',
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+          email: email,
+          displayName: name,
+          role: role,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        const data = pruneUndefined({ ...base, ...extras });
-        ref.set(data, { merge: true }).catch((err) => {
-          console.warn('ensureUserDoc (non-blocking) error:', err);
         });
-      } catch (err) {
-        console.warn('ensureUserDoc wrapper error:', err);
+      });
+    })
+    .then(() => {
+      toast('Account created successfully!');
+      closeModal('signupModal');
+    })
+    .catch((error) => {
+      console.error('Signup error:', error);
+      toast(error.message || 'Signup failed', 'error');
+      $('#signup-message').textContent = error.message || 'Signup failed';
+    })
+    .finally(() => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    });
+}
+
+function startPasswordReset() {
+  console.log('Password reset clicked');
+  const email = $('#login-email').value.trim();
+  if (!email) {
+    toast('Please enter your email address first', 'error');
+    return;
+  }
+  
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      toast('Password reset email sent');
+    })
+    .catch((error) => {
+      toast(error.message || 'Failed to send reset email', 'error');
+    });
+}
+
+function sendPasswordReset() {
+  console.log('Send password reset');
+  if (!currentUser?.email) {
+    toast('Please sign in first', 'error');
+    return;
+  }
+  
+  auth.sendPasswordResetEmail(currentUser.email)
+    .then(() => {
+      toast('Password reset email sent to ' + currentUser.email);
+    })
+    .catch((error) => {
+      toast(error.message || 'Failed to send reset email', 'error');
+    });
+}
+
+function showMyProfile() {
+  console.log('Show my profile clicked');
+  toast('Profile feature coming soon!', 'info');
+}
+
+// Enhanced Settings Functions
+
+function gotoSettings(event, targetId) {
+  console.log('Goto settings:', targetId);
+  event.preventDefault();
+  
+  const target = document.querySelector(targetId);
+  if (!target) return;
+  
+  // Update active nav
+  $$('#settingsNav a').forEach(a => a.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  
+  // Scroll to section
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  
+  // Update URL
+  history.replaceState(null, '', targetId);
+}
+
+function enableQuickEdit() {
+  console.log('Quick edit mode enabled');
+  toast('Quick edit mode enabled!', 'info');
+}
+
+function previewProfile() {
+  console.log('Preview profile');
+  toast('Profile preview coming soon!', 'info');
+}
+
+function editAllPersonal() {
+  console.log('Edit all personal info');
+  toast('Bulk edit mode enabled for personal info', 'info');
+}
+
+function editAllContact() {
+  console.log('Edit all contact info');
+  toast('Bulk edit mode enabled for contact info', 'info');
+}
+
+// Field editing functions
+function editField(fieldName) {
+  console.log('Edit field:', fieldName);
+  
+  // Hide all edit forms first
+  $$('.edit-form').forEach(form => {
+    form.classList.remove('active');
+    hide(form);
+  });
+  
+  // Show the specific edit form
+  const form = $(`#${fieldName}Form`);
+  const field = $(`[data-field="${fieldName}"]`);
+  const input = $(`#${fieldName}Input`);
+  const currentValue = $(`#${fieldName}Value`);
+  
+  if (form && field && input) {
+    field.classList.add('editing');
+    form.classList.add('active');
+    show(form);
+    
+    // Pre-fill with current value
+    if (currentValue && currentValue.textContent !== 'Not set' && currentValue.textContent !== 'Not provided') {
+      input.value = currentValue.textContent;
+    }
+    
+    input.focus();
+  }
+}
+
+function cancelEdit(fieldName) {
+  console.log('Cancel edit:', fieldName);
+  
+  const form = $(`#${fieldName}Form`);
+  const field = $(`[data-field="${fieldName}"]`);
+  
+  if (form && field) {
+    field.classList.remove('editing');
+    form.classList.remove('active');
+    hide(form);
+  }
+}
+
+function saveField(fieldName) {
+  console.log('Save field:', fieldName);
+  
+  const input = $(`#${fieldName}Input`);
+  const valueDisplay = $(`#${fieldName}Value`);
+  const form = $(`#${fieldName}Form`);
+  const field = $(`[data-field="${fieldName}"]`);
+  
+  if (!input || !valueDisplay) return;
+  
+  const newValue = input.value.trim();
+  
+  if (newValue) {
+    valueDisplay.textContent = newValue;
+    valueDisplay.classList.remove('empty');
+    
+    // Save to userSettings and Firebase
+    userSettings[fieldName] = newValue;
+    saveUserSettings();
+    
+    toast(`${fieldName} updated successfully`);
+  } else {
+    valueDisplay.textContent = getEmptyText(fieldName);
+    valueDisplay.classList.add('empty');
+    
+    // Remove from userSettings
+    delete userSettings[fieldName];
+    saveUserSettings();
+  }
+  
+  // Hide form
+  if (form && field) {
+    field.classList.remove('editing');
+    form.classList.remove('active');
+    hide(form);
+  }
+}
+
+function getEmptyText(fieldName) {
+  const emptyTexts = {
+    displayName: 'Not set',
+    bio: 'Tell us about yourself...',
+    phone: 'Not provided',
+    streetAddress: 'Not provided',
+    city: 'Not provided',
+    state: 'Not provided',
+    postalCode: 'Not provided',
+    country: 'Not selected'
+  };
+  return emptyTexts[fieldName] || 'Not set';
+}
+
+// Photo editing functions
+function editPhoto() {
+  console.log('Edit photo');
+  
+  // Hide all other edit forms
+  $$('.edit-form').forEach(form => {
+    if (form.id !== 'photoUploadForm') {
+      form.classList.remove('active');
+      hide(form);
+    }
+  });
+  
+  const form = $('#photoUploadForm');
+  if (form) {
+    form.classList.add('active');
+    show(form);
+  }
+}
+
+function triggerPhotoUpload() {
+  $('#photoInput').click();
+}
+
+function handlePhotoSelect(event) {
+  const file = event.target.files[0];
+  if (file) {
+    handlePhotoFile(file);
+  }
+}
+
+function handlePhotoDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  const upload = event.currentTarget;
+  upload.classList.remove('drag-over');
+  
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    handlePhotoFile(files[0]);
+  }
+}
+
+function handlePhotoDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.add('drag-over');
+}
+
+function handlePhotoDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function handlePhotoFile(file) {
+  console.log('Photo file selected:', file.name);
+  
+  // Validate file
+  if (!file.type.startsWith('image/')) {
+    toast('Please select an image file', 'error');
+    return;
+  }
+  
+  if (file.size > 5 * 1024 * 1024) { // 5MB
+    toast('File size must be less than 5MB', 'error');
+    return;
+  }
+  
+  selectedPhoto = file;
+  
+  // Preview the image
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    $('#displayPhotoPreview').src = e.target.result;
+    $('#photoStatus').textContent = `Ready to upload: ${file.name}`;
+  };
+  reader.readAsDataURL(file);
+  
+  // Enable save button
+  const saveBtn = $('#savePhotoBtn');
+  if (saveBtn) {
+    saveBtn.disabled = false;
+  }
+}
+
+function savePhoto() {
+  console.log('Save photo');
+  
+  if (!selectedPhoto || !currentUser) {
+    toast('Please select a photo and sign in', 'error');
+    return;
+  }
+  
+  const saveBtn = $('#savePhotoBtn');
+  const originalText = saveBtn.innerHTML;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Uploading...';
+  saveBtn.disabled = true;
+  
+  // Upload to Firebase Storage
+  const storageRef = storage.ref(`profile-photos/${currentUser.uid}/${Date.now()}_${selectedPhoto.name}`);
+  
+  storageRef.put(selectedPhoto)
+    .then(snapshot => snapshot.ref.getDownloadURL())
+    .then(downloadURL => {
+      // Update user profile
+      return currentUser.updateProfile({ photoURL: downloadURL }).then(() => {
+        // Save to Firestore
+        return db.collection('users').doc(currentUser.uid).update({
+          photoURL: downloadURL
+        });
+      }).then(() => {
+        $('#photoStatus').textContent = 'Photo uploaded successfully';
+        userSettings.photoURL = downloadURL;
+        updateUserAvatar(downloadURL);
+        toast('Profile photo updated successfully');
+        cancelPhotoEdit();
+      });
+    })
+    .catch(error => {
+      console.error('Photo upload error:', error);
+      toast('Failed to upload photo', 'error');
+    })
+    .finally(() => {
+      saveBtn.innerHTML = originalText;
+      saveBtn.disabled = true;
+    });
+}
+
+function cancelPhotoEdit() {
+  console.log('Cancel photo edit');
+  
+  const form = $('#photoUploadForm');
+  if (form) {
+    form.classList.remove('active');
+    hide(form);
+  }
+  
+  selectedPhoto = null;
+  $('#savePhotoBtn').disabled = true;
+}
+
+function updateUserAvatar(photoURL) {
+  const avatars = $$('#userAvatar, #userAvatarLarge');
+  avatars.forEach(avatar => {
+    if (photoURL) {
+      avatar.innerHTML = `<img src="${photoURL}" alt="Profile" class="w-full h-full rounded-full object-cover">`;
+    }
+  });
+}
+
+// Location functions
+function useCurrentLocation() {
+  console.log('Use current location clicked');
+  if (!navigator.geolocation) {
+    toast('Geolocation is not supported', 'error');
+    return;
+  }
+  
+  toast('Getting your location...', 'info');
+  
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      try {
+        // Use a geocoding service to get city/state from coordinates
+        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`);
+        const data = await response.json();
+        
+        const cityDisplay = $('#cityValue');
+        const stateDisplay = $('#stateValue');
+        
+        if (cityDisplay && data.city) {
+          cityDisplay.textContent = data.city;
+          cityDisplay.classList.remove('empty');
+          userSettings.city = data.city;
+        }
+        
+        if (stateDisplay && data.principalSubdivision) {
+          stateDisplay.textContent = data.principalSubdivision;
+          stateDisplay.classList.remove('empty');
+          userSettings.state = data.principalSubdivision;
+        }
+        
+        saveUserSettings();
+        toast('Location updated successfully');
+      } catch (error) {
+        console.error('Geocoding error:', error);
+        const cityDisplay = $('#cityValue');
+        if (cityDisplay) {
+          cityDisplay.textContent = 'Current Location';
+          cityDisplay.classList.remove('empty');
+          userSettings.city = 'Current Location';
+          saveUserSettings();
+        }
+        toast('Location detected successfully');
+      }
+    },
+    (error) => {
+      console.error('Geolocation error:', error);
+      toast('Could not get your location', 'error');
+    },
+    { timeout: 10000 }
+  );
+}
+
+// Settings save functions
+function saveToggle(settingName, value) {
+  console.log('Save toggle:', settingName, value);
+  userSettings[settingName] = value;
+  saveUserSettings();
+  toast(`${settingName} ${value ? 'enabled' : 'disabled'}`, 'success');
+}
+
+function savePreference(settingName, value) {
+  console.log('Save preference:', settingName, value);
+  userSettings[settingName] = value;
+  saveUserSettings();
+  toast(`${settingName} updated to ${value}`, 'success');
+}
+
+function saveUserSettings() {
+  if (!currentUser) return;
+  
+  db.collection('users').doc(currentUser.uid).update(userSettings)
+    .then(() => {
+      console.log('Settings saved to Firebase');
+    })
+    .catch(error => {
+      console.error('Failed to save settings:', error);
+    });
+}
+
+// Account management functions
+function deactivateAccount() {
+  console.log('Deactivate account clicked');
+  
+  if (!currentUser) {
+    toast('Please sign in first', 'error');
+    return;
+  }
+  
+  // Create custom confirmation dialog
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay show';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="text-xl font-bold text-orange-600">Confirm Account Deactivation</h2>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-700 mb-6">Are you sure you want to deactivate your account? You can reactivate it later by signing in again.</p>
+        <div class="flex justify-end space-x-3">
+          <button class="btn-base btn-outline" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button class="btn-base btn-outline text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white" onclick="confirmDeactivateAccount(); this.closest('.modal-overlay').remove()">Deactivate</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function confirmDeactivateAccount() {
+  console.log('Confirm deactivate account');
+  
+  // Update user status to deactivated
+  db.collection('users').doc(currentUser.uid).update({
+    status: 'deactivated',
+    deactivatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  })
+    .then(() => {
+      toast('Account deactivated successfully');
+      handleLogout();
+    })
+    .catch((error) => {
+      console.error('Deactivate account error:', error);
+      toast('Failed to deactivate account: ' + error.message, 'error');
+    });
+}
+
+function deleteAccount() {
+  console.log('Delete account clicked');
+  
+  if (!currentUser) {
+    toast('Please sign in first', 'error');
+    return;
+  }
+  
+  // Create custom confirmation dialog
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay show';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="text-xl font-bold text-red-600">Confirm Account Deletion</h2>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-700 mb-6">Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your data.</p>
+        <div class="flex justify-end space-x-3">
+          <button class="btn-base btn-outline" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button class="btn-base btn-danger" onclick="confirmDeleteAccount(); this.closest('.modal-overlay').remove()">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function confirmDeleteAccount() {
+  console.log('Confirm delete account');
+  
+  // Delete user data from Firestore
+  db.collection('users').doc(currentUser.uid).delete()
+    .then(() => {
+      // Delete user account
+      return currentUser.delete();
+    })
+    .then(() => {
+      toast('Account deleted successfully');
+      switchView('customer');
+    })
+    .catch((error) => {
+      console.error('Delete account error:', error);
+      toast('Failed to delete account: ' + error.message, 'error');
+    });
+}
+
+// Additional settings functions
+function managePaymentMethods() {
+  console.log('Manage payment methods');
+  toast('Payment methods management coming soon!', 'info');
+}
+
+function viewBillingHistory() {
+  console.log('View billing history');
+  toast('Billing history feature coming soon!', 'info');
+}
+
+function downloadUserData() {
+  console.log('Download user data');
+  if (!currentUser) {
+    toast('Please sign in first', 'error');
+    return;
+  }
+  
+  // Simulate data download
+  const userData = {
+    profile: userSettings,
+    account: {
+      email: currentUser.email,
+      uid: currentUser.uid,
+      createdAt: currentUser.metadata.creationTime
+    }
+  };
+  
+  const dataStr = JSON.stringify(userData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'quickfix-pro-data.json';
+  link.click();
+  
+  URL.revokeObjectURL(url);
+  toast('Your data has been downloaded', 'success');
+}
+
+// Help & Support Functions
+
+function showHelpSection(sectionName) {
+  console.log('Show help section:', sectionName);
+  
+  // Update navigation
+  $$('.help-nav-item').forEach(item => item.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  
+  // Hide all sections
+  $$('.help-section').forEach(section => {
+    section.classList.remove('active');
+    hide(section);
+  });
+  
+  // Show target section
+  const targetSection = $(`#${sectionName}Section`);
+  if (targetSection) {
+    targetSection.classList.add('active');
+    show(targetSection);
+  }
+  
+  currentHelpSection = sectionName;
+}
+
+function searchHelp(query) {
+  console.log('Search help:', query);
+  
+  if (!query || query.length < 2) {
+    // Reset highlighting
+    $$('.search-highlight').forEach(el => {
+      const parent = el.parentNode;
+      parent.replaceChild(document.createTextNode(el.textContent), el);
+      parent.normalize();
+    });
+    return;
+  }
+  
+  // Show FAQ section if searching
+  if (currentHelpSection !== 'faq') {
+    showHelpSection('faq');
+  }
+  
+  // Search and highlight in FAQ
+  const faqItems = $$('.faq-item');
+  const searchRegex = new RegExp(`(${query})`, 'gi');
+  
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question span');
+    const answer = item.querySelector('.faq-answer');
+    
+    if (question && answer) {
+      const questionText = question.textContent;
+      const answerText = answer.textContent;
+      
+      if (questionText.toLowerCase().includes(query.toLowerCase()) || 
+          answerText.toLowerCase().includes(query.toLowerCase())) {
+        show(item);
+        
+        // Highlight matches
+        question.innerHTML = questionText.replace(searchRegex, '<span class="search-highlight">$1</span>');
+        answer.innerHTML = answerText.replace(searchRegex, '<span class="search-highlight">$1</span>');
+      } else {
+        hide(item);
       }
     }
+  });
+}
 
-    function setRoleUI(role) {
-      const isPro = role === 'professional';
-      const proBtn = $('#professionalBtn');
-      const proMob = $('#mobileProfessional');
-      if (isPro) { proBtn?.classList.remove('hidden'); proMob?.classList.remove('hidden'); }
-      else { proBtn?.classList.add('hidden'); proMob?.classList.add('hidden'); }
-      const user = auth.currentUser;
-      if (isPro && user) loadMyPortfolio(user.uid);
+function toggleFAQ(element) {
+  console.log('Toggle FAQ');
+  
+  const question = element;
+  const answer = question.nextElementSibling;
+  const icon = question.querySelector('.faq-icon');
+  
+  // Close other FAQ items
+  $$('.faq-question.active').forEach(q => {
+    if (q !== question) {
+      q.classList.remove('active');
+      q.nextElementSibling.classList.remove('active');
     }
+  });
+  
+  // Toggle current FAQ item
+  question.classList.toggle('active');
+  answer.classList.toggle('active');
+}
 
-    // ---- Auth state ----
-    auth.onAuthStateChanged(async (user) => {
-      const avatar = $('#userAvatar');
-      const avatarLg = $('#userAvatarLarge');
-      const nameLg = $('#userNameLarge');
-      const statusLg = $('#userStatusLarge');
+function filterFAQ(category) {
+  console.log('Filter FAQ:', category);
+  
+  const faqItems = $$('.faq-item');
+  
+  faqItems.forEach(item => {
+    if (category === 'all' || item.dataset.category === category) {
+      show(item);
+    } else {
+      hide(item);
+    }
+  });
+  
+  // Update button styles
+  $$('#faqSection .btn-base').forEach(btn => btn.classList.remove('btn-primary'));
+  $$('#faqSection .btn-base').forEach(btn => btn.classList.add('btn-outline'));
+  event.currentTarget.classList.remove('btn-outline');
+  event.currentTarget.classList.add('btn-primary');
+}
 
-      if (!user) {
-        $('#setEmail') && ($('#setEmail').value = '');
-        hide($('#loggedUserMenu')); show($('#guestUserMenu'));
-        if (nameLg) nameLg.textContent = 'Guest User';
-        if (statusLg) statusLg.textContent = 'Not signed in';
-        if (avatar) avatar.innerHTML = '<i class="fas fa-user" aria-hidden="true"></i>';
-        if (avatarLg) avatarLg.innerHTML = '<i class="fas fa-user" aria-hidden="true"></i>';
-        return;
-      }
+function submitSupportTicket(event) {
+  event.preventDefault();
+  console.log('Submit support ticket');
+  
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  // Simulate ticket submission
+  const ticketData = {
+    name: formData.get('name') || form.querySelector('input[type="text"]').value,
+    email: formData.get('email') || form.querySelector('input[type="email"]').value,
+    category: form.querySelector('select').value,
+    priority: form.querySelectorAll('select')[1].value,
+    subject: form.querySelector('input[placeholder*="Brief"]').value,
+    description: form.querySelector('textarea').value,
+    timestamp: new Date().toISOString(),
+    ticketId: 'QF-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+  };
+  
+  // Save to Firebase (if logged in)
+  if (currentUser) {
+    db.collection('support-tickets').add({
+      ...ticketData,
+      userId: currentUser.uid
+    })
+    .then((docRef) => {
+      console.log('Support ticket saved:', docRef.id);
+    })
+    .catch((error) => {
+      console.error('Error saving ticket:', error);
+    });
+  }
+  
+  toast('Support ticket submitted successfully! Ticket ID: ' + ticketData.ticketId, 'success', 5000);
+  form.reset();
+}
 
-      show($('#loggedUserMenu')); hide($('#guestUserMenu'));
+function clearSupportForm() {
+  console.log('Clear support form');
+  const form = $('#contactSection form');
+  if (form) {
+    form.reset();
+  }
+}
+
+function startLiveChat() {
+  console.log('Start live chat');
+  toast('Live chat feature coming soon! Our team is available 24/7.', 'info');
+}
+
+function openGuide(guideName) {
+  console.log('Open guide:', guideName);
+  toast(`Opening ${guideName} guide - feature coming soon!`, 'info');
+}
+
+function submitFeedback(event) {
+  event.preventDefault();
+  console.log('Submit feedback');
+  
+  const form = event.target;
+  const feedbackData = {
+    type: form.querySelector('select').value,
+    rating: selectedRating,
+    message: form.querySelector('textarea').value,
+    timestamp: new Date().toISOString(),
+    userId: currentUser?.uid || 'anonymous'
+  };
+  
+  // Save to Firebase
+  db.collection('feedback').add(feedbackData)
+    .then((docRef) => {
+      console.log('Feedback saved:', docRef.id);
+      toast('Thank you for your feedback!', 'success');
+      form.reset();
+      selectedRating = 0;
+      updateRatingButtons();
+    })
+    .catch((error) => {
+      console.error('Error saving feedback:', error);
+      toast('Failed to submit feedback', 'error');
+    });
+}
+
+function setRating(rating) {
+  console.log('Set rating:', rating);
+  selectedRating = rating;
+  updateRatingButtons();
+}
+
+function updateRatingButtons() {
+  $$('#feedbackSection .btn-base').forEach((btn, index) => {
+    if (index + 1 <= selectedRating) {
+      btn.classList.remove('btn-outline');
+      btn.classList.add('btn-primary');
+    } else {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline');
+    }
+  });
+}
+
+// Helper functions
+function updateUserUI(user) {
+  const avatar = $('#userAvatar');
+  const avatarLg = $('#userAvatarLarge');
+  const nameLg = $('#userNameLarge');
+  const statusLg = $('#userStatusLarge');
+  
+  if (user) {
+    show($('#loggedUserMenu'));
+    hide($('#guestUserMenu'));
+    
+    if (user.photoURL) {
+      if (avatar) avatar.innerHTML = `<img src="${user.photoURL}" alt="Profile" class="w-full h-full rounded-full object-cover">`;
+      if (avatarLg) avatarLg.innerHTML = `<img src="${user.photoURL}" alt="Profile" class="w-full h-full rounded-full object-cover">`;
+    } else {
       const letter = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
       if (avatar) avatar.textContent = letter;
       if (avatarLg) avatarLg.textContent = letter;
-      if (nameLg) nameLg.textContent = user.displayName || user.email;
-      if (statusLg) statusLg.textContent = user.email;
-
-      $('#setEmail') && ($('#setEmail').value = user.email || '');
-      $('#setDisplayName') && ($('#setDisplayName').value = user.displayName || '');
-      if (user.photoURL) $('#setPhotoPreview').src = user.photoURL;
-
-      // Try to fetch profile quickly; if Firestore is blocked, fall back to defaults
-      let role = 'customer';
-      try {
-        const doc = await withTimeout(db.collection('users').doc(user.uid).get(), 5000, 'User doc fetch timed out');
-        const d = doc?.data() || {};
-        role = d.role || role;
-
-        if ($('#setLang')) $('#setLang').value = d.language || 'en';
-        if ($('#setCity')) $('#setCity').value = d.city || '';
-        if ($('#setCountry')) $('#setCountry').value = d.country || '';
-        if ($('#setTwoFA')) $('#setTwoFA').checked = !!d.twoFA;
-        if ($('#setNotifyEmail')) $('#setNotifyEmail').checked = !!d.notifyEmail;
-        if ($('#setNotifySMS')) $('#setNotifySMS').checked = !!d.notifySMS;
-        if ($('#setNotifyPush')) $('#setNotifyPush').checked = !!d.notifyPush;
-        if ($('#setPublic')) $('#setPublic').checked = !!d.isPublic;
-        if ($('#setSearchIndex')) $('#setSearchIndex').checked = !!d.searchIndex;
-        if ($('#setBillingNote')) $('#setBillingNote').value = d.billingNote || '';
-      } catch (err) {
-        console.warn('Fetch user doc failed (continuing with defaults):', err?.code || err?.message || err);
-      } finally {
-        setRoleUI(role);
-      }
-    });
-
-    // ---- Work Uploads ----
-    const dz = $('#workDropZone');
-    const imgInput = $('#workImagesInput');
-    const fileInput = $('#workFilesInput');
-    const previewWrap = $('#workAttachmentList');
-    const progressWrap = $('#workProgress');
-    const progressBar = $('#workProgressBar');
-    const progressText = $('#workProgressText');
-
-    let selectedImages = [];
-    let selectedFiles = [];
-
-    function renderPreviews() {
-      if (!previewWrap) return;
-      const imgs = selectedImages.map((f) => `
-        <div class="card p-2 text-center">
-          <img class="w-full h-28 object-cover rounded-md" alt="" src="${URL.createObjectURL(f)}" loading="lazy"/>
-          <div class="mt-2 text-xs truncate">${f.name}</div>
-        </div>`);
-      const files = selectedFiles.map((f) => `
-        <div class="card p-2 text-center">
-          <i class="fas fa-file text-2xl text-gray-500" aria-hidden="true"></i>
-          <div class="mt-2 text-xs truncate">${f.name}</div>
-        </div>`);
-      previewWrap.innerHTML = imgs.concat(files).join('');
     }
-
-    function acceptImagesOnly(fileList) {
-      return Array.from(fileList || []).filter(f => f.type.startsWith('image/')).slice(0,5);
-    }
-
-    dz?.addEventListener('click', () => imgInput.click());
-    dz?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') imgInput.click(); });
-    dz?.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
-    dz?.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-    dz?.addEventListener('drop', (e) => {
-      e.preventDefault(); dz.classList.remove('dragover');
-      const files = acceptImagesOnly(e.dataTransfer.files);
-      selectedImages = files; renderPreviews();
-    });
-    imgInput?.addEventListener('change', (e) => {
-      selectedImages = Array.from(e.target.files || []).slice(0,5);
-      renderPreviews();
-    });
-    fileInput?.addEventListener('change', (e) => {
-      selectedFiles = Array.from(e.target.files || []).slice(0,5);
-      renderPreviews();
-    });
-
-    function updateProgress(pct, text) {
-      if (!progressWrap) return;
-      show(progressWrap);
-      progressBar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
-      progressText.textContent = text || `${Math.round(pct)}%`;
-    }
-    function hideProgress() {
-      if (!progressWrap) return;
-      progressBar.style.width = '0%';
-      progressText.textContent = 'Preparing…';
-      hide(progressWrap);
-    }
-
-    // Per-file upload with progress + hard timeout
-    function uploadWithProgress(ref, file, onUpdate) {
-      const singleUpload = new Promise((resolve, reject) => {
-        const task = ref.put(file);
-        let last = 0;
-
-        task.on('state_changed',
-          (snap) => {
-            if (onUpdate) {
-              const inc = snap.bytesTransferred - last;
-              last = snap.bytesTransferred;
-              onUpdate(inc, snap.totalBytes);
-            }
-          },
-          (err) => reject(err),
-          async () => {
-            try {
-              const url = await task.snapshot.ref.getDownloadURL();
-              resolve(url);
-            } catch (e) { reject(e); }
-          }
-        );
-      });
-
-      // generous timeout based on size (min 25s)
-      return withTimeout(singleUpload, Math.max(25000, Math.floor(file.size / 1500)), 'Single file upload timed out');
-    }
-
-    $('#workForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!navigator.onLine) return toast('You are offline', 'error');
-
-      const user = auth.currentUser;
-      if (!user) { closeModal('workUploadModal'); openModal('loginModal'); return; }
-
-      const title = $('#workTitle').value.trim();
-      const desc = $('#workDesc').value.trim();
-      if (!title || !desc) return toast('Please enter a title and description.', 'error');
-      if (selectedImages.length === 0 && selectedFiles.length === 0) {
-        return toast('Add at least one image or file.', 'error');
-      }
-
-      // --- NEW: bail early if Firestore is unreachable to avoid "Failed to start upload" loop
-      if (!(await canReachFirestore())) {
-        return toast('Can’t reach the database right now. Please try again shortly or switch networks / disable VPN.', 'error', 6000);
-      }
-
-      const btn = $('#workSubmitBtn');
-      setLoading(btn, true, 'Uploading…');
-
-      try {
-        const docRef = await withTimeout(db.collection('work').add({
-          uid: user.uid, title, desc, images: [], files: [],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }), 12000, 'Failed to start upload');
-
-        const allFiles = [...selectedImages, ...selectedFiles];
-        const totalBytes = allFiles.reduce((s,f)=>s+(f.size||0),0) || 1;
-        let sent = 0;
-        updateProgress(2, 'Starting…');
-
-        const imageURLs = [];
-        const fileLinks = [];
-        const uploads = [];
-
-        selectedImages.forEach((f, i) => {
-          const path = `work/${user.uid}/${docRef.id}/image_${i}_${Date.now()}.${(f.name.split('.').pop() || 'jpg')}`;
-          const ref = storage.ref(path);
-          uploads.push(
-            uploadWithProgress(ref, f, (inc) => {
-              sent += inc;
-              updateProgress((sent/totalBytes)*100, `Uploading images… ${Math.round((sent/totalBytes)*100)}%`);
-            }).then(url => imageURLs.push(url))
-          );
-        });
-
-        selectedFiles.forEach((f, i) => {
-          const path = `work/${user.uid}/${docRef.id}/file_${i}_${Date.now()}_${f.name}`;
-          const ref = storage.ref(path);
-          uploads.push(
-            uploadWithProgress(ref, f, (inc) => {
-              sent += inc;
-              updateProgress((sent/totalBytes)*100, `Uploading files… ${Math.round((sent/totalBytes)*100)}%`);
-            }).then(url => fileLinks.push({ name: f.name, url }))
-          );
-        });
-
-        // Overall batch timeout (size-based, but with a sensible floor)
-        await withTimeout(Promise.all(uploads), Math.max(30000, Math.floor(totalBytes / 1200)), 'Upload timed out');
-        updateProgress(100, 'Finalizing…');
-
-        // Finalize (timeboxed)
-        await withTimeout(docRef.update({ images: imageURLs, files: fileLinks }), 10000, 'Finalize timed out');
-
-        $('#workForm').reset();
-        selectedImages = []; selectedFiles = []; renderPreviews();
-        hideProgress();
-
-        addWorkCardToGrid({ id: docRef.id, title, desc, images: imageURLs, files: fileLinks });
-
-        closeModal('workUploadModal');
-        toast('Added to your portfolio!');
-      } catch (err) {
-        console.error('Work upload failed:', err, err?.code, err?.message);
-        hideProgress(); // ensure the progress bar is cleared
-        const msg = (err?.code === 'unavailable' || /Failed to start upload/i.test(err?.message || ''))
-          ? 'Can’t reach the database right now. Try again in a minute or switch networks / disable VPN.'
-          : mapFirebaseError(err);
-        toast(msg, 'error', 6000);
-      } finally {
-        setLoading(btn, false);
-      }
-    });
-
-    function workCardHTML(item) {
-      const cover = item.images?.[0] || '';
-      const imgEl = cover ? `<img class="w-full h-40 object-cover rounded-xl" src="${cover}" alt="" loading="lazy">` :
-                            `<div class="w-full h-40 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-image" aria-hidden="true"></i></div>`;
-      return `
-        <div class="card">
-          ${imgEl}
-          <div class="mt-3">
-            <div class="font-bold">${item.title}</div>
-            <div class="text-sm text-gray-600 mt-1">${item.desc}</div>
-          </div>
-        </div>`;
-    }
-
-    function addWorkCardToGrid(item) {
-      const grid = $('#workPortfolio');
-      if (!grid) return;
-      const div = document.createElement('div');
-      div.innerHTML = workCardHTML(item);
-      grid.prepend(div.firstElementChild);
-    }
-
-    async function loadMyPortfolio(uid) {
-      const grid = $('#workPortfolio'); if (!grid) return;
-      try {
-        const snap = await withTimeout(
-          db.collection('work').where('uid','==',uid).orderBy('createdAt','desc').limit(24).get(),
-          6000, 'Portfolio fetch timed out'
-        );
-        grid.innerHTML = (snap.docs || []).map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
-      } catch (err) {
-        console.warn('Portfolio fetch failed:', err?.code || err?.message || err);
-        grid.innerHTML = '';
-      }
-    }
-
-    // ---- Settings save ----
-    $('#settingsForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) { openModal('loginModal'); return; }
-
-      const btn = $('#settingsSaveBtn');
-      setLoading(btn, true, 'Saving…', '<i class="fas fa-save mr-2"></i>Save All Settings');
-
-      const displayName = $('#setDisplayName').value.trim();
-      const language = $('#setLang').value;
-      const city = $('#setCity').value.trim();
-      const country = $('#setCountry').value.trim();
-      const twoFA = $('#setTwoFA').checked;
-      const notifyEmail = $('#setNotifyEmail').checked;
-      const notifySMS = $('#setNotifySMS').checked;
-      const notifyPush = $('#setNotifyPush').checked;
-      const isPublic = $('#setPublic').checked;
-      const searchIndex = $('#setSearchIndex').checked;
-      const billingNote = $('#setBillingNote').value.trim();
-
-      const photoFile = $('#setPhoto').files?.[0];
-      let photoURL = auth.currentUser.photoURL || '';
-
-      try {
-        if (photoFile) {
-          const snap = await withTimeout(
-            storage.ref(`users/${user.uid}/avatar_${Date.now()}.${(photoFile.name.split('.').pop()||'jpg')}`).put(photoFile),
-            20000, 'Avatar upload timed out'
-          );
-          photoURL = await snap.ref.getDownloadURL();
-          $('#setPhotoPreview').src = photoURL;
-          await user.updateProfile({ photoURL }).catch(()=>{});
-        }
-        if (displayName && displayName !== user.displayName) {
-          await user.updateProfile({ displayName }).catch(()=>{});
-        }
-
-        await withTimeout(db.collection('users').doc(user.uid).set(pruneUndefined({
-          displayName, language, city, country,
-          twoFA, notifyEmail, notifySMS, notifyPush,
-          isPublic, searchIndex, billingNote,
-          photoURL
-        }), { merge:true }), 12000, 'Save timed out');
-
-        toast('Settings saved');
-      } catch (err) {
-        toast(err.message || 'Failed to save settings', 'error');
-      } finally {
-        setLoading(btn, false, '', '<i class="fas fa-save mr-2"></i>Save All Settings');
-      }
-    });
-
-    $('#setPhoto')?.addEventListener('change', (e) => {
-      const f = e.target.files?.[0];
-      if (f) $('#setPhotoPreview').src = URL.createObjectURL(f);
-    });
-
-    // ---- Profile modal ----
-    function showMyProfile() {
-      const user = auth.currentUser;
-      const header = $('#profileModalHeader');
-      const meta = $('#profileMeta');
-      const grid = $('#profileWorkGrid');
-
-      if (!user) { openModal('loginModal'); return; }
-
-      header.innerHTML = `
-        <div class="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-primary to-primary-light text-white flex items-center justify-center text-2xl font-bold animate-bounce-gentle" aria-hidden="true">
-          ${(user.displayName||user.email||'U').charAt(0).toUpperCase()}
-        </div>
-        <h2 class="text-2xl md:text-3xl font-bold mt-2">${user.displayName||user.email}</h2>`;
-      meta.textContent = 'Your public portfolio';
-
-      openModal('profileModal');
-      withTimeout(
-        db.collection('work').where('uid','==',user.uid).orderBy('createdAt','desc').limit(24).get(),
-        6000, 'Profile work timed out'
-      )
-      .then(snap => {
-        grid.innerHTML = snap.docs.map(d => workCardHTML({ id:d.id, ...d.data() })).join('');
-      })
-      .catch(() => { grid.innerHTML = ''; });
-    }
-
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action="open-profile"]');
-      if (!btn) return;
-      const i = +btn.dataset.index || 0;
-      const p = pros[i];
-      const header = $('#profileModalHeader');
-      const meta = $('#profileMeta');
-      const grid = $('#profileWorkGrid');
-      header.innerHTML = `
-        <div class="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-secondary to-secondary-light text-white flex items-center justify-center text-2xl font-bold animate-bounce-gentle" aria-hidden="true">
-          ${p.name.charAt(0)}
-        </div>
-        <h2 class="text-2xl md:text-3xl font-bold mt-2">${p.name}</h2>`;
-      meta.textContent = `${p.title} • ${p.rating}★ • ${p.jobs} jobs`;
-      grid.innerHTML = '';
-      openModal('profileModal');
-    });
-
-    const settingsSections = ['sec-personal','sec-security','sec-notifications','sec-privacy','sec-billing','sec-payments','sec-connections','sec-danger'];
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            $$('#settingsNav a').forEach(x => x.classList.toggle('active', x.getAttribute('href') === `#${id}`));
-          }
-        });
-      }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0.1 });
-      settingsSections.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) io.observe(el);
-      });
-    }
-
-    console.log('QuickFix Pro ready (resilient Firestore).');
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
+    
+    if (nameLg) nameLg.textContent = user.displayName || user.email;
+    if (statusLg) statusLg.textContent = user.email;
   } else {
-    init();
+    hide($('#loggedUserMenu'));
+    show($('#guestUserMenu'));
+    
+    if (nameLg) nameLg.textContent = 'Guest User';
+    if (statusLg) statusLg.textContent = 'Not signed in';
+    if (avatar) avatar.innerHTML = '<i class="fas fa-user"></i>';
+    if (avatarLg) avatarLg.innerHTML = '<i class="fas fa-user"></i>';
   }
-})();
+}
+
+function loadUserSettings(userData) {
+  if (!userData) return;
+  
+  userSettings = { ...userData };
+  
+  // Update display elements
+  const updateField = (fieldName, value, fallback) => {
+    const element = $(`#${fieldName}Value`);
+    if (element) {
+      element.textContent = value || fallback;
+      if (value) {
+        element.classList.remove('empty');
+      } else {
+        element.classList.add('empty');
+      }
+    }
+  };
+  
+  updateField('displayName', userData.displayName, 'Not set');
+  updateField('bio', userData.bio, 'Tell us about yourself...');
+  updateField('phone', userData.phone, 'Not provided');
+  updateField('streetAddress', userData.streetAddress, 'Not provided');
+  updateField('city', userData.city, 'Not provided');
+  updateField('state', userData.state, 'Not provided');
+  updateField('postalCode', userData.postalCode, 'Not provided');
+  updateField('country', userData.country, 'Not selected');
+  
+  if ($('#emailDisplay')) $('#emailDisplay').textContent = userData.email || 'Not signed in';
+  
+  if (userData.photoURL && $('#displayPhotoPreview')) {
+    $('#displayPhotoPreview').src = userData.photoURL;
+    $('#photoStatus').textContent = 'Photo uploaded';
+  }
+  
+  // Load toggle states
+  const loadToggle = (toggleId, value) => {
+    const toggle = $(`#${toggleId}`);
+    if (toggle) toggle.checked = !!value;
+  };
+  
+  loadToggle('twoFAToggle', userData.twoFA);
+  loadToggle('loginNotificationsToggle', userData.loginNotifications !== false); // default true
+  loadToggle('emailNotificationsToggle', userData.emailNotifications !== false); // default true
+  loadToggle('smsNotificationsToggle', userData.smsNotifications);
+  loadToggle('marketingEmailsToggle', userData.marketingEmails);
+  loadToggle('darkModeToggle', userData.darkMode);
+  loadToggle('dataSharingToggle', userData.dataSharing !== false); // default true
+  loadToggle('autoPayToggle', userData.autoPay);
+  
+  // Load preferences
+  if ($('#languageSelect')) $('#languageSelect').value = userData.language || 'en';
+  if ($('#currencySelect')) $('#currencySelect').value = userData.currency || 'USD';
+  if ($('#profileVisibilitySelect')) $('#profileVisibilitySelect').value = userData.profileVisibility || 'public';
+}
+
+function renderHomepageContent() {
+  // Popular services
+  const popular = [
+    { name: 'Plumbing', icon: 'fa-faucet', color: 'bg-blue-500' },
+    { name: 'Electrical', icon: 'fa-bolt', color: 'bg-yellow-500' },
+    { name: 'HVAC', icon: 'fa-fan', color: 'bg-cyan-600' },
+    { name: 'Handyman', icon: 'fa-screwdriver-wrench', color: 'bg-emerald-600' },
+    { name: 'Carpentry', icon: 'fa-hammer', color: 'bg-orange-500' },
+    { name: 'Cleaning', icon: 'fa-broom', color: 'bg-indigo-500' }
+  ];
+  
+  const popularServices = $('#popularServices');
+  if (popularServices) {
+    popularServices.innerHTML = popular.map(service => `
+      <div class="card card-interactive text-center" onclick="doSearch('${service.name}')">
+        <div class="service-icon ${service.color} mx-auto mb-2">
+          <i class="fas ${service.icon}"></i>
+        </div>
+        <div class="font-bold">${service.name}</div>
+      </div>
+    `).join('');
+  }
+  
+  // All services
+  const categories = [
+    'Plumbing', 'Electrical', 'HVAC', 'Handyman', 'Carpentry', 'Cleaning',
+    'Gardening', 'Painting', 'Locksmith', 'IT Support', 'Moving', 'Appliances'
+  ];
+  
+  const serviceCategories = $('#serviceCategories');
+  if (serviceCategories) {
+    serviceCategories.innerHTML = categories.map(category => `
+      <div class="card card-interactive text-center" onclick="doSearch('${category}')">
+        <div class="font-bold">${category}</div>
+      </div>
+    `).join('');
+  }
+  
+  // Featured professionals
+  const pros = [
+    { name: 'Amina R.', title: 'Master Plumber', rating: 4.95, jobs: 312 },
+    { name: 'Victor K.', title: 'Certified Electrician', rating: 4.92, jobs: 287 },
+    { name: 'Lina P.', title: 'AC Specialist', rating: 4.90, jobs: 201 }
+  ];
+  
+  const featuredProfessionals = $('#featuredProfessionals');
+  if (featuredProfessionals) {
+    featuredProfessionals.innerHTML = pros.map(pro => `
+      <div class="card professional-card">
+        <div class="flex items-center gap-3">
+          <div class="avatar-container w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold">
+            ${pro.name.charAt(0)}
+          </div>
+          <div>
+            <div class="font-bold">${pro.name}</div>
+            <div class="text-sm text-gray-500">${pro.title}</div>
+          </div>
+          <div class="ml-auto text-sm font-semibold">${pro.rating}★ • ${pro.jobs}</div>
+        </div>
+        <button class="btn-base btn-outline w-full mt-4" onclick="showMyProfile()">
+          View Profile
+        </button>
+      </div>
+    `).join('');
+  }
+}
+
+// Auth state listener
+auth.onAuthStateChanged((user) => {
+  console.log('Auth state changed:', user ? user.email : 'signed out');
+  currentUser = user;
+  
+  updateUserUI(user);
+  
+  if (user) {
+    db.collection('users').doc(user.uid).get()
+      .then((doc) => {
+        const userData = doc.data() || {};
+        loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
+        
+        // Show professional button if user is a professional
+        if (userData.role === 'professional') {
+          $('#professionalBtn')?.classList.remove('hidden');
+          $('#mobileProfessional')?.classList.remove('hidden');
+        }
+      })
+      .catch((error) => {
+        console.warn('Failed to load user data:', error);
+      });
+  } else {
+    $('#professionalBtn')?.classList.add('hidden');
+    $('#mobileProfessional')?.classList.add('hidden');
+    userSettings = {};
+  }
+});
+
+// Close modals when clicking outside
+document.addEventListener('click', (e) => {
+  const overlay = e.target.closest('.modal-overlay');
+  const content = e.target.closest('.modal-content');
+  if (overlay && !content && overlay.classList.contains('show')) {
+    overlay.classList.remove('show');
+    setTimeout(() => overlay.classList.add('hidden'), 200);
+  }
+});
+
+// Close modals with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    $$('.modal-overlay.show').forEach(modal => {
+      modal.classList.remove('show');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    });
+  }
+});
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('QuickFix Pro DOM loaded');
+  renderHomepageContent();
+  
+  // Initialize location
+  const pill = $('#locationPill');
+  const citySpan = $('#locationCity');
+  if (pill && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        citySpan.textContent = 'Nearby';
+        show(pill);
+      },
+      () => {
+        citySpan.textContent = 'Your area';
+        show(pill);
+      },
+      { timeout: 1500 }
+    );
+  }
+  
+  console.log('QuickFix Pro ready!');
+});
+
+console.log('QuickFix Pro JavaScript loaded');
