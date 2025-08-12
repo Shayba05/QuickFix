@@ -95,6 +95,14 @@
       return err?.message || 'Operation failed';
     }
 
+    // --- NEW: quick preflight reachability check for Firestore ---
+    async function canReachFirestore() {
+      try {
+        await withTimeout(db.collection('_ping').limit(1).get(), 8000, 'firestore-timeout');
+        return true;
+      } catch (_) { return false; }
+    }
+
     // Extra visibility while debugging
     window.addEventListener('offline', () => toast('You are offline. Check your connection.', 'error', 3000));
     window.addEventListener('online', () => toast('Back online', 'success', 1500));
@@ -611,6 +619,11 @@
         return toast('Add at least one image or file.', 'error');
       }
 
+      // --- NEW: bail early if Firestore is unreachable to avoid "Failed to start upload" loop
+      if (!(await canReachFirestore())) {
+        return toast('Can’t reach the database right now. Please try again shortly or switch networks / disable VPN.', 'error', 6000);
+      }
+
       const btn = $('#workSubmitBtn');
       setLoading(btn, true, 'Uploading…');
 
@@ -667,9 +680,12 @@
         closeModal('workUploadModal');
         toast('Added to your portfolio!');
       } catch (err) {
-        console.error('Work upload failed:', err);
+        console.error('Work upload failed:', err, err?.code, err?.message);
         hideProgress(); // ensure the progress bar is cleared
-        toast(mapFirebaseError(err), 'error', 5000);
+        const msg = (err?.code === 'unavailable' || /Failed to start upload/i.test(err?.message || ''))
+          ? 'Can’t reach the database right now. Try again in a minute or switch networks / disable VPN.'
+          : mapFirebaseError(err);
+        toast(msg, 'error', 6000);
       } finally {
         setLoading(btn, false);
       }
