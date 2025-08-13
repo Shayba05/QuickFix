@@ -1,4 +1,4 @@
-// QuickFix Pro - Super Mobile Optimized with Booking History & Payment Methods
+// QuickFix Pro - Enhanced with Job Booking and Professional Availability
 console.log('QuickFix Pro starting...');
 
 // Firebase configuration
@@ -44,6 +44,10 @@ let pendingProfessionalSwitch = false;
 let isOnline = navigator.onLine;
 let mockBookingHistory = [];
 let mockPaymentMethods = [];
+let selectedJobPhotos = [];
+let selectedTimeSlot = null;
+let currentBookingProfessional = null;
+let professionalAvailability = {};
 
 // Network status monitoring
 window.addEventListener('online', () => {
@@ -177,6 +181,31 @@ function initializeMockData() {
       addedDate: '2024-01-10'
     }
   ];
+
+  // Mock professional availability
+  professionalAvailability = {
+    'john-smith': {
+      monday: { available: true, start: '09:00', end: '17:00' },
+      tuesday: { available: true, start: '09:00', end: '17:00' },
+      wednesday: { available: true, start: '09:00', end: '17:00' },
+      thursday: { available: true, start: '09:00', end: '17:00' },
+      friday: { available: true, start: '09:00', end: '17:00' },
+      saturday: { available: false, start: '09:00', end: '17:00' },
+      sunday: { available: false, start: '09:00', end: '17:00' },
+      breakTime: { enabled: true, start: '12:00', end: '13:00' },
+      minAdvance: 1,
+      maxAdvance: 30
+    }
+  };
+
+  // Set minimum date for booking (tomorrow)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+  const dateInput = document.getElementById('preferredDate');
+  if (dateInput) {
+    dateInput.min = minDate;
+  }
 }
 
 // Helper functions
@@ -271,7 +300,7 @@ function switchView(viewName) {
   console.log('Switch view:', viewName);
   
   // Hide all views
-  $$('#customerView, #professionalView, #adminView, #settingsView, #helpView, #algoliaResults').forEach(hide);
+  $$('#customerView, #professionalView, #adminView, #settingsView, #helpView, #howItWorksView, #algoliaResults').forEach(hide);
   
   // Show target view
   const targetView = $(`#${viewName}View`);
@@ -294,6 +323,9 @@ function switchView(viewName) {
   } else if (viewName === 'admin') {
     $('#adminBtn')?.classList.remove('btn-outline');
     $('#adminBtn')?.classList.add('btn-primary');
+  } else if (viewName === 'howItWorks') {
+    $('#howItWorksBtn')?.classList.remove('btn-outline');
+    $('#howItWorksBtn')?.classList.add('btn-primary');
   }
   
   // Update mobile nav
@@ -305,16 +337,41 @@ function switchView(viewName) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// How It Works Functions
+function showHowItWorksSection(sectionType) {
+  console.log('Show how it works section:', sectionType);
+  
+  // Update tab buttons
+  $('#customerTabBtn').classList.remove('btn-primary');
+  $('#customerTabBtn').classList.add('btn-outline');
+  $('#professionalTabBtn').classList.remove('btn-primary');
+  $('#professionalTabBtn').classList.add('btn-outline');
+  
+  if (sectionType === 'customer') {
+    $('#customerTabBtn').classList.remove('btn-outline');
+    $('#customerTabBtn').classList.add('btn-primary');
+    show($('#customerGuide'));
+    hide($('#professionalGuide'));
+  } else {
+    $('#professionalTabBtn').classList.remove('btn-outline');
+    $('#professionalTabBtn').classList.add('btn-primary');
+    hide($('#customerGuide'));
+    show($('#professionalGuide'));
+  }
+}
+
 function openModal(modalId) {
   console.log('Open modal:', modalId);
   const modal = document.getElementById(modalId);
   if (!modal) return;
   
-  // Special handling for booking history and payment methods
+  // Special handling for specific modals
   if (modalId === 'bookingHistoryModal') {
     loadBookingHistory();
   } else if (modalId === 'paymentMethodsModal') {
     loadPaymentMethods();
+  } else if (modalId === 'availabilityModal') {
+    loadCurrentAvailability();
   }
   
   modal.classList.remove('hidden');
@@ -352,6 +409,7 @@ function doSearch(query) {
   hide($('#adminView'));
   hide($('#settingsView'));
   hide($('#helpView'));
+  hide($('#howItWorksView'));
   show($('#algoliaResults'));
   $('#algoliaResultsList').innerHTML = `
     <div class="card">
@@ -476,7 +534,7 @@ function handleSignup(event) {
   // Validate age (must be 18+)
   const birthDate = new Date(dob);
   const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
+  let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
@@ -647,6 +705,378 @@ function sendPasswordReset() {
 function showMyProfile() {
   console.log('Show my profile clicked');
   toast('Profile feature coming soon!', 'info');
+}
+
+// Book Professional Functions
+function bookProfessional(professionalName, service = 'General Service') {
+  console.log('Book professional:', professionalName);
+  
+  if (!currentUser) {
+    toast('Please sign in to book services', 'error');
+    openModal('loginModal');
+    return;
+  }
+  
+  currentBookingProfessional = {
+    name: professionalName,
+    service: service
+  };
+  
+  // Update booking modal title
+  $('#bookingProfessionalInfo').textContent = `Book ${service} with ${professionalName}`;
+  
+  // Clear form
+  resetBookingForm();
+  
+  openModal('bookProfessionalModal');
+}
+
+function resetBookingForm() {
+  $('#serviceDescription').value = '';
+  $('#preferredDate').value = '';
+  $('#serviceAddress').value = '';
+  $('#customerPhone').value = currentUser?.phoneNumber || '';
+  $('#estimatedBudget').value = '';
+  $('#specialInstructions').value = '';
+  selectedJobPhotos = [];
+  selectedTimeSlot = null;
+  updateJobPhotoPreviews();
+  updateAvailableTimesDisplay();
+}
+
+// Job Photo Upload Functions
+function triggerJobPhotoUpload() {
+  $('#jobPhotosInput').click();
+}
+
+function handleJobPhotoSelect(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => handleJobPhotoFile(file));
+}
+
+function handleJobPhotoDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  const upload = event.currentTarget;
+  upload.classList.remove('drag-over');
+  
+  const files = Array.from(event.dataTransfer.files);
+  files.forEach(file => handleJobPhotoFile(file));
+}
+
+function handleJobPhotoDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.add('drag-over');
+}
+
+function handleJobPhotoDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function handleJobPhotoFile(file) {
+  console.log('Job photo file selected:', file.name);
+  
+  // Validate file
+  if (!file.type.startsWith('image/')) {
+    toast('Please select image files only', 'error');
+    return;
+  }
+  
+  if (file.size > 5 * 1024 * 1024) { // 5MB
+    toast('File size must be less than 5MB', 'error');
+    return;
+  }
+  
+  if (selectedJobPhotos.length >= 5) {
+    toast('Maximum 5 photos allowed', 'error');
+    return;
+  }
+  
+  // Create preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    selectedJobPhotos.push({
+      file: file,
+      url: e.target.result,
+      id: Date.now() + Math.random()
+    });
+    updateJobPhotoPreviews();
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateJobPhotoPreviews() {
+  const container = $('#jobPhotoPreviews');
+  if (!container) return;
+  
+  container.innerHTML = selectedJobPhotos.map(photo => `
+    <div class="job-photo-preview">
+      <img src="${photo.url}" alt="Job photo">
+      <button class="remove-photo-btn" onclick="removeJobPhoto('${photo.id}')" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+function removeJobPhoto(photoId) {
+  selectedJobPhotos = selectedJobPhotos.filter(photo => photo.id != photoId);
+  updateJobPhotoPreviews();
+}
+
+// Availability Functions
+function loadAvailableTimes() {
+  const dateInput = $('#preferredDate');
+  const selectedDate = new Date(dateInput.value);
+  const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
+  
+  console.log('Loading available times for:', dayName);
+  
+  const container = $('#availableTimesContainer');
+  if (!container) return;
+  
+  // Get professional availability (mock data for now)
+  const availability = professionalAvailability[currentBookingProfessional?.name?.toLowerCase().replace(/\s+/g, '-')] || 
+                      professionalAvailability['john-smith'];
+  
+  const dayAvailability = availability[dayName];
+  
+  if (!dayAvailability?.available) {
+    container.innerHTML = `
+      <div class="text-center text-gray-500 py-8">
+        <i class="fas fa-times-circle text-2xl mb-2 block text-red-500"></i>
+        Not available on ${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
+      </div>
+    `;
+    return;
+  }
+  
+  // Generate time slots
+  const timeSlots = generateTimeSlots(dayAvailability.start, dayAvailability.end, availability.breakTime);
+  
+  container.innerHTML = timeSlots.map(slot => `
+    <div class="time-slot ${slot.available ? '' : 'unavailable'}" 
+         onclick="${slot.available ? `selectTimeSlot('${slot.time}')` : ''}"
+         data-time="${slot.time}">
+      ${slot.time}
+      ${!slot.available ? '<br><small>Unavailable</small>' : ''}
+    </div>
+  `).join('');
+}
+
+function generateTimeSlots(startTime, endTime, breakTime) {
+  const slots = [];
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  const breakStart = breakTime?.enabled ? timeToMinutes(breakTime.start) : null;
+  const breakEnd = breakTime?.enabled ? timeToMinutes(breakTime.end) : null;
+  
+  // Generate 60-minute slots
+  for (let time = start; time < end; time += 60) {
+    const slotTime = minutesToTime(time);
+    const isBreakTime = breakStart && breakEnd && time >= breakStart && time < breakEnd;
+    
+    slots.push({
+      time: slotTime,
+      available: !isBreakTime && time + 60 <= end
+    });
+  }
+  
+  return slots;
+}
+
+function timeToMinutes(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function selectTimeSlot(time) {
+  console.log('Selected time slot:', time);
+  
+  // Remove previous selection
+  $$('.time-slot').forEach(slot => slot.classList.remove('selected'));
+  
+  // Add selection to clicked slot
+  const selectedSlot = $(`.time-slot[data-time="${time}"]`);
+  if (selectedSlot) {
+    selectedSlot.classList.add('selected');
+    selectedTimeSlot = time;
+  }
+}
+
+function updateAvailableTimesDisplay() {
+  const container = $('#availableTimesContainer');
+  if (container) {
+    container.innerHTML = `
+      <div class="text-center text-gray-500 py-8">
+        <i class="fas fa-clock text-2xl mb-2 block"></i>
+        Select a date to see available times
+      </div>
+    `;
+  }
+}
+
+// Submit Booking
+function submitBooking(event) {
+  event.preventDefault();
+  console.log('Submit booking');
+  
+  const description = $('#serviceDescription').value.trim();
+  const date = $('#preferredDate').value;
+  const address = $('#serviceAddress').value.trim();
+  const phone = $('#customerPhone').value.trim();
+  const budget = $('#estimatedBudget').value;
+  const instructions = $('#specialInstructions').value.trim();
+  
+  // Validation
+  if (!description || !date || !address || !phone || !budget) {
+    toast('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  if (!selectedTimeSlot) {
+    toast('Please select a time slot', 'error');
+    return;
+  }
+  
+  const btn = $('#submitBookingBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Booking...';
+  btn.disabled = true;
+  
+  // Create booking object
+  const booking = {
+    id: 'BK' + Date.now(),
+    customerId: currentUser.uid,
+    professional: currentBookingProfessional.name,
+    service: currentBookingProfessional.service,
+    description: description,
+    date: date,
+    time: selectedTimeSlot,
+    address: address,
+    phone: phone,
+    budget: budget,
+    instructions: instructions,
+    photos: selectedJobPhotos.map(photo => photo.file.name),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  
+  // Save booking (simulate)
+  setTimeout(() => {
+    console.log('Booking saved:', booking);
+    
+    // Add to mock booking history
+    mockBookingHistory.unshift({
+      id: booking.id,
+      date: booking.date,
+      service: booking.service,
+      professional: booking.professional,
+      amount: 0, // To be determined
+      status: 'pending',
+      rating: null,
+      details: booking.description
+    });
+    
+    toast('Booking submitted successfully!', 'success');
+    closeModal('bookProfessionalModal');
+    
+    // Reset form
+    resetBookingForm();
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }, 2000);
+}
+
+// Professional Availability Management
+function loadCurrentAvailability() {
+  console.log('Loading current availability');
+  
+  if (!currentUser || userSettings.role !== 'professional') return;
+  
+  // Load current availability settings (mock for now)
+  const availability = professionalAvailability[currentUser.uid] || professionalAvailability['john-smith'];
+  
+  // Set checkboxes and times
+  Object.keys(availability).forEach(day => {
+    if (day === 'breakTime' || day === 'minAdvance' || day === 'maxAdvance') return;
+    
+    const dayData = availability[day];
+    const checkbox = $(`#${day}`);
+    const startInput = $(`#${day}Start`);
+    const endInput = $(`#${day}End`);
+    
+    if (checkbox) checkbox.checked = dayData.available;
+    if (startInput) startInput.value = dayData.start;
+    if (endInput) endInput.value = dayData.end;
+  });
+  
+  // Set break time
+  if (availability.breakTime) {
+    $('#hasBreak').checked = availability.breakTime.enabled;
+    $('#breakStart').value = availability.breakTime.start;
+    $('#breakEnd').value = availability.breakTime.end;
+  }
+  
+  // Set advance booking settings
+  $('#minAdvance').value = availability.minAdvance || 1;
+  $('#maxAdvance').value = availability.maxAdvance || 30;
+}
+
+function saveAvailability(event) {
+  event.preventDefault();
+  console.log('Save availability');
+  
+  if (!currentUser || userSettings.role !== 'professional') {
+    toast('Only professionals can set availability', 'error');
+    return;
+  }
+  
+  // Collect availability data
+  const availability = {};
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  
+  days.forEach(day => {
+    const checkbox = $(`#${day}`);
+    const startInput = $(`#${day}Start`);
+    const endInput = $(`#${day}End`);
+    
+    availability[day] = {
+      available: checkbox?.checked || false,
+      start: startInput?.value || '09:00',
+      end: endInput?.value || '17:00'
+    };
+  });
+  
+  // Break time
+  availability.breakTime = {
+    enabled: $('#hasBreak')?.checked || false,
+    start: $('#breakStart')?.value || '12:00',
+    end: $('#breakEnd')?.value || '13:00'
+  };
+  
+  // Advance booking settings
+  availability.minAdvance = parseInt($('#minAdvance')?.value) || 1;
+  availability.maxAdvance = parseInt($('#maxAdvance')?.value) || 30;
+  
+  // Save to mock data (in real app, save to Firebase)
+  professionalAvailability[currentUser.uid] = availability;
+  
+  toast('Availability settings saved successfully!', 'success');
+  closeModal('availabilityModal');
+  
+  console.log('Saved availability:', availability);
 }
 
 // Booking History Functions
@@ -1724,227 +2154,303 @@ function updateUserUI(user) {
   }
 }
 
-function loadUserSettings(userData) {
-  if (!userData) return;
-  
-  userSettings = { ...userData };
-  
-  // Update display elements
-  const updateField = (fieldName, value, fallback) => {
-    const element = $(`#${fieldName}Value`);
-    if (element) {
-      element.textContent = value || fallback;
-      if (value) {
-        element.classList.remove('empty');
-      } else {
-        element.classList.add('empty');
-      }
-    }
-  };
-  
-  updateField('displayName', userData.displayName, 'Not set');
-  updateField('bio', userData.bio, 'Tell us about yourself...');
-  updateField('phone', userData.phone, 'Not provided');
-  updateField('streetAddress', userData.streetAddress, 'Not provided');
-  updateField('city', userData.city, 'Not provided');
-  updateField('state', userData.state, 'Not provided');
-  updateField('postalCode', userData.postalCode, 'Not provided');
-  updateField('country', userData.country, 'Not selected');
-  
-  if ($('#emailDisplay')) $('#emailDisplay').textContent = userData.email || 'Not signed in';
-  
-  if (userData.photoURL && $('#displayPhotoPreview')) {
-    $('#displayPhotoPreview').src = userData.photoURL;
-    $('#photoStatus').textContent = 'Photo uploaded';
-  }
-  
-  // Load toggle states
-  const loadToggle = (toggleId, value) => {
-    const toggle = $(`#${toggleId}`);
-    if (toggle) toggle.checked = !!value;
-  };
-  
-  loadToggle('twoFAToggle', userData.twoFA);
-  loadToggle('loginNotificationsToggle', userData.loginNotifications !== false); // default true
-  loadToggle('emailNotificationsToggle', userData.emailNotifications !== false); // default true
-  loadToggle('smsNotificationsToggle', userData.smsNotifications);
-  loadToggle('marketingEmailsToggle', userData.marketingEmails);
-  loadToggle('darkModeToggle', userData.darkMode);
-  loadToggle('dataSharingToggle', userData.dataSharing !== false); // default true
-  loadToggle('autoPayToggle', userData.autoPay);
-  
-  // Load preferences
-  if ($('#languageSelect')) $('#languageSelect').value = userData.language || 'en';
-  if ($('#currencySelect')) $('#currencySelect').value = userData.currency || 'USD';
-  if ($('#profileVisibilitySelect')) $('#profileVisibilitySelect').value = userData.profileVisibility || 'public';
-}
-
-function renderHomepageContent() {
+// Load mock content for homepage
+function loadMockContent() {
   // Popular services
-  const popular = [
-    { name: 'Plumbing', icon: 'fa-faucet', color: 'bg-blue-500' },
-    { name: 'Electrical', icon: 'fa-bolt', color: 'bg-yellow-500' },
-    { name: 'HVAC', icon: 'fa-fan', color: 'bg-cyan-600' },
-    { name: 'Handyman', icon: 'fa-screwdriver-wrench', color: 'bg-emerald-600' },
-    { name: 'Carpentry', icon: 'fa-hammer', color: 'bg-orange-500' },
-    { name: 'Cleaning', icon: 'fa-broom', color: 'bg-indigo-500' }
+  const popularServices = [
+    { name: 'Plumbing', icon: 'fas fa-wrench', color: 'from-blue-500 to-blue-600' },
+    { name: 'Electrical', icon: 'fas fa-bolt', color: 'from-yellow-500 to-yellow-600' },
+    { name: 'Handyman', icon: 'fas fa-tools', color: 'from-green-500 to-green-600' },
+    { name: 'HVAC', icon: 'fas fa-wind', color: 'from-purple-500 to-purple-600' },
+    { name: 'Cleaning', icon: 'fas fa-broom', color: 'from-pink-500 to-pink-600' },
+    { name: 'Painting', icon: 'fas fa-paint-roller', color: 'from-red-500 to-red-600' }
   ];
   
-  const popularServices = $('#popularServices');
-  if (popularServices) {
-    popularServices.innerHTML = popular.map(service => `
-      <div class="card card-interactive text-center" onclick="doSearch('${service.name}')">
-        <div class="service-icon ${service.color} mx-auto mb-2">
-          <i class="fas ${service.icon}"></i>
+  const popularContainer = $('#popularServices');
+  if (popularContainer) {
+    popularContainer.innerHTML = popularServices.map(service => `
+      <div class="card card-interactive" onclick="doSearch('${service.name}')">
+        <div class="service-icon bg-gradient-to-br ${service.color}">
+          <i class="${service.icon}"></i>
         </div>
-        <div class="font-bold">${service.name}</div>
+        <h3 class="text-sm font-bold mt-3 text-center">${service.name}</h3>
       </div>
     `).join('');
   }
   
-  // All services
-  const categories = [
-    'Plumbing', 'Electrical', 'HVAC', 'Handyman', 'Carpentry', 'Cleaning',
-    'Gardening', 'Painting', 'Locksmith', 'IT Support', 'Moving', 'Appliances'
+  // All service categories
+  const allServices = [
+    { name: 'Plumbing', icon: 'fas fa-wrench', color: 'from-blue-500 to-blue-600' },
+    { name: 'Electrical', icon: 'fas fa-bolt', color: 'from-yellow-500 to-yellow-600' },
+    { name: 'Handyman', icon: 'fas fa-tools', color: 'from-green-500 to-green-600' },
+    { name: 'HVAC', icon: 'fas fa-wind', color: 'from-purple-500 to-purple-600' },
+    { name: 'Cleaning', icon: 'fas fa-broom', color: 'from-pink-500 to-pink-600' },
+    { name: 'Painting', icon: 'fas fa-paint-roller', color: 'from-red-500 to-red-600' },
+    { name: 'Appliances', icon: 'fas fa-home', color: 'from-indigo-500 to-indigo-600' },
+    { name: 'Carpentry', icon: 'fas fa-hammer', color: 'from-orange-500 to-orange-600' },
+    { name: 'Roofing', icon: 'fas fa-home', color: 'from-gray-500 to-gray-600' },
+    { name: 'Landscaping', icon: 'fas fa-leaf', color: 'from-green-400 to-green-500' },
+    { name: 'Moving', icon: 'fas fa-truck', color: 'from-blue-400 to-blue-500' },
+    { name: 'Assembly', icon: 'fas fa-screwdriver', color: 'from-purple-400 to-purple-500' }
   ];
   
-  const serviceCategories = $('#serviceCategories');
-  if (serviceCategories) {
-    serviceCategories.innerHTML = categories.map(category => `
-      <div class="card card-interactive text-center" onclick="doSearch('${category}')">
-        <div class="font-bold">${category}</div>
+  const servicesContainer = $('#serviceCategories');
+  if (servicesContainer) {
+    servicesContainer.innerHTML = allServices.map(service => `
+      <div class="card card-interactive" onclick="doSearch('${service.name}')">
+        <div class="service-icon bg-gradient-to-br ${service.color}">
+          <i class="${service.icon}"></i>
+        </div>
+        <h3 class="text-sm font-bold mt-3 text-center">${service.name}</h3>
       </div>
     `).join('');
   }
   
   // Featured professionals
-  const pros = [
-    { name: 'Amina R.', title: 'Master Plumber', rating: 4.95, jobs: 312 },
-    { name: 'Victor K.', title: 'Certified Electrician', rating: 4.92, jobs: 287 },
-    { name: 'Lina P.', title: 'AC Specialist', rating: 4.90, jobs: 201 }
+  const professionals = [
+    { name: 'John Smith', service: 'Plumbing', rating: 4.9, reviews: 124, price: '$80/hr', image: 'JH' },
+    { name: 'Sarah Williams', service: 'House Cleaning', rating: 4.8, reviews: 89, price: '$25/hr', image: 'SW' },
+    { name: 'Mike Johnson', service: 'Handyman', rating: 4.7, reviews: 156, price: '$65/hr', image: 'MJ' }
   ];
   
-  const featuredProfessionals = $('#featuredProfessionals');
-  if (featuredProfessionals) {
-    featuredProfessionals.innerHTML = pros.map(pro => `
+  const professionalsContainer = $('#featuredProfessionals');
+  if (professionalsContainer) {
+    professionalsContainer.innerHTML = professionals.map(pro => `
       <div class="card professional-card">
-        <div class="flex items-center gap-3">
-          <div class="avatar-container w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold">
-            ${pro.name.charAt(0)}
+        <div class="flex items-center mb-4">
+          <div class="avatar-container w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+            ${pro.image}
           </div>
           <div>
-            <div class="font-bold">${pro.name}</div>
-            <div class="text-sm text-gray-500">${pro.title}</div>
+            <h3 class="font-bold text-lg">${pro.name}</h3>
+            <p class="text-gray-600">${pro.service}</p>
           </div>
-          <div class="ml-auto text-sm font-semibold">${pro.rating}★ • ${pro.jobs}</div>
         </div>
-        <button class="btn-base btn-outline w-full mt-4" onclick="showMyProfile()">
-          View Profile
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <span class="text-yellow-500 mr-1">★</span>
+            <span class="font-semibold">${pro.rating}</span>
+            <span class="text-gray-500 ml-1">(${pro.reviews})</span>
+          </div>
+          <span class="font-bold text-primary">${pro.price}</span>
+        </div>
+        <button class="btn-base btn-primary w-full" onclick="bookProfessional('${pro.name}', '${pro.service}')">
+          Book Now
         </button>
+      </div>
+    `).join('');
+  }
+  
+  // Work portfolio for professional view
+  const workPortfolio = $('#workPortfolio');
+  if (workPortfolio) {
+    const workSamples = [
+      { title: 'Kitchen Plumbing Repair', type: 'Before & After', date: '2 days ago' },
+      { title: 'Bathroom Renovation', type: 'Complete Project', date: '1 week ago' },
+      { title: 'Emergency Leak Fix', type: 'Quick Fix', date: '3 days ago' }
+    ];
+    
+    workPortfolio.innerHTML = workSamples.map(work => `
+      <div class="card">
+        <div class="bg-gradient-to-br from-gray-200 to-gray-300 h-32 rounded-lg mb-3 flex items-center justify-center">
+          <i class="fas fa-image text-gray-500 text-2xl"></i>
+        </div>
+        <h4 class="font-bold mb-2">${work.title}</h4>
+        <p class="text-sm text-gray-600 mb-2">${work.type}</p>
+        <p class="text-xs text-gray-500">${work.date}</p>
+      </div>
+    `).join('');
+  }
+  
+  // Recent professionals for admin view
+  const recentProfessionals = $('#recentProfessionals');
+  if (recentProfessionals) {
+    const recentActivity = [
+      { name: 'Alex Rodriguez', action: 'Completed job', time: '5 min ago', status: 'active' },
+      { name: 'Emma Davis', action: 'New registration', time: '15 min ago', status: 'pending' },
+      { name: 'Chris Wilson', action: 'Updated profile', time: '1 hour ago', status: 'active' }
+    ];
+    
+    recentProfessionals.innerHTML = recentActivity.map(activity => `
+      <div class="card">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold">${activity.name}</h4>
+            <p class="text-sm text-gray-600">${activity.action}</p>
+            <p class="text-xs text-gray-500">${activity.time}</p>
+          </div>
+          <span class="status-badge status-${activity.status === 'active' ? 'online' : 'pending'}">${activity.status}</span>
+        </div>
       </div>
     `).join('');
   }
 }
 
-// Auth state listener - FIXED for professional view switching
-auth.onAuthStateChanged((user) => {
-  console.log('Auth state changed:', user ? user.email : 'signed out', 'initialAuthComplete:', initialAuthComplete);
-  currentUser = user;
-  
-  updateUserUI(user);
-  
-  if (user) {
-    safeFirestoreRead(() =>
-      db.collection('users').doc(user.uid).get(),
-      () => ({ data: () => ({}) }) // fallback for offline
-    ).then((doc) => {
-      const userData = doc?.data() || {};
-      loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
-      
-      // Show professional button if user is a professional
-      if (userData.role === 'professional') {
-        $('#professionalBtn')?.classList.remove('hidden');
-        $('#mobileProfessional')?.classList.remove('hidden');
-        
-        // FIXED: Auto-switch to professional view for professionals
-        // Only switch if this is the initial auth or pending switch, and user is currently on customer view or no view
-        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView').find(el => !el.classList.contains('hidden'));
-        const isOnCustomerOrNoView = !currentView || currentView.id === 'customerView';
-        
-        if ((pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView))) {
-          console.log('Auto-switching professional user to professional dashboard');
-          setTimeout(() => {
-            switchView('professional');
-          }, 100); // Small delay to ensure DOM is ready
-          pendingProfessionalSwitch = false;
-        }
-      } else {
-        // Customer or other role
-        $('#professionalBtn')?.classList.add('hidden');
-        $('#mobileProfessional')?.classList.add('hidden');
-      }
-      
-      initialAuthComplete = true;
-    }).catch((error) => {
-      console.warn('Failed to load user data:', error);
-      initialAuthComplete = true;
-    });
-  } else {
-    $('#professionalBtn')?.classList.add('hidden');
-    $('#mobileProfessional')?.classList.add('hidden');
-    userSettings = {};
-    initialAuthComplete = true;
-    pendingProfessionalSwitch = false;
-  }
-});
-
-// Close modals when clicking outside
-document.addEventListener('click', (e) => {
-  const overlay = e.target.closest('.modal-overlay');
-  const content = e.target.closest('.modal-content');
-  if (overlay && !content && overlay.classList.contains('show')) {
-    overlay.classList.remove('show');
-    setTimeout(() => overlay.classList.add('hidden'), 200);
-  }
-});
-
-// Close modals with Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    $$('.modal-overlay.show').forEach(modal => {
-      modal.classList.remove('show');
-      setTimeout(() => modal.classList.add('hidden'), 200);
-    });
-  }
-});
-
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('QuickFix Pro DOM loaded');
-  
-  // Initialize mock data
-  initializeMockData();
-  
-  renderHomepageContent();
-  
-  // Initialize location
-  const pill = $('#locationPill');
-  const citySpan = $('#locationCity');
-  if (pill && navigator.geolocation) {
+// Detect location
+function detectLocation() {
+  if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      () => {
-        citySpan.textContent = 'Nearby';
-        show(pill);
+      async (position) => {
+        try {
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`);
+          const data = await response.json();
+          
+          const locationElement = $('#locationCity');
+          if (locationElement && data.city) {
+            locationElement.textContent = data.city;
+          }
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          const locationElement = $('#locationCity');
+          if (locationElement) {
+            locationElement.textContent = 'Your Area';
+          }
+        }
       },
-      () => {
-        citySpan.textContent = 'Your area';
-        show(pill);
-      },
-      { timeout: 1500 }
+      (error) => {
+        console.error('Geolocation error:', error);
+        const locationElement = $('#locationCity');
+        if (locationElement) {
+          locationElement.textContent = 'Your Area';
+        }
+      }
     );
   }
+}
+
+// Initialize app
+function initializeApp() {
+  console.log('Initializing QuickFix Pro...');
   
-  console.log('QuickFix Pro ready!');
+  // Load mock data
+  initializeMockData();
+  loadMockContent();
+  detectLocation();
+  
+  // Dark mode detection
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    if (event.matches) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+}
+
+// Firebase auth state observer
+auth.onAuthStateChanged(async (user) => {
+  console.log('Auth state changed:', user?.email);
+  currentUser = user;
+  initialAuthComplete = true;
+  
+  if (user) {
+    // Load user settings with error handling
+    const userDoc = await safeFirestoreRead(() =>
+      db.collection('users').doc(user.uid).get()
+    );
+    
+    if (userDoc?.exists) {
+      userSettings = userDoc.data();
+      console.log('Loaded user settings:', userSettings);
+      
+      // Show professional button if user is a professional
+      if (userSettings.role === 'professional') {
+        show($('#professionalBtn'));
+        show($('#mobileProfessional'));
+        
+        // Switch to professional view if flagged
+        if (pendingProfessionalSwitch) {
+          switchView('professional');
+          pendingProfessionalSwitch = false;
+        }
+      }
+      
+      // Update settings UI
+      updateSettingsUI();
+    }
+  } else {
+    userSettings = {};
+    hide($('#professionalBtn'));
+    hide($('#mobileProfessional'));
+  }
+  
+  updateUserUI(user);
 });
 
-console.log('QuickFix Pro JavaScript loaded');
+// Update settings UI with current values
+function updateSettingsUI() {
+  // Update display fields
+  if (userSettings.displayName) {
+    const displayNameValue = $('#displayNameValue');
+    if (displayNameValue) {
+      displayNameValue.textContent = userSettings.displayName;
+      displayNameValue.classList.remove('empty');
+    }
+  }
+  
+  if (userSettings.bio) {
+    const bioValue = $('#bioValue');
+    if (bioValue) {
+      bioValue.textContent = userSettings.bio;
+      bioValue.classList.remove('empty');
+    }
+  }
+  
+  if (userSettings.phone) {
+    const phoneValue = $('#phoneValue');
+    if (phoneValue) {
+      phoneValue.textContent = userSettings.phone;
+      phoneValue.classList.remove('empty');
+    }
+  }
+  
+  if (userSettings.city) {
+    const cityValue = $('#cityValue');
+    if (cityValue) {
+      cityValue.textContent = userSettings.city;
+      cityValue.classList.remove('empty');
+    }
+  }
+  
+  // Update email display
+  if (currentUser?.email) {
+    const emailDisplay = $('#emailDisplay');
+    if (emailDisplay) {
+      emailDisplay.textContent = currentUser.email;
+    }
+  }
+  
+  // Update photo if available
+  if (userSettings.photoURL) {
+    updateUserAvatar(userSettings.photoURL);
+  }
+}
+
+// Initialize on DOM content loaded
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Search input functionality
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = $('#searchInput');
+  const mobileSearchInput = $('#mobileSearchInput');
+  
+  if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        doSearch(searchInput.value);
+      }
+    });
+  }
+  
+  if (mobileSearchInput) {
+    mobileSearchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        doSearch(mobileSearchInput.value);
+        closeModal('searchModal');
+      }
+    });
+  }
+});
