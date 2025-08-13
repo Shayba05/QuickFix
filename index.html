@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>QuickFix Pro - Professional Service Platform</title>
 
   <!-- Tailwind (CDN for development) -->
@@ -56,7 +56,29 @@
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%); color:#1F2937; font-size:1.125rem; line-height:1.7; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg,#FAFAFA 0%,#F4F4F5 100%); 
+      color:#1F2937; 
+      font-size:1rem; 
+      line-height:1.6; 
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* Enhanced Mobile Optimization */
+    @media (max-width: 768px) {
+      body { 
+        font-size: 0.95rem; 
+        padding-bottom: 90px !important; 
+      }
+      .card { padding: 1rem; margin-bottom: 1rem; }
+      .btn-base { min-height: 48px; padding: 0.75rem 1rem; font-size: 1rem; }
+      .form-input { min-height: 48px; padding: 0.875rem; font-size: 1rem; }
+      .modal-content { margin: 0.5rem; max-height: calc(100vh - 1rem); }
+      .modal-body { padding: 1rem; }
+      .modal-header { padding: 1.5rem 1rem 0.5rem; }
+    }
 
     .responsive-container{width:100%;margin:0 auto;padding:0 1rem}
     @media(min-width:475px){.responsive-container{max-width:475px}}
@@ -66,8 +88,26 @@
     @media(min-width:1280px){.responsive-container{max-width:1280px}}
     @media(min-width:1536px){.responsive-container{max-width:1536px}}
 
-    .btn-base{display:inline-flex;align-items:center;justify-content:center;font-weight:600;border-radius:12px;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;text-decoration:none;border:none;outline:none;min-height:40px;padding:.6rem 1.2rem;font-size:.95rem;position:relative;overflow:hidden}
-    @media(min-width:768px){.btn-base{min-height:44px;padding:.75rem 1.5rem;font-size:1rem}}
+    .btn-base{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      border-radius:12px;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      cursor:pointer;
+      text-decoration:none;
+      border:none;
+      outline:none;
+      min-height:44px;
+      padding:.75rem 1.25rem;
+      font-size:1rem;
+      position:relative;
+      overflow:hidden;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    @media(min-width:768px){.btn-base{min-height:48px;padding:.875rem 1.5rem;font-size:1.05rem}}
     .btn-base[disabled]{opacity:.6;cursor:not-allowed}
     .btn-base::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transition:left .5s}
     .btn-base:hover::before{left:100%}
@@ -86,50 +126,157 @@
     .btn-google{background:#4285F4;color:#fff;box-shadow:0 4px 14px rgba(66,133,244,.3)}
     .btn-google:hover{background:#357ae8;box-shadow:0 8px 25px rgba(66,133,244,.4)}
 
-    .card{background:#fff;border:1px solid #E4E4E7;border-radius:16px;padding:1.5rem;box-shadow:0 4px 16px rgba(0,0,0,.05);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+    .card{
+      background:#fff;
+      border:1px solid #E4E4E7;
+      border-radius:16px;
+      padding:1.5rem;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+      transition:all .4s cubic-bezier(.4,0,.2,1);
+      position:relative;
+      overflow:hidden;
+      touch-action: manipulation;
+    }
     @media(min-width:768px){.card{padding:2rem;border-radius:20px}}
     .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(107,70,193,.05) 0%,rgba(139,92,246,.05) 100%);opacity:0;transition:opacity .3s}
     .card:hover::before{opacity:1}
-    .card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(0,0,0,.12);border-color:#6B46C1}
+    .card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 30px rgba(0,0,0,.1);border-color:#6B46C1}
     .card-interactive{cursor:pointer}
 
     .professional-card{transition:all .4s cubic-bezier(.4,0,.2,1);background:linear-gradient(145deg,#fff 0%,#f8fafc 100%)}
-    .professional-card:hover{transform:translateY(-12px);box-shadow:0 25px 50px rgba(0,0,0,.15);background:linear-gradient(145deg,#fff 0%,#f1f5f9 100%)}
+    .professional-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,.12);background:linear-gradient(145deg,#fff 0%,#f1f5f9 100%)}
     .professional-card .avatar-container{transition:all .3s ease}
-    .professional-card:hover .avatar-container{transform:scale(1.1) rotate(2deg)}
+    .professional-card:hover .avatar-container{transform:scale(1.05) rotate(1deg)}
 
-    .mobile-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-top:1px solid #E4E4E7;padding:.75rem 0 1rem;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.1)}
+    .mobile-nav{
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:rgba(255,255,255,.98);
+      backdrop-filter:blur(20px);
+      border-top:1px solid #E4E4E7;
+      padding:0.75rem 0.5rem 1.25rem;
+      z-index:100;
+      box-shadow:0 -4px 20px rgba(0,0,0,.15);
+      height: 80px;
+    }
     @media(min-width:768px){.mobile-nav{display:none} body{padding-bottom:0!important}}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:.5rem;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);text-decoration:none;color:#71717A;font-size:.875rem;font-weight:500;border-radius:12px;margin:0 .25rem}
-    .nav-item.active{color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.1) 0%,rgba(139,92,246,.1) 100%);transform:scale(1.05)}
-    .nav-item:hover{transform:translateY(-3px) scale(1.05);color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.05) 0%,rgba(139,92,246,.05) 100%)}
-    .nav-item i{font-size:1.5rem;margin-bottom:.25rem;transition:all .2s}
+    .nav-item{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:0.625rem 0.25rem;
+      cursor:pointer;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      text-decoration:none;
+      color:#71717A;
+      font-size:0.8rem;
+      font-weight:600;
+      border-radius:12px;
+      margin:0 0.125rem;
+      touch-action: manipulation;
+      min-height: 60px;
+      justify-content: center;
+    }
+    .nav-item.active{
+      color:#6B46C1;
+      background:linear-gradient(135deg,rgba(107,70,193,.12) 0%,rgba(139,92,246,.12) 100%);
+      transform:scale(1.05);
+    }
+    .nav-item:hover{transform:translateY(-2px) scale(1.03);color:#6B46C1;background:linear-gradient(135deg,rgba(107,70,193,.08) 0%,rgba(139,92,246,.08) 100%)}
+    .nav-item i{font-size:1.5rem;margin-bottom:.375rem;transition:all .2s}
+    .nav-item span{font-size:0.75rem;font-weight:600;line-height:1}
 
-    .form-input{width:100%;padding:1rem;font-size:1rem;border:2px solid #D4D4D8;border-radius:12px;background:#fff;color:#1F2937;transition:all .3s cubic-bezier(.4,0,.2,1)}
-    @media(min-width:768px){.form-input{padding:1.25rem;font-size:1.125rem}}
-    .form-input:focus{outline:none;border-color:#6B46C1;box-shadow:0 0 0 4px rgba(107,70,193,.1);transform:translateY(-2px)}
+    .form-input{
+      width:100%;
+      padding:1rem;
+      font-size:1rem;
+      border:2px solid #D4D4D8;
+      border-radius:12px;
+      background:#fff;
+      color:#1F2937;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      touch-action: manipulation;
+      min-height: 48px;
+    }
+    @media(min-width:768px){.form-input{padding:1.25rem;font-size:1.125rem;min-height:52px}}
+    .form-input:focus{outline:none;border-color:#6B46C1;box-shadow:0 0 0 4px rgba(107,70,193,.1);transform:translateY(-1px)}
 
-    .form-label{display:block;font-weight:600;margin-bottom:.5rem;color:#374151;font-size:.95rem}
+    .form-label{display:block;font-weight:600;margin-bottom:.5rem;color:#374151;font-size:1rem}
     .form-group{margin-bottom:1.5rem}
 
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1)}
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(8px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:1rem;
+      opacity:0;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      overscroll-behavior: contain;
+    }
     .modal-overlay.show{opacity:1}
-    .modal-content{background:#fff;border-radius:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.9) translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1)}
+    .modal-content{
+      background:#fff;
+      border-radius:20px;
+      width:100%;
+      max-width:500px;
+      max-height:90vh;
+      overflow-y:auto;
+      position:relative;
+      box-shadow:0 25px 80px rgba(0,0,0,.3);
+      transform:scale(.9) translateY(20px);
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      -webkit-overflow-scrolling: touch;
+    }
     .modal-overlay.show .modal-content{transform:scale(1) translateY(0)}
     @media(min-width:768px){.modal-content{max-width:700px}}
+    @media(max-width:640px){
+      .modal-content{
+        margin:0.5rem;
+        max-height:calc(100vh - 1rem);
+        border-radius:16px;
+      }
+    }
     .modal-header{padding:2rem 2rem 1rem;border-bottom:1px solid #E4E4E7;text-align:center}
+    @media(max-width:640px){.modal-header{padding:1.5rem 1rem 0.5rem}}
     .modal-body{padding:2rem}
-    .close-btn{position:absolute;top:1rem;right:1rem;width:44px;height:44px;background:#EF4444;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .3s;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+    @media(max-width:640px){.modal-body{padding:1rem}}
+    .close-btn{
+      position:absolute;
+      top:1rem;
+      right:1rem;
+      width:44px;
+      height:44px;
+      background:#EF4444;
+      color:#fff;
+      border:none;
+      border-radius:50%;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.25rem;
+      transition:all .3s;
+      box-shadow:0 4px 12px rgba(239,68,68,.3);
+      touch-action: manipulation;
+    }
     .close-btn:hover{background:#DC2626;transform:scale(1.1) rotate(90deg);box-shadow:0 6px 20px rgba(239,68,68,.4)}
 
-    .user-type-card.selected { border-color:#6B46C1; background:linear-gradient(135deg, rgba(107,70,193,.06), rgba(139,92,246,.06)); }
+    .user-type-card.selected { border-color:#6B46C1; background:linear-gradient(135deg, rgba(107,70,193,.08), rgba(139,92,246,.08)); }
 
     .service-icon{width:48px;height:48px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center}
 
     .settings-grid { display:grid; grid-template-columns: 260px 1fr; gap:2rem; }
     @media (max-width: 1024px) { .settings-grid { grid-template-columns: 1fr; } }
     .settings-nav { position: sticky; top: 6rem; height: fit-content; }
-    .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.8rem 1rem; border-radius:.8rem; font-weight:600; color:#374151; text-decoration: none; transition: all .2s ease; }
+    .settings-nav a { display:flex; align-items:center; gap:.6rem; padding:.8rem 1rem; border-radius:.8rem; font-weight:600; color:#374151; text-decoration: none; transition: all .2s ease; touch-action: manipulation; }
     .settings-nav a.active, .settings-nav a:hover { background:#f3f4f6; color:#111827; }
 
     .stat-value{font-weight:800;color:#6B46C1;margin-bottom:.5rem}
@@ -149,12 +296,14 @@
       background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
       border: 1px solid #e2e8f0;
       border-radius: 16px;
-      padding: 2rem;
+      padding: 1.5rem;
       text-align: center;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      touch-action: manipulation;
     }
+    @media(max-width:640px){.info-card{padding:1.25rem}}
 
     .info-card::before {
       content: '';
@@ -178,16 +327,17 @@
     }
 
     .info-icon {
-      width: 60px;
-      height: 60px;
+      width: 56px;
+      height: 56px;
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 1rem;
       color: white;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
     }
+    @media(max-width:640px){.info-icon{width:48px;height:48px;font-size:1.2rem}}
 
     /* Enhanced Settings Styles */
     .editable-field {
@@ -201,6 +351,8 @@
       cursor: pointer;
       transition: all 0.3s ease;
       margin-bottom: 1rem;
+      touch-action: manipulation;
+      min-height: 60px;
     }
 
     .editable-field:hover {
@@ -242,14 +394,20 @@
     }
 
     .edit-btn {
-      padding: 0.25rem 0.5rem;
+      padding: 0.5rem;
       background: #6B46C1;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
     }
 
     .edit-btn:hover {
@@ -280,7 +438,9 @@
       padding: 1.5rem;
       margin-bottom: 1rem;
       transition: all 0.3s ease;
+      touch-action: manipulation;
     }
+    @media(max-width:640px){.setting-item{padding:1.25rem}}
 
     .setting-item:hover {
       border-color: #6B46C1;
@@ -290,8 +450,8 @@
     .setting-toggle {
       position: relative;
       display: inline-block;
-      width: 48px;
-      height: 24px;
+      width: 52px;
+      height: 28px;
     }
 
     .setting-toggle input {
@@ -309,14 +469,14 @@
       bottom: 0;
       background-color: #cbd5e1;
       transition: 0.3s;
-      border-radius: 24px;
+      border-radius: 28px;
     }
 
     .toggle-slider:before {
       position: absolute;
       content: "";
-      height: 18px;
-      width: 18px;
+      height: 22px;
+      width: 22px;
       left: 3px;
       bottom: 3px;
       background-color: white;
@@ -348,7 +508,9 @@
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.3s ease;
+      touch-action: manipulation;
     }
+    @media(max-width:640px){.photo-upload{padding:1.5rem}}
 
     .photo-upload:hover {
       border-color: #6B46C1;
@@ -363,15 +525,16 @@
     /* Help & Support Styles */
     .help-nav {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       margin-bottom: 2rem;
       border-bottom: 2px solid #e2e8f0;
       overflow-x: auto;
       padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
     }
 
     .help-nav-item {
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 1.25rem;
       border-radius: 12px;
       background: #f8fafc;
       color: #6b7280;
@@ -380,6 +543,10 @@
       transition: all 0.3s ease;
       white-space: nowrap;
       border: 2px solid transparent;
+      touch-action: manipulation;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
     }
 
     .help-nav-item.active {
@@ -406,6 +573,7 @@
       margin-bottom: 1rem;
       overflow: hidden;
       transition: all 0.3s ease;
+      touch-action: manipulation;
     }
 
     .faq-item:hover {
@@ -422,7 +590,10 @@
       font-weight: 600;
       color: #374151;
       transition: all 0.3s ease;
+      min-height: 60px;
+      touch-action: manipulation;
     }
+    @media(max-width:640px){.faq-question{padding:1.25rem}}
 
     .faq-question:hover {
       background: #f8fafc;
@@ -442,15 +613,18 @@
       color: #6b7280;
       line-height: 1.6;
     }
+    @media(max-width:640px){.faq-answer{padding:0 1.25rem}}
 
     .faq-answer.active {
       padding: 0 1.5rem 1.5rem;
-      max-height: 200px;
+      max-height: 300px;
     }
+    @media(max-width:640px){.faq-answer.active{padding:0 1.25rem 1.25rem}}
 
     .faq-icon {
       transition: transform 0.3s ease;
       color: #6b7280;
+      font-size: 1.25rem;
     }
 
     .faq-question.active .faq-icon {
@@ -462,13 +636,15 @@
       background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
       border: 1px solid #e2e8f0;
       border-radius: 16px;
-      padding: 2rem;
+      padding: 1.5rem;
       text-align: center;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
       cursor: pointer;
+      touch-action: manipulation;
     }
+    @media(max-width:640px){.contact-option{padding:1.25rem}}
 
     .contact-option::before {
       content: '';
@@ -492,16 +668,17 @@
     }
 
     .contact-icon {
-      width: 60px;
-      height: 60px;
+      width: 56px;
+      height: 56px;
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 1rem;
       color: white;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
     }
+    @media(max-width:640px){.contact-icon{width:48px;height:48px;font-size:1.2rem}}
 
     .search-highlight {
       background: yellow;
@@ -518,7 +695,7 @@
     }
 
     .status-badge {
-      padding: 0.25rem 0.75rem;
+      padding: 0.375rem 0.75rem;
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -537,6 +714,21 @@
     }
 
     .status-away {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-completed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-cancelled {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .status-pending {
       background: #fef3c7;
       color: #92400e;
     }
@@ -563,14 +755,215 @@
       font-weight: 500;
     }
 
-    #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:.8rem 1rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:10000}
+    /* Enhanced Table Styles for Mobile */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 0.9rem;
+    }
+
+    .data-table th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 600;
+      padding: 1rem 0.75rem;
+      text-align: left;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 1rem 0.75rem;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover {
+      background: #f9fafb;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Mobile Card Layout for Tables */
+    @media (max-width: 768px) {
+      .mobile-card-table {
+        display: block;
+      }
+      
+      .mobile-card-table thead {
+        display: none;
+      }
+      
+      .mobile-card-table tbody {
+        display: block;
+      }
+      
+      .mobile-card-table tr {
+        display: block;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      
+      .mobile-card-table td {
+        display: block;
+        text-align: left;
+        border: none;
+        padding: 0.5rem 0;
+        position: relative;
+        padding-left: 35%;
+      }
+      
+      .mobile-card-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 30%;
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+    }
+
+    /* Credit Card Styles */
+    .credit-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .credit-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .credit-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    }
+
+    .card-type {
+      text-align: right;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .card-number {
+      font-family: 'Courier New', monospace;
+      font-size: 1.25rem;
+      letter-spacing: 0.1em;
+      margin: 1rem 0;
+      word-spacing: 0.5em;
+    }
+
+    .card-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .card-holder {
+      font-size: 0.875rem;
+      opacity: 0.9;
+    }
+
+    .card-expiry {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+
+    .card-visa { background: linear-gradient(135deg, #1a365d 0%, #2d5aa0 100%); }
+    .card-mastercard { background: linear-gradient(135deg, #eb4034 0%, #ffa931 100%); }
+    .card-amex { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
+    .card-discover { background: linear-gradient(135deg, #ff6900 0%, #fcb900 100%); }
+
+    /* Date Filter Styles */
+    .date-filter {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .date-filter select {
+      min-width: 120px;
+      padding: 0.75rem;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .date-filter select:focus {
+      outline: none;
+      border-color: #6B46C1;
+      box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.1);
+    }
+
+    @media (max-width: 640px) {
+      .date-filter {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-filter select {
+        min-width: auto;
+        width: 100%;
+      }
+    }
+
+    #toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:#111827;color:#fff;padding:.8rem 1rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:10000}
+    @media(min-width:768px){#toast{bottom:24px}}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
     #toast.success{background:#059669}
     #toast.error{background:#DC2626}
+    #toast.info{background:#3B82F6}
+    #toast.warning{background:#F59E0B}
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
       .card:hover, .btn-base:hover, .nav-item:hover { transform: none !important; box-shadow: none !important; }
+    }
+
+    /* Enhanced touch targets for better mobile interaction */
+    @media (pointer: coarse) {
+      .btn-base { min-height: 48px; }
+      .nav-item { min-height: 60px; }
+      .edit-btn { min-width: 48px; min-height: 48px; }
+      .close-btn { width: 48px; height: 48px; }
+      .faq-question { min-height: 64px; }
     }
   </style>
 </head>
@@ -578,18 +971,18 @@
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="responsive-container">
-      <div class="flex items-center justify-between h-12 md:h-14">
-        <div class="flex items-center space-x-4">
+      <div class="flex items-center justify-between h-14 md:h-16">
+        <div class="flex items-center space-x-3">
           <div class="flex items-center space-x-2 pl-1 pr-2 py-1 rounded-md cursor-pointer" onclick="goHome()" tabindex="0" role="button" aria-label="Go home">
-            <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
-              <i class="fas fa-tools text-white text-sm md:text-base" aria-hidden="true"></i>
+            <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
+              <i class="fas fa-tools text-white text-base md:text-lg" aria-hidden="true"></i>
             </div>
-            <div class="hidden xs:block">
+            <div class="hidden sm:block">
               <h1 class="text-lg md:text-xl font-black text-primary">QuickFix Pro</h1>
             </div>
           </div>
 
-          <div id="locationPill" class="hidden sm:flex items-center text-sm text-gray-700 bg-gray-100 border border-gray-200 rounded-full px-3 py-1">
+          <div id="locationPill" class="hidden sm:flex items-center text-sm text-gray-700 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
             <i class="fas fa-map-marker-alt mr-2 text-primary" aria-hidden="true"></i>
             <span id="locationCity">Detecting city…</span>
           </div>
@@ -608,8 +1001,8 @@
             </button>
           </div>
 
-          <button id="userMenuBtn" class="btn-base p-1.5 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal')" aria-haspopup="dialog">
-            <div id="userAvatar" class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
+          <button id="userMenuBtn" class="btn-base p-2 hover:bg-gray-100 rounded-lg" onclick="openModal('userMenuModal')" aria-haspopup="dialog">
+            <div id="userAvatar" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-sm">
               <i class="fas fa-user" aria-hidden="true"></i>
             </div>
           </button>
@@ -792,7 +1185,7 @@
             <h3 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Available Balance</h3>
             <span class="text-sm bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold">Ready to withdraw</span>
           </div>
-          <button class="btn-base btn-secondary" onclick="openModal('withdrawModal')"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Funds</button>
+          <button class="btn-base btn-secondary mt-4 md:mt-0" onclick="openModal('withdrawModal')"><i class="fas fa-university mr-2" aria-hidden="true"></i>Withdraw Funds</button>
         </div>
         <div class="text-center md:text-left">
           <div class="text-4xl md:text-6xl font-black text-secondary mb-4">$2,847.50</div>
@@ -868,8 +1261,8 @@
       <div class="responsive-container text-center">
         <h2 class="text-3xl md:text-4xl font-black mb-4">Settings & Profile</h2>
         <p class="text-purple-100 text-lg">Customize your experience and manage your account</p>
-        <div class="mt-6">
-          <button class="btn-base bg-white text-primary hover:bg-gray-100 mr-4" onclick="enableQuickEdit()">
+        <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+          <button class="btn-base bg-white text-primary hover:bg-gray-100" onclick="enableQuickEdit()">
             <i class="fas fa-edit mr-2"></i>Quick Edit Mode
           </button>
           <button class="btn-base btn-outline border-white text-white hover:bg-white hover:text-primary" onclick="previewProfile()">
@@ -1349,7 +1742,7 @@
                 <h4 class="font-semibold">Payment Methods</h4>
                 <p class="text-sm text-gray-600">Manage your saved payment methods</p>
               </div>
-              <button class="btn-base btn-outline" onclick="managePaymentMethods()">
+              <button class="btn-base btn-outline" onclick="openModal('paymentMethodsModal')">
                 <i class="fas fa-credit-card mr-2"></i>Manage
               </button>
             </div>
@@ -1733,7 +2126,7 @@
                   <textarea class="form-input" rows="6" placeholder="Please provide as much detail as possible about your issue..." required></textarea>
                 </div>
 
-                <div class="flex justify-end gap-3">
+                <div class="flex flex-col sm:flex-row justify-end gap-3">
                   <button type="button" class="btn-base btn-outline" onclick="clearSupportForm()">Clear Form</button>
                   <button type="submit" class="btn-base btn-primary">
                     <i class="fas fa-paper-plane mr-2"></i>Submit Ticket
@@ -2027,7 +2420,7 @@
   </section>
 
   <!-- Mobile Navigation -->
-  <nav class="mobile-nav mobile-only">
+  <nav class="mobile-nav">
     <div class="flex">
       <div class="nav-item active" id="mobileCustomer" onclick="switchView('customer')">
         <i class="fas fa-home" aria-hidden="true"></i>
@@ -2111,8 +2504,8 @@
         </div>
         <div id="loggedUserMenu" class="space-y-4 hidden">
           <button class="btn-base btn-outline w-full" onclick="openSettings()"><i class="fas fa-cog mr-2" aria-hidden="true"></i>Settings & Privacy</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-history mr-2" aria-hidden="true"></i>Booking History</button>
-          <button class="btn-base btn-outline w-full"><i class="fas fa-credit-card mr-2" aria-hidden="true"></i>Payment Methods</button>
+          <button class="btn-base btn-outline w-full" onclick="openModal('bookingHistoryModal')"><i class="fas fa-history mr-2" aria-hidden="true"></i>Booking History</button>
+          <button class="btn-base btn-outline w-full" onclick="openModal('paymentMethodsModal')"><i class="fas fa-credit-card mr-2" aria-hidden="true"></i>Payment Methods</button>
           <button class="btn-base btn-outline w-full" onclick="openHelpSupport()"><i class="fas fa-headset mr-2" aria-hidden="true"></i>Help & Support</button>
           <div class="pt-4 border-t border-gray-200">
             <button class="btn-base btn-danger w-full" onclick="handleLogout()"><i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i>Sign Out</button>
@@ -2239,6 +2632,164 @@
             <button type="button" class="btn-base btn-outline text-sm" onclick="doSearch('AC repair')">AC Repair</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking History Modal -->
+  <div id="bookingHistoryModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="modal-content" style="max-width: 900px;">
+      <button class="close-btn" onclick="closeModal('bookingHistoryModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <div class="modal-header">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-history text-white text-2xl" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Booking History</h2>
+        <p class="text-gray-600 mt-2">View all your completed bookings and transactions</p>
+      </div>
+      <div class="modal-body">
+        <!-- Date Filter -->
+        <div class="date-filter">
+          <select id="yearFilter" onchange="filterBookings()">
+            <option value="">All Years</option>
+            <option value="2024" selected>2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+          </select>
+          
+          <select id="monthFilter" onchange="filterBookings()">
+            <option value="">All Months</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          
+          <select id="statusFilter" onchange="filterBookings()">
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+
+        <!-- Booking History Table -->
+        <div class="table-responsive">
+          <table class="data-table mobile-card-table" id="bookingHistoryTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Service</th>
+                <th>Professional</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookingHistoryBody">
+              <!-- Booking history will be populated here -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center mt-6">
+          <button class="btn-base btn-outline mr-3" onclick="exportBookingHistory()">
+            <i class="fas fa-download mr-2"></i>Export PDF
+          </button>
+          <button class="btn-base btn-primary" onclick="closeModal('bookingHistoryModal')">
+            <i class="fas fa-check mr-2"></i>Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Methods Modal -->
+  <div id="paymentMethodsModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="modal-content" style="max-width: 800px;">
+      <button class="close-btn" onclick="closeModal('paymentMethodsModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <div class="modal-header">
+        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-credit-card text-white text-2xl" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Payment Methods</h2>
+        <p class="text-gray-600 mt-2">Manage your saved credit and debit cards</p>
+      </div>
+      <div class="modal-body">
+        <!-- Add New Card Button -->
+        <div class="mb-6">
+          <button class="btn-base btn-primary w-full" onclick="openModal('addCardModal')">
+            <i class="fas fa-plus mr-2"></i>Add New Card
+          </button>
+        </div>
+
+        <!-- Saved Cards -->
+        <div id="savedCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Credit cards will be populated here -->
+        </div>
+
+        <div class="text-center">
+          <button class="btn-base btn-outline" onclick="closeModal('paymentMethodsModal')">
+            <i class="fas fa-check mr-2"></i>Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Card Modal -->
+  <div id="addCardModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('addCardModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <div class="modal-header">
+        <h2 class="text-2xl font-bold text-text-primary">Add New Card</h2>
+        <p class="text-gray-600 mt-2">Add a new credit or debit card</p>
+      </div>
+      <div class="modal-body">
+        <form id="addCardForm" onsubmit="addNewCard(event)">
+          <div class="form-group">
+            <label class="form-label">Card Number</label>
+            <input type="text" id="cardNumber" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)" required>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Expiry Date</label>
+              <input type="text" id="expiryDate" class="form-input" placeholder="MM/YY" maxlength="5" oninput="formatExpiryDate(this)" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV</label>
+              <input type="text" id="cvv" class="form-input" placeholder="123" maxlength="4" oninput="formatCVV(this)" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Cardholder Name</label>
+            <input type="text" id="cardholderName" class="form-input" placeholder="John Doe" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="setDefaultCard" class="mr-2 h-4 w-4 text-primary rounded">
+              <span class="text-sm text-gray-600">Set as default payment method</span>
+            </label>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-3 mt-6">
+            <button type="button" class="btn-base btn-outline" onclick="closeModal('addCardModal')">Cancel</button>
+            <button type="submit" class="btn-base btn-primary">
+              <i class="fas fa-plus mr-2"></i>Add Card
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

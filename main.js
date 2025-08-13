@@ -1,4 +1,4 @@
-// QuickFix Pro - Enhanced JavaScript with Firestore Error Handling
+// QuickFix Pro - Super Mobile Optimized with Booking History & Payment Methods
 console.log('QuickFix Pro starting...');
 
 // Firebase configuration
@@ -42,6 +42,8 @@ let selectedRating = 0;
 let initialAuthComplete = false;
 let pendingProfessionalSwitch = false;
 let isOnline = navigator.onLine;
+let mockBookingHistory = [];
+let mockPaymentMethods = [];
 
 // Network status monitoring
 window.addEventListener('online', () => {
@@ -55,6 +57,127 @@ window.addEventListener('offline', () => {
   console.log('Gone offline');
   toast('Working offline', 'info', 2000);
 });
+
+// Initialize mock data
+function initializeMockData() {
+  // Mock booking history data
+  mockBookingHistory = [
+    {
+      id: 'BK001',
+      date: '2024-01-15',
+      service: 'Plumbing Repair',
+      professional: 'John Smith',
+      amount: 125.00,
+      status: 'completed',
+      rating: 5,
+      details: 'Fixed kitchen sink leak'
+    },
+    {
+      id: 'BK002',
+      date: '2024-01-08',
+      service: 'TV Mounting',
+      professional: 'Mike Johnson',
+      amount: 85.00,
+      status: 'completed',
+      rating: 4,
+      details: '65" TV mounted on living room wall'
+    },
+    {
+      id: 'BK003',
+      date: '2024-01-03',
+      service: 'IKEA Assembly',
+      professional: 'Sarah Williams',
+      amount: 95.00,
+      status: 'completed',
+      rating: 5,
+      details: 'Assembled bedroom furniture set'
+    },
+    {
+      id: 'BK004',
+      date: '2023-12-28',
+      service: 'Electrical Work',
+      professional: 'David Brown',
+      amount: 180.00,
+      status: 'completed',
+      rating: 5,
+      details: 'Installed new ceiling fan'
+    },
+    {
+      id: 'BK005',
+      date: '2023-12-20',
+      service: 'AC Repair',
+      professional: 'Lisa Garcia',
+      amount: 220.00,
+      status: 'completed',
+      rating: 4,
+      details: 'Fixed heating system issue'
+    },
+    {
+      id: 'BK006',
+      date: '2023-12-15',
+      service: 'House Cleaning',
+      professional: 'Clean Team Pro',
+      amount: 150.00,
+      status: 'cancelled',
+      rating: null,
+      details: 'Deep cleaning service'
+    },
+    {
+      id: 'BK007',
+      date: '2023-11-30',
+      service: 'Handyman Service',
+      professional: 'Tony Martinez',
+      amount: 75.00,
+      status: 'completed',
+      rating: 5,
+      details: 'Fixed multiple small issues'
+    },
+    {
+      id: 'BK008',
+      date: '2023-11-22',
+      service: 'Carpet Cleaning',
+      professional: 'Pro Cleaners',
+      amount: 120.00,
+      status: 'completed',
+      rating: 4,
+      details: 'Living room and bedroom carpets'
+    }
+  ];
+
+  // Mock payment methods data
+  mockPaymentMethods = [
+    {
+      id: 'PM001',
+      type: 'visa',
+      last4: '4242',
+      expiryMonth: '12',
+      expiryYear: '2026',
+      holderName: 'John Doe',
+      isDefault: true,
+      addedDate: '2023-06-15'
+    },
+    {
+      id: 'PM002',
+      type: 'mastercard',
+      last4: '8888',
+      expiryMonth: '08',
+      expiryYear: '2025',
+      holderName: 'John Doe',
+      isDefault: false,
+      addedDate: '2023-03-20'
+    },
+    {
+      id: 'PM003',
+      type: 'amex',
+      last4: '1234',
+      expiryMonth: '05',
+      expiryYear: '2027',
+      holderName: 'John Doe',
+      isDefault: false,
+      addedDate: '2024-01-10'
+    }
+  ];
+}
 
 // Helper functions
 function $(selector) {
@@ -71,28 +194,6 @@ function show(element) {
 
 function hide(element) {
   if (element) element.classList.add('hidden');
-}
-
-// NEW — normalize role values so typos don’t break logic
-function normalizeRole(val) {
-  if (!val) return '';
-  const v = String(val).trim().toLowerCase();
-  if (['professional', 'pro', 'prof', 'profesional', 'proffesional'].includes(v)) return 'professional';
-  if (['admin', 'administrator'].includes(v)) return 'admin';
-  return 'customer';
-}
-
-function setProfessionalUI(enabled) {
-  if (enabled) {
-    $('#professionalBtn')?.classList.remove('hidden');
-  } else {
-    $('#professionalBtn')?.classList.add('hidden');
-  }
-  // mobile item is optional in some layouts — guard it
-  const mob = $('#mobileProfessional');
-  if (mob) {
-    if (enabled) mob.classList.remove('hidden'); else mob.classList.add('hidden');
-  }
 }
 
 function toast(message, type = 'success', duration = 3000) {
@@ -135,15 +236,12 @@ function handleFirestoreError(error, operation = 'operation') {
 // Enhanced Firestore operations with error handling
 async function safeFirestoreWrite(operation, fallbackMessage) {
   try {
-    // NEW — return the awaited result so callers can chain reliably
-    return await operation();
+    await operation();
   } catch (error) {
     handleFirestoreError(error, 'write');
     if (fallbackMessage && !isOnline) {
       toast(fallbackMessage, 'info');
-      return; // resolve so UI flow continues while offline
     }
-    // Do not rethrow to keep prior behavior (no unnecessary changes)
   }
 }
 
@@ -162,7 +260,7 @@ async function safeFirestoreRead(operation, fallbackAction) {
 // Main functions - WORKING!
 function goHome() {
   console.log('Go home clicked');
-  if (currentUser && normalizeRole(userSettings.role) === 'professional') {
+  if (currentUser && userSettings.role === 'professional') {
     switchView('professional');
   } else {
     switchView('customer');
@@ -211,6 +309,13 @@ function openModal(modalId) {
   console.log('Open modal:', modalId);
   const modal = document.getElementById(modalId);
   if (!modal) return;
+  
+  // Special handling for booking history and payment methods
+  if (modalId === 'bookingHistoryModal') {
+    loadBookingHistory();
+  } else if (modalId === 'paymentMethodsModal') {
+    loadPaymentMethods();
+  }
   
   modal.classList.remove('hidden');
   requestAnimationFrame(() => {
@@ -280,7 +385,6 @@ function handleLogout() {
   console.log('Logout clicked');
   auth.signOut()
     .then(() => {
-      localStorage.removeItem('qf_role'); // clear cached role on logout
       toast('Signed out successfully');
       closeModal('userMenuModal');
       switchView('customer');
@@ -338,9 +442,7 @@ function handleSignup(event) {
   const dob = $('#dateOfBirth').value;
   const password = $('#password').value;
   const confirmPassword = $('#confirmPassword').value;
-  // NEW — normalize the selected role (fixes "proffesional" typo)
-  const rawRole = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
-  const role = normalizeRole(rawRole);
+  const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
   const agreeTerms = $('#agreeTerms').checked;
   
   // Clear previous error messages
@@ -374,7 +476,7 @@ function handleSignup(event) {
   // Validate age (must be 18+)
   const birthDate = new Date(dob);
   const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
+  const age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
@@ -395,10 +497,8 @@ function handleSignup(event) {
     .then(({ user }) => {
       const displayName = `${firstName} ${lastName}`;
       
-      // Proceed even if updateProfile fails (e.g., offline) — don’t block signup flow
-      return user.updateProfile({ displayName }).catch(err => {
-        console.warn('updateProfile failed (continuing):', err);
-      }).then(() => {
+      // Update profile
+      return user.updateProfile({ displayName: displayName }).then(() => {
         // Save user data to Firestore with enhanced error handling
         return safeFirestoreWrite(() => 
           db.collection('users').doc(user.uid).set({
@@ -409,7 +509,7 @@ function handleSignup(event) {
             lastName: lastName,
             phone: phone,
             dateOfBirth: dob,
-            role: role, // normalized role
+            role: role,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           }), 
           'Account created - profile will sync when online'
@@ -417,40 +517,31 @@ function handleSignup(event) {
       });
     })
     .then(() => {
-      // Cache role locally and reflect in UI immediately
-      localStorage.setItem('qf_role', role);
-      setProfessionalUI(role === 'professional');
-      if (role === 'professional') {
-        pendingProfessionalSwitch = true;
-        switchView('professional');
-      } else {
-        switchView('customer');
-      }
-
       toast('Account created successfully!');
       closeModal('signupModal');
-
-      // Clear form (guard for missing nodes so we don’t throw)
-      const formEl = $('#signupForm');
-      if (formEl) formEl.reset();
+      
+      // Clear form
+      $('#signupForm').reset();
       $$('.user-type-card').forEach(card => card.classList.remove('selected'));
-      const roleUser = $('#roleUser');
-      if (roleUser && roleUser.closest) {
-        roleUser.checked = true;
-        roleUser.closest('.user-type-card')?.classList.add('selected');
+      $('#roleUser').checked = true;
+      $('#roleUser').closest('.user-type-card').classList.add('selected');
+      
+      // If professional, flag for switch after auth completes
+      if (role === 'professional') {
+        pendingProfessionalSwitch = true;
       }
     })
     .catch((error) => {
       console.error('Signup error:', error);
       let errorMessage = 'Account creation failed';
       
-      if (error?.code === 'auth/email-already-in-use') {
+      if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'An account with this email already exists';
-      } else if (error?.code === 'auth/weak-password') {
+      } else if (error.code === 'auth/weak-password') {
         errorMessage = 'Password is too weak';
-      } else if (error?.code === 'auth/invalid-email') {
+      } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address';
-      } else if (error?.message) {
+      } else if (error.message) {
         errorMessage = error.message;
       }
       
@@ -458,7 +549,6 @@ function handleSignup(event) {
       $('#signup-message').textContent = errorMessage;
     })
     .finally(() => {
-      // Always restore the button — prevents “endless loading”
       btn.innerHTML = originalText;
       btn.disabled = false;
     });
@@ -557,6 +647,339 @@ function sendPasswordReset() {
 function showMyProfile() {
   console.log('Show my profile clicked');
   toast('Profile feature coming soon!', 'info');
+}
+
+// Booking History Functions
+function loadBookingHistory() {
+  console.log('Loading booking history');
+  
+  const tbody = $('#bookingHistoryBody');
+  if (!tbody) return;
+  
+  // Filter bookings based on current filters
+  const filteredBookings = filterBookingsByDate(mockBookingHistory);
+  
+  tbody.innerHTML = filteredBookings.map(booking => {
+    const date = new Date(booking.date);
+    const statusBadge = getStatusBadge(booking.status);
+    
+    return `
+      <tr>
+        <td data-label="Date">${date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        })}</td>
+        <td data-label="Service">${booking.service}</td>
+        <td data-label="Professional">${booking.professional}</td>
+        <td data-label="Amount">$${booking.amount.toFixed(2)}</td>
+        <td data-label="Status">${statusBadge}</td>
+        <td data-label="Actions">
+          <div class="flex gap-2">
+            <button class="btn-base btn-outline btn-sm" onclick="viewBookingDetails('${booking.id}')" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+            ${booking.status === 'completed' && !booking.reviewed ? 
+              `<button class="btn-base btn-primary btn-sm" onclick="reviewBooking('${booking.id}')" title="Write Review">
+                <i class="fas fa-star"></i>
+              </button>` : 
+              booking.rating ? 
+                `<span class="text-yellow-500" title="Rated ${booking.rating} stars">${'★'.repeat(booking.rating)}</span>` : 
+                ''
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  if (filteredBookings.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-8 text-gray-500">
+          <i class="fas fa-calendar-times text-4xl mb-4 block"></i>
+          No bookings found for the selected filters.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function filterBookings() {
+  console.log('Filtering bookings');
+  loadBookingHistory();
+}
+
+function filterBookingsByDate(bookings) {
+  const yearFilter = $('#yearFilter')?.value;
+  const monthFilter = $('#monthFilter')?.value;
+  const statusFilter = $('#statusFilter')?.value;
+  
+  return bookings.filter(booking => {
+    const bookingDate = new Date(booking.date);
+    
+    // Year filter
+    if (yearFilter && bookingDate.getFullYear().toString() !== yearFilter) {
+      return false;
+    }
+    
+    // Month filter
+    if (monthFilter && (bookingDate.getMonth() + 1).toString() !== monthFilter) {
+      return false;
+    }
+    
+    // Status filter
+    if (statusFilter && booking.status !== statusFilter) {
+      return false;
+    }
+    
+    return true;
+  });
+}
+
+function getStatusBadge(status) {
+  const badges = {
+    completed: '<span class="status-badge status-completed">Completed</span>',
+    cancelled: '<span class="status-badge status-cancelled">Cancelled</span>',
+    pending: '<span class="status-badge status-pending">Pending</span>'
+  };
+  return badges[status] || status;
+}
+
+function viewBookingDetails(bookingId) {
+  console.log('View booking details:', bookingId);
+  const booking = mockBookingHistory.find(b => b.id === bookingId);
+  if (!booking) return;
+  
+  // Create custom modal for booking details
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay show';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button class="close-btn" onclick="this.closest('.modal-overlay').remove()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <h2 class="text-xl font-bold">Booking Details</h2>
+      </div>
+      <div class="modal-body">
+        <div class="space-y-4">
+          <div><strong>Booking ID:</strong> ${booking.id}</div>
+          <div><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</div>
+          <div><strong>Service:</strong> ${booking.service}</div>
+          <div><strong>Professional:</strong> ${booking.professional}</div>
+          <div><strong>Amount:</strong> $${booking.amount.toFixed(2)}</div>
+          <div><strong>Status:</strong> ${getStatusBadge(booking.status)}</div>
+          <div><strong>Details:</strong> ${booking.details}</div>
+          ${booking.rating ? `<div><strong>Your Rating:</strong> ${'★'.repeat(booking.rating)} (${booking.rating}/5)</div>` : ''}
+        </div>
+        <div class="mt-6 text-center">
+          <button class="btn-base btn-primary" onclick="this.closest('.modal-overlay').remove()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function reviewBooking(bookingId) {
+  console.log('Review booking:', bookingId);
+  toast('Review feature coming soon!', 'info');
+}
+
+function exportBookingHistory() {
+  console.log('Export booking history');
+  toast('PDF export feature coming soon!', 'info');
+}
+
+// Payment Methods Functions
+function loadPaymentMethods() {
+  console.log('Loading payment methods');
+  
+  const container = $('#savedCardsContainer');
+  if (!container) return;
+  
+  container.innerHTML = mockPaymentMethods.map(card => {
+    const cardClass = `card-${card.type}`;
+    const cardIcon = getCardIcon(card.type);
+    
+    return `
+      <div class="credit-card ${cardClass}" onclick="selectPaymentMethod('${card.id}')">
+        <div class="card-type">${cardIcon}</div>
+        <div class="card-number">•••• •••• •••• ${card.last4}</div>
+        <div class="card-details">
+          <div class="card-holder">
+            <div style="font-size: 0.7rem; opacity: 0.8;">CARDHOLDER</div>
+            <div>${card.holderName}</div>
+          </div>
+          <div class="card-expiry">
+            <div style="font-size: 0.7rem; opacity: 0.8;">EXPIRES</div>
+            <div>${card.expiryMonth}/${card.expiryYear}</div>
+          </div>
+        </div>
+        ${card.isDefault ? '<div style="position: absolute; top: 1rem; left: 1rem; background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 1rem; font-size: 0.75rem;">DEFAULT</div>' : ''}
+        <button class="btn-base btn-danger btn-sm" style="position: absolute; top: 1rem; right: 1rem;" onclick="event.stopPropagation(); removePaymentMethod('${card.id}')" title="Remove Card">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+  
+  if (mockPaymentMethods.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-8 text-gray-500">
+        <i class="fas fa-credit-card text-4xl mb-4 block"></i>
+        <p>No payment methods added yet.</p>
+        <p class="text-sm">Add a card to get started.</p>
+      </div>
+    `;
+  }
+}
+
+function getCardIcon(type) {
+  const icons = {
+    visa: 'VISA',
+    mastercard: 'MASTERCARD',
+    amex: 'AMEX',
+    discover: 'DISCOVER'
+  };
+  return icons[type] || type.toUpperCase();
+}
+
+function selectPaymentMethod(cardId) {
+  console.log('Select payment method:', cardId);
+  // In a real app, this would select the card for payment
+  toast('Payment method selected', 'success');
+}
+
+function removePaymentMethod(cardId) {
+  console.log('Remove payment method:', cardId);
+  
+  // Create confirmation dialog
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay show';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="text-xl font-bold text-red-600">Remove Payment Method</h2>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-700 mb-6">Are you sure you want to remove this payment method? This action cannot be undone.</p>
+        <div class="flex justify-end space-x-3">
+          <button class="btn-base btn-outline" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button class="btn-base btn-danger" onclick="confirmRemovePaymentMethod('${cardId}'); this.closest('.modal-overlay').remove()">Remove</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function confirmRemovePaymentMethod(cardId) {
+  console.log('Confirm remove payment method:', cardId);
+  
+  // Remove from mock data
+  mockPaymentMethods = mockPaymentMethods.filter(card => card.id !== cardId);
+  
+  // Reload payment methods
+  loadPaymentMethods();
+  
+  toast('Payment method removed successfully', 'success');
+}
+
+function addNewCard(event) {
+  event.preventDefault();
+  console.log('Add new card');
+  
+  const cardNumber = $('#cardNumber').value.replace(/\s/g, '');
+  const expiryDate = $('#expiryDate').value;
+  const cvv = $('#cvv').value;
+  const cardholderName = $('#cardholderName').value;
+  const setDefault = $('#setDefaultCard').checked;
+  
+  // Basic validation
+  if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+    toast('Please fill in all fields', 'error');
+    return;
+  }
+  
+  if (cardNumber.length < 13 || cardNumber.length > 19) {
+    toast('Invalid card number', 'error');
+    return;
+  }
+  
+  if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+    toast('Invalid expiry date format', 'error');
+    return;
+  }
+  
+  if (cvv.length < 3 || cvv.length > 4) {
+    toast('Invalid CVV', 'error');
+    return;
+  }
+  
+  // Determine card type
+  const cardType = getCardType(cardNumber);
+  const [month, year] = expiryDate.split('/');
+  
+  // Create new card object
+  const newCard = {
+    id: 'PM' + Date.now(),
+    type: cardType,
+    last4: cardNumber.slice(-4),
+    expiryMonth: month,
+    expiryYear: '20' + year,
+    holderName: cardholderName,
+    isDefault: setDefault || mockPaymentMethods.length === 0,
+    addedDate: new Date().toISOString().split('T')[0]
+  };
+  
+  // If setting as default, remove default from other cards
+  if (setDefault) {
+    mockPaymentMethods.forEach(card => card.isDefault = false);
+  }
+  
+  // Add to mock data
+  mockPaymentMethods.push(newCard);
+  
+  // Clear form
+  $('#addCardForm').reset();
+  
+  // Close modal and reload payment methods
+  closeModal('addCardModal');
+  loadPaymentMethods();
+  
+  toast('Payment method added successfully', 'success');
+}
+
+function getCardType(number) {
+  // Simple card type detection
+  if (number.startsWith('4')) return 'visa';
+  if (number.startsWith('5') || number.startsWith('2')) return 'mastercard';
+  if (number.startsWith('3')) return 'amex';
+  if (number.startsWith('6')) return 'discover';
+  return 'unknown';
+}
+
+// Card input formatting functions
+function formatCardNumber(input) {
+  let value = input.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+  const formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+  input.value = formattedValue;
+}
+
+function formatExpiryDate(input) {
+  let value = input.value.replace(/\D/g, '');
+  if (value.length >= 2) {
+    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+  }
+  input.value = value;
+}
+
+function formatCVV(input) {
+  input.value = input.value.replace(/[^0-9]/gi, '');
 }
 
 // Enhanced Settings Functions
@@ -1023,12 +1446,12 @@ function confirmDeleteAccount() {
 // Additional settings functions
 function managePaymentMethods() {
   console.log('Manage payment methods');
-  toast('Payment methods management coming soon!', 'info');
+  openModal('paymentMethodsModal');
 }
 
 function viewBillingHistory() {
   console.log('View billing history');
-  toast('Billing history feature coming soon!', 'info');
+  openModal('bookingHistoryModal');
 }
 
 function downloadUserData() {
@@ -1436,46 +1859,31 @@ auth.onAuthStateChanged((user) => {
       () => ({ data: () => ({}) }) // fallback for offline
     ).then((doc) => {
       const userData = doc?.data() || {};
-      
-      // Compute a normalized role from Firestore or local cache
-      const localRoleRaw = localStorage.getItem('qf_role');
-      const firestoreRole = normalizeRole(userData.role);
-      const localRole = normalizeRole(localRoleRaw);
-      const computedRole = firestoreRole || localRole || 'customer';
-
-      // Keep local cache in sync with Firestore
-      if (firestoreRole && firestoreRole !== localRole) {
-        localStorage.setItem('qf_role', firestoreRole);
-      } else if (!firestoreRole && localRole) {
-        safeFirestoreWrite(() =>
-          db.collection('users').doc(user.uid).set({ role: localRole }, { merge: true })
-        );
-      }
-
-      // Apply UI state based on computed role
-      setProfessionalUI(computedRole === 'professional');
-
-      // Populate other settings/fields in the UI
       loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
-
-      // Ensure future checks (goHome, etc.) read the normalized role
-      userSettings.role = computedRole; // NEW — set after loadUserSettings so it isn't overwritten
-
-      // Auto-switch into Pro dashboard on first load or after signup
-      if (computedRole === 'professional') {
-        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView')
-          .find(el => !el.classList.contains('hidden'));
+      
+      // Show professional button if user is a professional
+      if (userData.role === 'professional') {
+        $('#professionalBtn')?.classList.remove('hidden');
+        $('#mobileProfessional')?.classList.remove('hidden');
+        
+        // FIXED: Auto-switch to professional view for professionals
+        // Only switch if this is the initial auth or pending switch, and user is currently on customer view or no view
+        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView').find(el => !el.classList.contains('hidden'));
         const isOnCustomerOrNoView = !currentView || currentView.id === 'customerView';
-
-        if (pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView)) {
-          setTimeout(() => switchView('professional'), 100);
+        
+        if ((pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView))) {
+          console.log('Auto-switching professional user to professional dashboard');
+          setTimeout(() => {
+            switchView('professional');
+          }, 100); // Small delay to ensure DOM is ready
           pendingProfessionalSwitch = false;
         }
       } else {
-        // Non-pros shouldn't see Pro nav
-        setProfessionalUI(false);
+        // Customer or other role
+        $('#professionalBtn')?.classList.add('hidden');
+        $('#mobileProfessional')?.classList.add('hidden');
       }
-
+      
       initialAuthComplete = true;
     }).catch((error) => {
       console.warn('Failed to load user data:', error);
@@ -1513,6 +1921,10 @@ document.addEventListener('keydown', (e) => {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   console.log('QuickFix Pro DOM loaded');
+  
+  // Initialize mock data
+  initializeMockData();
+  
   renderHomepageContent();
   
   // Initialize location
