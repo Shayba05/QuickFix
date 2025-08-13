@@ -73,6 +73,28 @@ function hide(element) {
   if (element) element.classList.add('hidden');
 }
 
+// NEW — normalize role values so typos don’t break logic
+function normalizeRole(val) {
+  if (!val) return '';
+  const v = String(val).trim().toLowerCase();
+  if (['professional', 'pro', 'prof', 'profesional', 'proffesional'].includes(v)) return 'professional';
+  if (['admin', 'administrator'].includes(v)) return 'admin';
+  return 'customer';
+}
+
+function setProfessionalUI(enabled) {
+  if (enabled) {
+    $('#professionalBtn')?.classList.remove('hidden');
+  } else {
+    $('#professionalBtn')?.classList.add('hidden');
+  }
+  // mobile item is optional in some layouts — guard it
+  const mob = $('#mobileProfessional');
+  if (mob) {
+    if (enabled) mob.classList.remove('hidden'); else mob.classList.add('hidden');
+  }
+}
+
 function toast(message, type = 'success', duration = 3000) {
   console.log(`Toast: ${message} (${type})`);
   const toastEl = $('#toast');
@@ -113,12 +135,15 @@ function handleFirestoreError(error, operation = 'operation') {
 // Enhanced Firestore operations with error handling
 async function safeFirestoreWrite(operation, fallbackMessage) {
   try {
-    await operation();
+    // NEW — return the awaited result so callers can chain reliably
+    return await operation();
   } catch (error) {
     handleFirestoreError(error, 'write');
     if (fallbackMessage && !isOnline) {
       toast(fallbackMessage, 'info');
+      return; // resolve so UI flow continues while offline
     }
+    // Do not rethrow to keep prior behavior (no unnecessary changes)
   }
 }
 
@@ -137,7 +162,7 @@ async function safeFirestoreRead(operation, fallbackAction) {
 // Main functions - WORKING!
 function goHome() {
   console.log('Go home clicked');
-  if (currentUser && userSettings.role === 'professional') {
+  if (currentUser && normalizeRole(userSettings.role) === 'professional') {
     switchView('professional');
   } else {
     switchView('customer');
@@ -255,6 +280,7 @@ function handleLogout() {
   console.log('Logout clicked');
   auth.signOut()
     .then(() => {
+      localStorage.removeItem('qf_role'); // clear cached role on logout
       toast('Signed out successfully');
       closeModal('userMenuModal');
       switchView('customer');
@@ -312,7 +338,9 @@ function handleSignup(event) {
   const dob = $('#dateOfBirth').value;
   const password = $('#password').value;
   const confirmPassword = $('#confirmPassword').value;
-  const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
+  // NEW — normalize the selected role (fixes "proffesional" typo)
+  const rawRole = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
+  const role = normalizeRole(rawRole);
   const agreeTerms = $('#agreeTerms').checked;
   
   // Clear previous error messages
@@ -346,7 +374,7 @@ function handleSignup(event) {
   // Validate age (must be 18+)
   const birthDate = new Date(dob);
   const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
+  let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
@@ -367,8 +395,10 @@ function handleSignup(event) {
     .then(({ user }) => {
       const displayName = `${firstName} ${lastName}`;
       
-      // Update profile
-      return user.updateProfile({ displayName: displayName }).then(() => {
+      // Proceed even if updateProfile fails (e.g., offline) — don’t block signup flow
+      return user.updateProfile({ displayName }).catch(err => {
+        console.warn('updateProfile failed (continuing):', err);
+      }).then(() => {
         // Save user data to Firestore with enhanced error handling
         return safeFirestoreWrite(() => 
           db.collection('users').doc(user.uid).set({
@@ -379,7 +409,7 @@ function handleSignup(event) {
             lastName: lastName,
             phone: phone,
             dateOfBirth: dob,
-            role: role,
+            role: role, // normalized role
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           }), 
           'Account created - profile will sync when online'
@@ -387,31 +417,40 @@ function handleSignup(event) {
       });
     })
     .then(() => {
-      toast('Account created successfully!');
-      closeModal('signupModal');
-      
-      // Clear form
-      $('#signupForm').reset();
-      $$('.user-type-card').forEach(card => card.classList.remove('selected'));
-      $('#roleUser').checked = true;
-      $('#roleUser').closest('.user-type-card').classList.add('selected');
-      
-      // If professional, flag for switch after auth completes
+      // Cache role locally and reflect in UI immediately
+      localStorage.setItem('qf_role', role);
+      setProfessionalUI(role === 'professional');
       if (role === 'professional') {
         pendingProfessionalSwitch = true;
+        switchView('professional');
+      } else {
+        switchView('customer');
+      }
+
+      toast('Account created successfully!');
+      closeModal('signupModal');
+
+      // Clear form (guard for missing nodes so we don’t throw)
+      const formEl = $('#signupForm');
+      if (formEl) formEl.reset();
+      $$('.user-type-card').forEach(card => card.classList.remove('selected'));
+      const roleUser = $('#roleUser');
+      if (roleUser && roleUser.closest) {
+        roleUser.checked = true;
+        roleUser.closest('.user-type-card')?.classList.add('selected');
       }
     })
     .catch((error) => {
       console.error('Signup error:', error);
       let errorMessage = 'Account creation failed';
       
-      if (error.code === 'auth/email-already-in-use') {
+      if (error?.code === 'auth/email-already-in-use') {
         errorMessage = 'An account with this email already exists';
-      } else if (error.code === 'auth/weak-password') {
+      } else if (error?.code === 'auth/weak-password') {
         errorMessage = 'Password is too weak';
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (error?.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address';
-      } else if (error.message) {
+      } else if (error?.message) {
         errorMessage = error.message;
       }
       
@@ -419,6 +458,7 @@ function handleSignup(event) {
       $('#signup-message').textContent = errorMessage;
     })
     .finally(() => {
+      // Always restore the button — prevents “endless loading”
       btn.innerHTML = originalText;
       btn.disabled = false;
     });
@@ -1396,31 +1436,46 @@ auth.onAuthStateChanged((user) => {
       () => ({ data: () => ({}) }) // fallback for offline
     ).then((doc) => {
       const userData = doc?.data() || {};
-      loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
       
-      // Show professional button if user is a professional
-      if (userData.role === 'professional') {
-        $('#professionalBtn')?.classList.remove('hidden');
-        $('#mobileProfessional')?.classList.remove('hidden');
-        
-        // FIXED: Auto-switch to professional view for professionals
-        // Only switch if this is the initial auth or pending switch, and user is currently on customer view or no view
-        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView').find(el => !el.classList.contains('hidden'));
+      // Compute a normalized role from Firestore or local cache
+      const localRoleRaw = localStorage.getItem('qf_role');
+      const firestoreRole = normalizeRole(userData.role);
+      const localRole = normalizeRole(localRoleRaw);
+      const computedRole = firestoreRole || localRole || 'customer';
+
+      // Keep local cache in sync with Firestore
+      if (firestoreRole && firestoreRole !== localRole) {
+        localStorage.setItem('qf_role', firestoreRole);
+      } else if (!firestoreRole && localRole) {
+        safeFirestoreWrite(() =>
+          db.collection('users').doc(user.uid).set({ role: localRole }, { merge: true })
+        );
+      }
+
+      // Apply UI state based on computed role
+      setProfessionalUI(computedRole === 'professional');
+
+      // Populate other settings/fields in the UI
+      loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
+
+      // Ensure future checks (goHome, etc.) read the normalized role
+      userSettings.role = computedRole; // NEW — set after loadUserSettings so it isn't overwritten
+
+      // Auto-switch into Pro dashboard on first load or after signup
+      if (computedRole === 'professional') {
+        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView')
+          .find(el => !el.classList.contains('hidden'));
         const isOnCustomerOrNoView = !currentView || currentView.id === 'customerView';
-        
-        if ((pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView))) {
-          console.log('Auto-switching professional user to professional dashboard');
-          setTimeout(() => {
-            switchView('professional');
-          }, 100); // Small delay to ensure DOM is ready
+
+        if (pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView)) {
+          setTimeout(() => switchView('professional'), 100);
           pendingProfessionalSwitch = false;
         }
       } else {
-        // Customer or other role
-        $('#professionalBtn')?.classList.add('hidden');
-        $('#mobileProfessional')?.classList.add('hidden');
+        // Non-pros shouldn't see Pro nav
+        setProfessionalUI(false);
       }
-      
+
       initialAuthComplete = true;
     }).catch((error) => {
       console.warn('Failed to load user data:', error);
