@@ -116,7 +116,7 @@
     .modal-overlay.show{opacity:1}
     .modal-content{background:#fff;border-radius:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.3);transform:scale(.9) translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1)}
     .modal-overlay.show .modal-content{transform:scale(1) translateY(0)}
-    @media(min-width:768px){.modal-content{max-width:600px}}
+    @media(min-width:768px){.modal-content{max-width:700px}}
     .modal-header{padding:2rem 2rem 1rem;border-bottom:1px solid #E4E4E7;text-align:center}
     .modal-body{padding:2rem}
     .close-btn{position:absolute;top:1rem;right:1rem;width:44px;height:44px;background:#EF4444;color:#fff;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .3s;box-shadow:0 4px 12px rgba(239,68,68,.3)}
@@ -539,6 +539,28 @@
     .status-away {
       background: #fef3c7;
       color: #92400e;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    .divider span {
+      padding: 0 1rem;
+      color: #6b7280;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
 
     #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:.8rem 1rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:10000}
@@ -2100,7 +2122,7 @@
     </div>
   </div>
 
-  <!-- Signup Modal -->
+  <!-- Enhanced Signup Modal -->
   <div id="signupModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
     <div class="modal-content">
       <button class="close-btn" onclick="closeModal('signupModal')" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
@@ -2109,14 +2131,29 @@
           <i class="fas fa-user-plus text-white text-2xl" aria-hidden="true"></i>
         </div>
         <h2 class="text-2xl md:text-3xl font-bold text-text-primary">Join QuickFix Pro</h2>
-        <p class="text-gray-600 mt-2">Create your account</p>
+        <p class="text-gray-600 mt-2">Create your account and get started</p>
       </div>
 
       <div class="modal-body">
-        <form class="space-y-6" id="signupForm" onsubmit="handleSignup(event)" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="fullName">Full Name</label>
-            <input id="fullName" type="text" class="form-input" placeholder="Enter your full name" required />
+        <!-- Google Sign Up Button -->
+        <button class="btn-base btn-google w-full mb-4" onclick="handleGoogleSignup()">
+          <i class="fab fa-google mr-2" aria-hidden="true"></i>Continue with Google
+        </button>
+        
+        <div class="divider">
+          <span>or sign up with email</span>
+        </div>
+
+        <form class="space-y-4" id="signupForm" onsubmit="handleSignup(event)" novalidate>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name</label>
+              <input id="firstName" type="text" class="form-input" placeholder="Enter your first name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last Name</label>
+              <input id="lastName" type="text" class="form-input" placeholder="Enter your last name" required />
+            </div>
           </div>
 
           <div class="form-group">
@@ -2125,8 +2162,23 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label" for="phoneNumber">Phone Number</label>
+            <input id="phoneNumber" type="tel" class="form-input" placeholder="Enter your phone number" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="dateOfBirth">Date of Birth</label>
+            <input id="dateOfBirth" type="date" class="form-input" required />
+          </div>
+
+          <div class="form-group">
             <label class="form-label" for="password">Password</label>
             <input id="password" type="password" class="form-input" placeholder="Create a secure password (min 6 chars)" minlength="6" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" type="password" class="form-input" placeholder="Confirm your password" minlength="6" required />
           </div>
 
           <div class="form-group">
@@ -2134,14 +2186,21 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer selected" onclick="selectRole('customer')">
                 <input type="radio" name="accountRole" id="roleUser" value="customer" class="hidden" checked>
-                <span class="font-semibold"><i class="fas fa-user mr-2" aria-hidden="true"></i>User</span>
+                <span class="font-semibold"><i class="fas fa-user mr-2" aria-hidden="true"></i>Customer</span>
               </label>
               <label class="user-type-card border-2 border-gray-200 rounded-lg p-3 flex items-center justify-center cursor-pointer" onclick="selectRole('professional')">
                 <input type="radio" name="accountRole" id="roleProfessional" value="professional" class="hidden">
                 <span class="font-semibold"><i class="fas fa-briefcase mr-2" aria-hidden="true"></i>Professional</span>
               </label>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Users can browse and book pros. Professionals can list services and access the Pro dashboard.</p>
+            <p class="text-xs text-gray-500 mt-2">Customers can browse and book services. Professionals can list services and access the Pro dashboard.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="agreeTerms" class="mr-2 h-4 w-4 text-primary rounded" required/>
+              <span class="text-sm text-gray-600">I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a> and <a href="#" class="text-primary hover:underline">Privacy Policy</a></span>
+            </label>
           </div>
 
           <button type="submit" class="btn-base btn-secondary w-full" id="signupSubmitBtn">Create Account</button>

@@ -1,4 +1,4 @@
-// QuickFix Pro - Enhanced JavaScript with Help & Support
+// QuickFix Pro - Enhanced JavaScript with Firestore Error Handling
 console.log('QuickFix Pro starting...');
 
 // Firebase configuration
@@ -18,12 +18,43 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// Configure Firestore settings to handle offline/network issues
+db.settings({
+  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+});
+
+// Enable offline persistence (helps with network issues)
+db.enablePersistence({ synchronizeTabs: true })
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.log('Persistence failed: Multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      console.log('Persistence not available in this browser');
+    }
+  });
+
 // Global variables
 let currentUser = null;
 let userSettings = {};
 let selectedPhoto = null;
 let currentHelpSection = 'overview';
 let selectedRating = 0;
+let initialAuthComplete = false;
+let pendingProfessionalSwitch = false;
+let isOnline = navigator.onLine;
+
+// Network status monitoring
+window.addEventListener('online', () => {
+  isOnline = true;
+  console.log('Back online');
+  toast('Connection restored', 'success', 2000);
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  console.log('Gone offline');
+  toast('Working offline', 'info', 2000);
+});
 
 // Helper functions
 function $(selector) {
@@ -59,10 +90,58 @@ function toast(message, type = 'success', duration = 3000) {
   }, duration);
 }
 
+// Enhanced Firestore error handling
+function handleFirestoreError(error, operation = 'operation') {
+  console.error(`Firestore ${operation} error:`, error);
+  
+  if (error.code === 'unavailable' || error.code === 'deadline-exceeded') {
+    if (!isOnline) {
+      toast('Saved locally - will sync when online', 'info');
+    } else {
+      toast('Connection issue - retrying...', 'warning', 2000);
+    }
+  } else if (error.code === 'permission-denied') {
+    toast('Permission denied', 'error');
+  } else if (error.code === 'not-found') {
+    console.log(`Document not found for ${operation}`);
+  } else {
+    // Don't show generic network errors to users
+    console.log(`${operation} will retry automatically`);
+  }
+}
+
+// Enhanced Firestore operations with error handling
+async function safeFirestoreWrite(operation, fallbackMessage) {
+  try {
+    await operation();
+  } catch (error) {
+    handleFirestoreError(error, 'write');
+    if (fallbackMessage && !isOnline) {
+      toast(fallbackMessage, 'info');
+    }
+  }
+}
+
+async function safeFirestoreRead(operation, fallbackAction) {
+  try {
+    return await operation();
+  } catch (error) {
+    handleFirestoreError(error, 'read');
+    if (fallbackAction) {
+      return fallbackAction();
+    }
+    return null;
+  }
+}
+
 // Main functions - WORKING!
 function goHome() {
   console.log('Go home clicked');
-  switchView('customer');
+  if (currentUser && userSettings.role === 'professional') {
+    switchView('professional');
+  } else {
+    switchView('customer');
+  }
 }
 
 function switchView(viewName) {
@@ -77,9 +156,27 @@ function switchView(viewName) {
     show(targetView);
   }
   
+  // Update header nav buttons
+  $$('.nav-btn').forEach(btn => {
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-outline');
+  });
+  
+  if (viewName === 'customer') {
+    $('#customerBtn')?.classList.remove('btn-outline');
+    $('#customerBtn')?.classList.add('btn-primary');
+  } else if (viewName === 'professional') {
+    $('#professionalBtn')?.classList.remove('btn-outline');
+    $('#professionalBtn')?.classList.add('btn-primary');
+  } else if (viewName === 'admin') {
+    $('#adminBtn')?.classList.remove('btn-outline');
+    $('#adminBtn')?.classList.add('btn-primary');
+  }
+  
   // Update mobile nav
   $$('.mobile-nav .nav-item').forEach(item => item.classList.remove('active'));
   if (viewName === 'customer') $('#mobileCustomer')?.classList.add('active');
+  if (viewName === 'professional') $('#mobileProfessional')?.classList.add('active');
   if (viewName === 'admin') $('#mobileAdmin')?.classList.add('active');
   
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -121,6 +218,10 @@ function doSearch(query) {
   if (!query) return;
   
   hide($('#customerView'));
+  hide($('#professionalView'));
+  hide($('#adminView'));
+  hide($('#settingsView'));
+  hide($('#helpView'));
   show($('#algoliaResults'));
   $('#algoliaResultsList').innerHTML = `
     <div class="card">
@@ -156,6 +257,7 @@ function handleLogout() {
     .then(() => {
       toast('Signed out successfully');
       closeModal('userMenuModal');
+      switchView('customer');
     })
     .catch((error) => {
       console.error('Logout error:', error);
@@ -184,6 +286,9 @@ function handleLogin(event) {
     .then(() => {
       toast('Welcome back!');
       closeModal('loginModal');
+      $('#login-email').value = '';
+      $('#login-password').value = '';
+      $('#login-message').textContent = '';
     })
     .catch((error) => {
       console.error('Login error:', error);
@@ -200,13 +305,56 @@ function handleSignup(event) {
   event.preventDefault();
   console.log('Signup form submitted');
   
-  const name = $('#fullName').value.trim();
+  const firstName = $('#firstName').value.trim();
+  const lastName = $('#lastName').value.trim();
   const email = $('#emailAddress').value.trim();
+  const phone = $('#phoneNumber').value.trim();
+  const dob = $('#dateOfBirth').value;
   const password = $('#password').value;
+  const confirmPassword = $('#confirmPassword').value;
   const role = document.querySelector('input[name="accountRole"]:checked')?.value || 'customer';
+  const agreeTerms = $('#agreeTerms').checked;
   
-  if (!name || !email || !password) {
+  // Clear previous error messages
+  $('#signup-message').textContent = '';
+  
+  // Validation
+  if (!firstName || !lastName || !email || !phone || !dob || !password) {
     toast('Please fill in all required fields', 'error');
+    $('#signup-message').textContent = 'Please fill in all required fields';
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    toast('Passwords do not match', 'error');
+    $('#signup-message').textContent = 'Passwords do not match';
+    return;
+  }
+  
+  if (password.length < 6) {
+    toast('Password must be at least 6 characters', 'error');
+    $('#signup-message').textContent = 'Password must be at least 6 characters';
+    return;
+  }
+  
+  if (!agreeTerms) {
+    toast('Please agree to the Terms of Service and Privacy Policy', 'error');
+    $('#signup-message').textContent = 'Please agree to the Terms of Service and Privacy Policy';
+    return;
+  }
+  
+  // Validate age (must be 18+)
+  const birthDate = new Date(dob);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  if (age < 18) {
+    toast('You must be at least 18 years old to create an account', 'error');
+    $('#signup-message').textContent = 'You must be at least 18 years old to create an account';
     return;
   }
   
@@ -217,30 +365,119 @@ function handleSignup(event) {
   
   auth.createUserWithEmailAndPassword(email, password)
     .then(({ user }) => {
+      const displayName = `${firstName} ${lastName}`;
+      
       // Update profile
-      return user.updateProfile({ displayName: name }).then(() => {
-        // Save user data to Firestore
-        return db.collection('users').doc(user.uid).set({
-          uid: user.uid,
-          email: email,
-          displayName: name,
-          role: role,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+      return user.updateProfile({ displayName: displayName }).then(() => {
+        // Save user data to Firestore with enhanced error handling
+        return safeFirestoreWrite(() => 
+          db.collection('users').doc(user.uid).set({
+            uid: user.uid,
+            email: email,
+            displayName: displayName,
+            firstName: firstName,
+            lastName: lastName,
+            phone: phone,
+            dateOfBirth: dob,
+            role: role,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }), 
+          'Account created - profile will sync when online'
+        );
       });
     })
     .then(() => {
       toast('Account created successfully!');
       closeModal('signupModal');
+      
+      // Clear form
+      $('#signupForm').reset();
+      $$('.user-type-card').forEach(card => card.classList.remove('selected'));
+      $('#roleUser').checked = true;
+      $('#roleUser').closest('.user-type-card').classList.add('selected');
+      
+      // If professional, flag for switch after auth completes
+      if (role === 'professional') {
+        pendingProfessionalSwitch = true;
+      }
     })
     .catch((error) => {
       console.error('Signup error:', error);
-      toast(error.message || 'Signup failed', 'error');
-      $('#signup-message').textContent = error.message || 'Signup failed';
+      let errorMessage = 'Account creation failed';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'An account with this email already exists';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast(errorMessage, 'error');
+      $('#signup-message').textContent = errorMessage;
     })
     .finally(() => {
       btn.innerHTML = originalText;
       btn.disabled = false;
+    });
+}
+
+function handleGoogleSignup() {
+  console.log('Google signup clicked');
+  
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('email');
+  provider.addScope('profile');
+  
+  auth.signInWithPopup(provider)
+    .then((result) => {
+      const user = result.user;
+      const isNewUser = result.additionalUserInfo.isNewUser;
+      
+      if (isNewUser) {
+        // New user - save to Firestore
+        const names = user.displayName ? user.displayName.split(' ') : ['', ''];
+        const firstName = names[0] || '';
+        const lastName = names.slice(1).join(' ') || '';
+        
+        return safeFirestoreWrite(() =>
+          db.collection('users').doc(user.uid).set({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            firstName: firstName,
+            lastName: lastName,
+            photoURL: user.photoURL,
+            role: 'customer', // Default to customer for Google signup
+            provider: 'google',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }),
+          'Account created - profile will sync when online'
+        ).then(() => {
+          toast('Account created successfully with Google!');
+          closeModal('signupModal');
+        });
+      } else {
+        toast('Signed in successfully with Google!');
+        closeModal('signupModal');
+      }
+    })
+    .catch((error) => {
+      console.error('Google signup error:', error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        // User closed popup, don't show error
+        return;
+      }
+      
+      let errorMessage = 'Google sign up failed';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast(errorMessage, 'error');
     });
 }
 
@@ -524,10 +761,13 @@ function savePhoto() {
     .then(downloadURL => {
       // Update user profile
       return currentUser.updateProfile({ photoURL: downloadURL }).then(() => {
-        // Save to Firestore
-        return db.collection('users').doc(currentUser.uid).update({
-          photoURL: downloadURL
-        });
+        // Save to Firestore with error handling
+        return safeFirestoreWrite(() =>
+          db.collection('users').doc(currentUser.uid).update({
+            photoURL: downloadURL
+          }),
+          'Photo uploaded - will sync when online'
+        );
       }).then(() => {
         $('#photoStatus').textContent = 'Photo uploaded successfully';
         userSettings.photoURL = downloadURL;
@@ -640,13 +880,10 @@ function savePreference(settingName, value) {
 function saveUserSettings() {
   if (!currentUser) return;
   
-  db.collection('users').doc(currentUser.uid).update(userSettings)
-    .then(() => {
-      console.log('Settings saved to Firebase');
-    })
-    .catch(error => {
-      console.error('Failed to save settings:', error);
-    });
+  safeFirestoreWrite(() =>
+    db.collection('users').doc(currentUser.uid).update(userSettings),
+    'Settings saved locally - will sync when online'
+  );
 }
 
 // Account management functions
@@ -682,18 +919,19 @@ function confirmDeactivateAccount() {
   console.log('Confirm deactivate account');
   
   // Update user status to deactivated
-  db.collection('users').doc(currentUser.uid).update({
-    status: 'deactivated',
-    deactivatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  })
-    .then(() => {
-      toast('Account deactivated successfully');
-      handleLogout();
-    })
-    .catch((error) => {
-      console.error('Deactivate account error:', error);
-      toast('Failed to deactivate account: ' + error.message, 'error');
-    });
+  safeFirestoreWrite(() =>
+    db.collection('users').doc(currentUser.uid).update({
+      status: 'deactivated',
+      deactivatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }),
+    'Account will be deactivated when online'
+  ).then(() => {
+    toast('Account deactivated successfully');
+    handleLogout();
+  }).catch((error) => {
+    console.error('Deactivate account error:', error);
+    toast('Failed to deactivate account: ' + error.message, 'error');
+  });
 }
 
 function deleteAccount() {
@@ -728,19 +966,18 @@ function confirmDeleteAccount() {
   console.log('Confirm delete account');
   
   // Delete user data from Firestore
-  db.collection('users').doc(currentUser.uid).delete()
-    .then(() => {
-      // Delete user account
-      return currentUser.delete();
-    })
-    .then(() => {
-      toast('Account deleted successfully');
-      switchView('customer');
-    })
-    .catch((error) => {
-      console.error('Delete account error:', error);
-      toast('Failed to delete account: ' + error.message, 'error');
-    });
+  safeFirestoreWrite(() =>
+    db.collection('users').doc(currentUser.uid).delete()
+  ).then(() => {
+    // Delete user account
+    return currentUser.delete();
+  }).then(() => {
+    toast('Account deleted successfully');
+    switchView('customer');
+  }).catch((error) => {
+    console.error('Delete account error:', error);
+    toast('Failed to delete account: ' + error.message, 'error');
+  });
 }
 
 // Additional settings functions
@@ -912,18 +1149,15 @@ function submitSupportTicket(event) {
     ticketId: 'QF-' + Math.random().toString(36).substr(2, 9).toUpperCase()
   };
   
-  // Save to Firebase (if logged in)
+  // Save to Firebase (if logged in) with error handling
   if (currentUser) {
-    db.collection('support-tickets').add({
-      ...ticketData,
-      userId: currentUser.uid
-    })
-    .then((docRef) => {
-      console.log('Support ticket saved:', docRef.id);
-    })
-    .catch((error) => {
-      console.error('Error saving ticket:', error);
-    });
+    safeFirestoreWrite(() =>
+      db.collection('support-tickets').add({
+        ...ticketData,
+        userId: currentUser.uid
+      }),
+      'Support ticket saved locally - will submit when online'
+    );
   }
   
   toast('Support ticket submitted successfully! Ticket ID: ' + ticketData.ticketId, 'success', 5000);
@@ -961,19 +1195,19 @@ function submitFeedback(event) {
     userId: currentUser?.uid || 'anonymous'
   };
   
-  // Save to Firebase
-  db.collection('feedback').add(feedbackData)
-    .then((docRef) => {
-      console.log('Feedback saved:', docRef.id);
-      toast('Thank you for your feedback!', 'success');
-      form.reset();
-      selectedRating = 0;
-      updateRatingButtons();
-    })
-    .catch((error) => {
-      console.error('Error saving feedback:', error);
-      toast('Failed to submit feedback', 'error');
-    });
+  // Save to Firebase with error handling
+  safeFirestoreWrite(() =>
+    db.collection('feedback').add(feedbackData),
+    'Feedback saved locally - will submit when online'
+  ).then(() => {
+    toast('Thank you for your feedback!', 'success');
+    form.reset();
+    selectedRating = 0;
+    updateRatingButtons();
+  }).catch((error) => {
+    console.error('Error saving feedback:', error);
+    toast('Failed to submit feedback', 'error');
+  });
 }
 
 function setRating(rating) {
@@ -1149,32 +1383,55 @@ function renderHomepageContent() {
   }
 }
 
-// Auth state listener
+// Auth state listener - FIXED for professional view switching
 auth.onAuthStateChanged((user) => {
-  console.log('Auth state changed:', user ? user.email : 'signed out');
+  console.log('Auth state changed:', user ? user.email : 'signed out', 'initialAuthComplete:', initialAuthComplete);
   currentUser = user;
   
   updateUserUI(user);
   
   if (user) {
-    db.collection('users').doc(user.uid).get()
-      .then((doc) => {
-        const userData = doc.data() || {};
-        loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
+    safeFirestoreRead(() =>
+      db.collection('users').doc(user.uid).get(),
+      () => ({ data: () => ({}) }) // fallback for offline
+    ).then((doc) => {
+      const userData = doc?.data() || {};
+      loadUserSettings({ ...userData, email: user.email, displayName: user.displayName });
+      
+      // Show professional button if user is a professional
+      if (userData.role === 'professional') {
+        $('#professionalBtn')?.classList.remove('hidden');
+        $('#mobileProfessional')?.classList.remove('hidden');
         
-        // Show professional button if user is a professional
-        if (userData.role === 'professional') {
-          $('#professionalBtn')?.classList.remove('hidden');
-          $('#mobileProfessional')?.classList.remove('hidden');
+        // FIXED: Auto-switch to professional view for professionals
+        // Only switch if this is the initial auth or pending switch, and user is currently on customer view or no view
+        const currentView = $$('#customerView, #professionalView, #adminView, #settingsView, #helpView').find(el => !el.classList.contains('hidden'));
+        const isOnCustomerOrNoView = !currentView || currentView.id === 'customerView';
+        
+        if ((pendingProfessionalSwitch || (!initialAuthComplete && isOnCustomerOrNoView))) {
+          console.log('Auto-switching professional user to professional dashboard');
+          setTimeout(() => {
+            switchView('professional');
+          }, 100); // Small delay to ensure DOM is ready
+          pendingProfessionalSwitch = false;
         }
-      })
-      .catch((error) => {
-        console.warn('Failed to load user data:', error);
-      });
+      } else {
+        // Customer or other role
+        $('#professionalBtn')?.classList.add('hidden');
+        $('#mobileProfessional')?.classList.add('hidden');
+      }
+      
+      initialAuthComplete = true;
+    }).catch((error) => {
+      console.warn('Failed to load user data:', error);
+      initialAuthComplete = true;
+    });
   } else {
     $('#professionalBtn')?.classList.add('hidden');
     $('#mobileProfessional')?.classList.add('hidden');
     userSettings = {};
+    initialAuthComplete = true;
+    pendingProfessionalSwitch = false;
   }
 });
 
