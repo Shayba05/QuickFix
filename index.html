@@ -80,6 +80,228 @@
       .modal-header { padding: 1.5rem 1rem 0.5rem; }
     }
 
+    /* Mobile Intro Carousel Styles */
+    .mobile-intro {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+      z-index: 99999;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-intro {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    .carousel-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .carousel-slide.active {
+      transform: translateX(0);
+    }
+
+    .carousel-slide:not(.active) {
+      transform: translateX(100%);
+    }
+
+    .slide-icon {
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+      font-size: 3rem;
+    }
+
+    .slide-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    .slide-description {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      opacity: 0.9;
+      max-width: 300px;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background: white;
+      transform: scale(1.2);
+    }
+
+    .intro-bottom {
+      padding: 2rem;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .get-started-btn {
+      width: 100%;
+      background: white;
+      color: #6B46C1;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .get-started-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Mobile Menu Styles */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 280px;
+      height: 100vh;
+      background: white;
+      z-index: 9999;
+      transition: left 0.3s ease;
+      overflow-y: auto;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-menu.active {
+      left: 0;
+    }
+
+    .mobile-menu-header {
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+      color: white;
+    }
+
+    .mobile-menu-items {
+      padding: 1rem 0;
+    }
+
+    .mobile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      color: #374151;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .mobile-menu-item:hover {
+      background: #f8fafc;
+      color: #6B46C1;
+    }
+
+    .mobile-menu-item i {
+      margin-right: 0.75rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .hamburger-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .hamburger-btn {
+        display: flex;
+      }
+    }
+
+    .hamburger-line {
+      width: 20px;
+      height: 2px;
+      background: #374151;
+      margin: 2px 0;
+      transition: 0.3s;
+    }
+
+    .hamburger-btn.active .hamburger-line:nth-child(1) {
+      transform: rotate(-45deg) translate(-4px, 4px);
+    }
+
+    .hamburger-btn.active .hamburger-line:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger-btn.active .hamburger-line:nth-child(3) {
+      transform: rotate(45deg) translate(-4px, -4px);
+    }
+
     .responsive-container{width:100%;margin:0 auto;padding:0 1rem}
     @media(min-width:475px){.responsive-container{max-width:475px}}
     @media(min-width:640px){.responsive-container{max-width:640px;padding:0 1.5rem}}
@@ -1041,11 +1263,117 @@
   </style>
 </head>
 <body>
+  <!-- Mobile Intro Carousel (Mobile Only) -->
+  <div id="mobileIntro" class="mobile-intro">
+    <div class="carousel-container">
+      <div class="carousel-slide active">
+        <div class="slide-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <h2 class="slide-title">Find Professionals</h2>
+        <p class="slide-description">Search for qualified professionals in your area. Browse profiles, read reviews, and compare services easily.</p>
+      </div>
+      
+      <div class="carousel-slide">
+        <div class="slide-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <h2 class="slide-title">Book Instantly</h2>
+        <p class="slide-description">Schedule your appointment at a convenient time. Get instant confirmation and professional details.</p>
+      </div>
+      
+      <div class="carousel-slide">
+        <div class="slide-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <h2 class="slide-title">Get It Fixed</h2>
+        <p class="slide-description">Professional arrives on time. Pay securely after completion. Rate your experience and build trust.</p>
+      </div>
+    </div>
+    
+    <div class="carousel-dots">
+      <div class="dot active" onclick="showSlide(0)"></div>
+      <div class="dot" onclick="showSlide(1)"></div>
+      <div class="dot" onclick="showSlide(2)"></div>
+    </div>
+    
+    <div class="intro-bottom">
+      <button class="get-started-btn" onclick="enterMainApp()">
+        <i class="fas fa-arrow-right mr-2"></i>Get Started
+      </button>
+      <p class="text-center text-white text-sm mt-3 opacity-75">
+        Join thousands of satisfied customers
+      </p>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="mobile-menu-header">
+      <div class="flex items-center">
+        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
+          <i class="fas fa-tools text-white"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg">QuickFix Pro</h3>
+          <p class="text-purple-200 text-sm">Professional Services</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mobile-menu-items">
+      <div class="mobile-menu-item" onclick="switchView('customer'); closeMobileMenu();">
+        <i class="fas fa-home"></i>
+        <span>Customer Home</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="switchView('professional'); closeMobileMenu();">
+        <i class="fas fa-briefcase"></i>
+        <span>Professional Dashboard</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="switchView('admin'); closeMobileMenu();">
+        <i class="fas fa-crown"></i>
+        <span>Admin Panel</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="switchView('howItWorks'); closeMobileMenu();">
+        <i class="fas fa-info-circle"></i>
+        <span>How It Works</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="openHelpSupport(); closeMobileMenu();">
+        <i class="fas fa-headset"></i>
+        <span>Help & Support</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="openSettings(); closeMobileMenu();">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </div>
+      
+      <div class="mobile-menu-item" onclick="openModal('searchModal'); closeMobileMenu();">
+        <i class="fas fa-search"></i>
+        <span>Search Services</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="responsive-container">
       <div class="flex items-center justify-between h-14 md:h-16">
         <div class="flex items-center space-x-3">
+          <!-- Mobile Menu Button -->
+          <button class="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+          </button>
+          
           <div class="flex items-center space-x-2 pl-1 pr-2 py-1 rounded-md cursor-pointer" onclick="goHome()" tabindex="0" role="button" aria-label="Go home">
             <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center shadow-md">
               <i class="fas fa-tools text-white text-base md:text-lg" aria-hidden="true"></i>

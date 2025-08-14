@@ -49,6 +49,11 @@ let selectedTimeSlot = null;
 let currentBookingProfessional = null;
 let professionalAvailability = {};
 
+// Mobile Intro Carousel Variables
+let isFirstVisit = true;
+let currentSlide = 0;
+const totalSlides = 3;
+
 // Network status monitoring
 window.addEventListener('online', () => {
   isOnline = true;
@@ -60,6 +65,18 @@ window.addEventListener('offline', () => {
   isOnline = false;
   console.log('Gone offline');
   toast('Working offline', 'info', 2000);
+});
+
+// Dark Mode Detection
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    if (event.matches) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
 });
 
 // Initialize mock data
@@ -286,6 +303,99 @@ async function safeFirestoreRead(operation, fallbackAction) {
   }
 }
 
+// Mobile Intro Carousel Functions
+function showSlide(slideIndex) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.dot');
+    
+    // Remove active class from all slides and dots
+    slides.forEach((slide, index) => {
+        slide.classList.remove('active');
+        if (index === slideIndex) {
+            slide.classList.add('active');
+        }
+    });
+    
+    dots.forEach((dot, index) => {
+        dot.classList.remove('active');
+        if (index === slideIndex) {
+            dot.classList.add('active');
+        }
+    });
+    
+    currentSlide = slideIndex;
+}
+
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % totalSlides;
+    showSlide(currentSlide);
+}
+
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+    showSlide(currentSlide);
+}
+
+function enterMainApp() {
+    const mobileIntro = document.getElementById('mobileIntro');
+    mobileIntro.style.display = 'none';
+    isFirstVisit = false;
+    localStorage.setItem('hasSeenIntro', 'true');
+    
+    // Show main content
+    document.body.style.overflow = 'auto';
+    
+    toast('Welcome to QuickFix Pro!', 'success');
+}
+
+// Auto-advance carousel
+function startCarouselAutoAdvance() {
+    if (window.innerWidth <= 768) {
+        setInterval(() => {
+            if (document.getElementById('mobileIntro').style.display !== 'none') {
+                nextSlide();
+            }
+        }, 4000);
+    }
+}
+
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    
+    const isActive = mobileMenu.classList.contains('active');
+    
+    if (isActive) {
+        closeMobileMenu();
+    } else {
+        openMobileMenu();
+    }
+}
+
+function openMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    
+    mobileMenu.classList.add('active');
+    mobileMenuOverlay.classList.add('active');
+    hamburgerBtn.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    
+    mobileMenu.classList.remove('active');
+    mobileMenuOverlay.classList.remove('active');
+    hamburgerBtn.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
 // Main functions - WORKING!
 function goHome() {
   console.log('Go home clicked');
@@ -334,6 +444,9 @@ function switchView(viewName) {
   if (viewName === 'professional') $('#mobileProfessional')?.classList.add('active');
   if (viewName === 'admin') $('#mobileAdmin')?.classList.add('active');
   
+  // Close mobile menu if open
+  closeMobileMenu();
+  
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -378,6 +491,9 @@ function openModal(modalId) {
   requestAnimationFrame(() => {
     modal.classList.add('show');
   });
+  
+  // Close mobile menu if open
+  closeMobileMenu();
 }
 
 function closeModal(modalId) {
@@ -729,6 +845,26 @@ function bookProfessional(professionalName, service = 'General Service') {
   resetBookingForm();
   
   openModal('bookProfessionalModal');
+}
+
+function openBookingModal(professionalId) {
+    const modal = document.getElementById('bookProfessionalModal');
+    const infoElement = document.getElementById('bookingProfessionalInfo');
+    
+    // Mock professional data
+    const professional = {
+        1: { name: 'Mike Johnson', service: 'Master Plumber' },
+        2: { name: 'Sarah Davis', service: 'Professional Handywoman' },
+        3: { name: 'David Wilson', service: 'Licensed Electrician' }
+    }[professionalId] || { name: 'Professional', service: 'Service Provider' };
+    
+    if (infoElement) {
+        infoElement.textContent = `Book ${professional.name} - ${professional.service}`;
+    }
+    
+    currentBookingProfessional = professional;
+    resetBookingForm();
+    openModal('bookProfessionalModal');
 }
 
 function resetBookingForm() {
@@ -2215,7 +2351,7 @@ function loadMockContent() {
   
   const professionalsContainer = $('#featuredProfessionals');
   if (professionalsContainer) {
-    professionalsContainer.innerHTML = professionals.map(pro => `
+    professionalsContainer.innerHTML = professionals.map((pro, index) => `
       <div class="card professional-card">
         <div class="flex items-center mb-4">
           <div class="avatar-container w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
@@ -2234,7 +2370,7 @@ function loadMockContent() {
           </div>
           <span class="font-bold text-primary">${pro.price}</span>
         </div>
-        <button class="btn-base btn-primary w-full" onclick="bookProfessional('${pro.name}', '${pro.service}')">
+        <button class="btn-base btn-primary w-full" onclick="openBookingModal(${index + 1})">
           Book Now
         </button>
       </div>
@@ -2322,20 +2458,45 @@ function detectLocation() {
 function initializeApp() {
   console.log('Initializing QuickFix Pro...');
   
+  // Check if user has seen intro before
+  const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+  const isMobile = window.innerWidth <= 768;
+  
+  if (!hasSeenIntro && isMobile) {
+    // Show mobile intro
+    document.getElementById('mobileIntro').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    startCarouselAutoAdvance();
+  } else {
+    // Hide mobile intro
+    document.getElementById('mobileIntro').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+  
   // Load mock data
   initializeMockData();
   loadMockContent();
   detectLocation();
   
-  // Dark mode detection
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.classList.add('dark');
-  }
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    if (event.matches) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  // Initialize search on Enter key
+  const searchInputs = document.querySelectorAll('#searchInput, #mobileSearchInput');
+  searchInputs.forEach(input => {
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        doSearch(this.value);
+      }
+    });
+  });
+  
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(e) {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    
+    if (mobileMenu.classList.contains('active') && 
+        !mobileMenu.contains(e.target) && 
+        !hamburgerBtn.contains(e.target)) {
+      closeMobileMenu();
     }
   });
 }
@@ -2428,6 +2589,78 @@ function updateSettingsUI() {
     updateUserAvatar(userSettings.photoURL);
   }
 }
+
+// Close modals on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const openModal = document.querySelector('.modal-overlay.show');
+        if (openModal) {
+            const modalId = openModal.id;
+            closeModal(modalId);
+        }
+        
+        // Close mobile menu if open
+        if (document.getElementById('mobileMenu').classList.contains('active')) {
+            closeMobileMenu();
+        }
+    }
+});
+
+// Touch gesture support for carousel
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+    if (e.target.closest('.carousel-container')) {
+        touchStartX = e.changedTouches[0].screenX;
+    }
+});
+
+document.addEventListener('touchend', function(e) {
+    if (e.target.closest('.carousel-container')) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleGesture();
+    }
+});
+
+function handleGesture() {
+    const threshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0) {
+            // Swipe left - next slide
+            nextSlide();
+        } else {
+            // Swipe right - previous slide
+            prevSlide();
+        }
+    }
+}
+
+// Handle resize events
+window.addEventListener('resize', function() {
+    // Handle mobile menu on resize
+    if (window.innerWidth > 1024) {
+        closeMobileMenu();
+    }
+    
+    // Handle intro carousel on resize
+    if (window.innerWidth > 768) {
+        const mobileIntro = document.getElementById('mobileIntro');
+        if (mobileIntro && mobileIntro.style.display !== 'none') {
+            enterMainApp();
+        }
+    }
+});
+
+// Handle orientation change
+window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+        // Recalculate layouts if needed
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
+});
 
 // Initialize on DOM content loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
