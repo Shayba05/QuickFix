@@ -39,6 +39,94 @@
             'gray-700': '#3F3F46',
             'gray-800': '#27272A',
             'gray-900': '#18181B'
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.8s ease-in-out',
+            'slide-up': 'slideUp 0.8s ease-out',
+            'slide-down': 'slideDown 0.8s ease-out',
+            'slide-left': 'slideLeft 0.8s ease-out',
+            'slide-right': 'slideRight 0.8s ease-out',
+            'scale-in': 'scaleIn 0.6s ease-out',
+            'bounce-in': 'bounceIn 1s ease-out',
+            'float': 'float 3s ease-in-out infinite',
+            'glow': 'glow 2s ease-in-out infinite alternate',
+            'shimmer': 'shimmer 2s linear infinite',
+            'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+            'rotate-slow': 'rotateSlow 10s linear infinite',
+            'zoom-in': 'zoomIn 0.6s ease-out',
+            'slide-bounce': 'slideBounce 0.8s ease-out',
+            'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+            'wave': 'wave 2s ease-in-out infinite'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(100px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' }
+            },
+            slideDown: {
+              '0%': { transform: 'translateY(-100px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' }
+            },
+            slideLeft: {
+              '0%': { transform: 'translateX(100px)', opacity: '0' },
+              '100%': { transform: 'translateX(0)', opacity: '1' }
+            },
+            slideRight: {
+              '0%': { transform: 'translateX(-100px)', opacity: '0' },
+              '100%': { transform: 'translateX(0)', opacity: '1' }
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.8)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            },
+            bounceIn: {
+              '0%': { transform: 'scale(0.3)', opacity: '0' },
+              '50%': { transform: 'scale(1.05)' },
+              '70%': { transform: 'scale(0.9)' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-20px)' }
+            },
+            glow: {
+              '0%': { boxShadow: '0 0 20px rgba(107, 70, 193, 0.5)' },
+              '100%': { boxShadow: '0 0 40px rgba(107, 70, 193, 0.8)' }
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' }
+            },
+            pulseSoft: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.7' }
+            },
+            rotateSlow: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' }
+            },
+            zoomIn: {
+              '0%': { transform: 'scale(0.5)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            },
+            slideBounce: {
+              '0%': { transform: 'translateX(-100%)', opacity: '0' },
+              '60%': { transform: 'translateX(10%)', opacity: '1' },
+              '100%': { transform: 'translateX(0%)', opacity: '1' }
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(107, 70, 193, 0.4)' },
+              '50%': { boxShadow: '0 0 40px rgba(107, 70, 193, 0.8)' }
+            },
+            wave: {
+              '0%, 100%': { transform: 'rotate(0deg)' },
+              '25%': { transform: 'rotate(5deg)' },
+              '75%': { transform: 'rotate(-5deg)' }
+            }
           }
         }
       }
@@ -80,7 +168,7 @@
       .modal-header { padding: 1.5rem 1rem 0.5rem; }
     }
 
-    /* Mobile Intro Carousel Styles */
+    /* Enhanced Mobile Intro Carousel - Only visible on mobile */
     .mobile-intro {
       display: none;
       position: fixed;
@@ -88,9 +176,36 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #6B46C1 50%, #8B5CF6 75%, #A855F7 100%);
       z-index: 99999;
       color: white;
+      overflow: hidden;
+    }
+
+    /* Animated background particles */
+    .mobile-intro::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .mobile-intro::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.03), transparent);
+      animation: rotate-slow 20s linear infinite;
     }
 
     @media (max-width: 768px) {
@@ -105,6 +220,7 @@
       display: flex;
       overflow: hidden;
       position: relative;
+      z-index: 10;
     }
 
     .carousel-slide {
@@ -115,85 +231,185 @@
       align-items: center;
       padding: 2rem;
       text-align: center;
-      transition: transform 0.5s ease-in-out;
+      transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: translateX(100%);
+      opacity: 0;
     }
 
     .carousel-slide.active {
       transform: translateX(0);
+      opacity: 1;
     }
 
-    .carousel-slide:not(.active) {
-      transform: translateX(100%);
+    .carousel-slide.prev {
+      transform: translateX(-100%);
+      opacity: 0;
     }
 
     .slide-icon {
-      width: 120px;
-      height: 120px;
-      background: rgba(255, 255, 255, 0.2);
+      width: 160px;
+      height: 160px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 3px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 2rem;
-      font-size: 3rem;
+      font-size: 4rem;
+      animation: zoom-in 1.2s ease-out, float 4s ease-in-out infinite 1.2s, pulse-glow 3s ease-in-out infinite 2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+
+    .slide-icon::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: shimmer 3s linear infinite;
+    }
+
+    .slide-icon::after {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent, rgba(255,255,255,0.1));
+      animation: rotate-slow 15s linear infinite;
     }
 
     .slide-title {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
+      font-size: 2.8rem;
+      font-weight: 900;
+      margin-bottom: 1.5rem;
       color: white;
+      animation: slide-bounce 1s ease-out 0.3s both;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      background: linear-gradient(45deg, #ffffff, #e0e7ff, #ffffff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: slide-bounce 1s ease-out 0.3s both, shimmer 4s ease-in-out infinite 1.5s;
     }
 
     .slide-description {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      opacity: 0.9;
-      max-width: 300px;
+      font-size: 1.3rem;
+      line-height: 1.7;
+      opacity: 0.95;
+      max-width: 350px;
+      animation: slide-up 1s ease-out 0.8s both;
+      text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+      font-weight: 500;
     }
 
     .carousel-dots {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 1rem;
+      gap: 1rem;
+      padding: 1.5rem;
+      position: relative;
+      z-index: 20;
     }
 
     .dot {
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.4);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .dot::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.5s ease;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
     }
 
     .dot.active {
-      background: white;
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.4);
+      box-shadow: 0 0 25px rgba(255,255,255,0.6);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .dot.active::before {
+      width: 10px;
+      height: 10px;
+    }
+
+    .dot:hover {
       transform: scale(1.2);
+      background: rgba(255, 255, 255, 0.6);
     }
 
     .intro-bottom {
       padding: 2rem;
-      background: rgba(0, 0, 0, 0.1);
+      background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+      backdrop-filter: blur(15px);
+      position: relative;
+      z-index: 20;
     }
 
     .get-started-btn {
       width: 100%;
-      background: white;
+      background: linear-gradient(45deg, #ffffff, #f0f0f0);
       color: #6B46C1;
       border: none;
-      border-radius: 12px;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      font-weight: 700;
+      border-radius: 20px;
+      padding: 1.2rem 2rem;
+      font-size: 1.3rem;
+      font-weight: 900;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    .get-started-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(107,70,193,0.2), transparent);
+      transition: left 0.6s;
     }
 
     .get-started-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 20px 45px rgba(0,0,0,0.5);
+      background: linear-gradient(45deg, #f8f8f8, #e8e8e8);
+    }
+
+    .get-started-btn:hover::before {
+      left: 100%;
+    }
+
+    .get-started-btn:active {
+      transform: translateY(-3px) scale(1.01);
     }
 
     /* Mobile Menu Styles */
@@ -1266,28 +1482,40 @@
   <!-- Mobile Intro Carousel (Mobile Only) -->
   <div id="mobileIntro" class="mobile-intro">
     <div class="carousel-container">
+      <!-- Slide 1: Search & Find -->
       <div class="carousel-slide active">
         <div class="slide-icon">
           <i class="fas fa-search"></i>
         </div>
         <h2 class="slide-title">Find Professionals</h2>
-        <p class="slide-description">Search for qualified professionals in your area. Browse profiles, read reviews, and compare services easily.</p>
+        <p class="slide-description">Search for qualified professionals in your area. Browse profiles, read reviews, and compare services to find the perfect match for your needs.</p>
       </div>
       
+      <!-- Slide 2: Book Service -->
       <div class="carousel-slide">
         <div class="slide-icon">
           <i class="fas fa-calendar-check"></i>
         </div>
         <h2 class="slide-title">Book Instantly</h2>
-        <p class="slide-description">Schedule your appointment at a convenient time. Get instant confirmation and professional details.</p>
+        <p class="slide-description">Schedule your appointment at a convenient time that works for you. Get instant confirmation and direct contact with your professional.</p>
       </div>
       
+      <!-- Slide 3: Get Service -->
       <div class="carousel-slide">
         <div class="slide-icon">
           <i class="fas fa-star"></i>
         </div>
         <h2 class="slide-title">Get It Fixed</h2>
-        <p class="slide-description">Professional arrives on time. Pay securely after completion. Rate your experience and build trust.</p>
+        <p class="slide-description">Professional arrives on time and completes the job. Pay securely after satisfaction and rate your experience to help others.</p>
+      </div>
+      
+      <!-- Slide 4: Success -->
+      <div class="carousel-slide">
+        <div class="slide-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="slide-title">Job Complete!</h2>
+        <p class="slide-description">Your problem is solved! Join thousands of satisfied customers who trust QuickFix Pro for all their home service needs.</p>
       </div>
     </div>
     
@@ -1295,13 +1523,14 @@
       <div class="dot active" onclick="showSlide(0)"></div>
       <div class="dot" onclick="showSlide(1)"></div>
       <div class="dot" onclick="showSlide(2)"></div>
+      <div class="dot" onclick="showSlide(3)"></div>
     </div>
     
     <div class="intro-bottom">
       <button class="get-started-btn" onclick="enterMainApp()">
-        <i class="fas fa-arrow-right mr-2"></i>Get Started
+        <i class="fas fa-rocket mr-3"></i>Get Started
       </button>
-      <p class="text-center text-white text-sm mt-3 opacity-75">
+      <p class="text-center text-white text-sm mt-4 opacity-75">
         Join thousands of satisfied customers
       </p>
     </div>
@@ -1457,11 +1686,6 @@
           <p class="text-gray-600">Professional arrives on time. Pay securely after completion. Rate your experience.</p>
         </div>
       </div>
-    </div>
-
-    <div class="responsive-container py-6 md:py-8">
-      <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-text-primary">Popular Services</h2>
-      <div id="popularServices" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4"></div>
     </div>
 
     <!-- Trust Stats Section -->

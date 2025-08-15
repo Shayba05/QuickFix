@@ -52,7 +52,7 @@ let professionalAvailability = {};
 // Mobile Intro Carousel Variables
 let isFirstVisit = true;
 let currentSlide = 0;
-const totalSlides = 3;
+const totalSlides = 4;
 
 // Network status monitoring
 window.addEventListener('online', () => {
