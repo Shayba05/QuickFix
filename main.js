@@ -50,9 +50,8 @@ let currentBookingProfessional = null;
 let professionalAvailability = {};
 
 // Mobile Intro Carousel Variables
-let isFirstVisit = true;
 let currentSlide = 0;
-const totalSlides = 4;
+let totalSlides = 0; // will be computed from DOM
 
 // Network status monitoring
 window.addEventListener('online', () => {
@@ -304,64 +303,78 @@ async function safeFirestoreRead(operation, fallbackAction) {
 }
 
 // Mobile Intro Carousel Functions
+function computeTotalSlides() {
+  const slides = document.querySelectorAll('#mobileIntro .carousel-slide');
+  totalSlides = slides.length || 0;
+}
+
 function showSlide(slideIndex) {
-    const slides = document.querySelectorAll('.carousel-slide');
-    const dots = document.querySelectorAll('.dot');
-    
-    // Remove active class from all slides and dots
-    slides.forEach((slide, index) => {
-        slide.classList.remove('active');
-        if (index === slideIndex) {
-            slide.classList.add('active');
-        }
-    });
-    
-    dots.forEach((dot, index) => {
-        dot.classList.remove('active');
-        if (index === slideIndex) {
-            dot.classList.add('active');
-        }
-    });
-    
-    currentSlide = slideIndex;
+  const intro = document.getElementById('mobileIntro');
+  if (!intro || intro.style.display === 'none') return;
+
+  const slides = intro.querySelectorAll('.carousel-slide');
+  const dots = intro.querySelectorAll('.dot');
+  if (!slides.length) return;
+
+  // clamp
+  currentSlide = (slideIndex + slides.length) % slides.length;
+
+  slides.forEach((slide, i) => {
+    slide.classList.toggle('active', i === currentSlide);
+  });
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSlide);
+  });
 }
 
 function nextSlide() {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    showSlide(currentSlide);
+  computeTotalSlides();
+  showSlide(currentSlide + 1);
 }
 
 function prevSlide() {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    showSlide(currentSlide);
+  computeTotalSlides();
+  showSlide(currentSlide - 1);
 }
+
+function goToSlide(idx) {
+  computeTotalSlides();
+  showSlide(idx);
+}
+
 
 function enterMainApp() {
   const mobileIntro = document.getElementById('mobileIntro');
-  mobileIntro.style.display = 'none';
+  if (mobileIntro) {
+    mobileIntro.style.display = 'none';
+  }
   localStorage.setItem('hasSeenIntro', 'true');
 
   // unlock page scroll
   document.documentElement.classList.remove('no-scroll');
   document.body.classList.remove('no-scroll');
-
   document.body.style.overflow = 'auto';
+
   toast('Welcome to QuickFix Pro!', 'success');
 }
+
+const searchInput = document.querySelector('#mobileSearchInput') || document.querySelector('#searchInput');
+searchInput?.focus();
 
 
 // Auto-advance carousel
 function startCarouselAutoAdvance() {
-  if (window.innerWidth <= 768) {
-    const intro = document.getElementById('mobileIntro');
-    if (!intro) return;
-    setInterval(() => {
-      if (intro && intro.style.display !== 'none') {
-        nextSlide();
-      }
-    }, 4000);
-  }
+  const intro = document.getElementById('mobileIntro');
+  if (!intro) return;
+
+  setInterval(() => {
+    // Only auto-advance if intro is visible on mobile
+    if (window.innerWidth <= 768 && intro.style.display !== 'none') {
+      nextSlide();
+    }
+  }, 4500);
 }
+
 
 // Mobile Menu Functions
 function toggleMobileMenu() {
@@ -2469,31 +2482,35 @@ function detectLocation() {
 function initializeApp() {
   console.log('Initializing QuickFix Pro...');
 
-  // Check if user has seen intro before
-  const hasSeenIntro = localStorage.getItem('hasSeenIntro') === 'true';
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const introEl = document.getElementById('mobileIntro');
+// Mobile-only welcome overlay
+const hasSeenIntro = localStorage.getItem('hasSeenIntro') === 'true';
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+const introEl = document.getElementById('mobileIntro');
 
-  if (introEl) {
-    if (!hasSeenIntro && isMobile) {
-      introEl.style.display = 'flex';
-      document.documentElement.classList.add('no-scroll');
-      document.body.classList.add('no-scroll');
-      startCarouselAutoAdvance();
-      // ensure first slide is visible
-      showSlide(0);
-    } else {
-      introEl.style.display = 'none';
-      document.documentElement.classList.remove('no-scroll');
-      document.body.classList.remove('no-scroll');
-      document.body.style.overflow = 'auto';
-    }
+if (introEl) {
+  if (!hasSeenIntro && isMobile) {
+    introEl.style.display = 'flex';
+    document.documentElement.classList.add('no-scroll');
+    document.body.classList.add('no-scroll');
+    document.body.style.overflow = 'hidden';
+
+    computeTotalSlides();
+    showSlide(0);
+    startCarouselAutoAdvance();
   } else {
-    // If this page doesn't have the intro, just ensure scrolling works
+    introEl.style.display = 'none';
     document.documentElement.classList.remove('no-scroll');
     document.body.classList.remove('no-scroll');
     document.body.style.overflow = 'auto';
   }
+} else {
+  // No intro available on this page
+  document.documentElement.classList.remove('no-scroll');
+  document.body.classList.remove('no-scroll');
+  document.body.style.overflow = 'auto';
+}
+
+
 
   // Load mock data
   initializeMockData();

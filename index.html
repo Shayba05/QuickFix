@@ -1494,6 +1494,255 @@
   }
 </style>
 
+<style>
+  /* Mobile Intro Overlay */
+  #mobileIntro {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;                 /* JS will set to flex when needed */
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 20% -20%, rgba(99,102,241,0.25), transparent),
+                radial-gradient(1000px 600px at 120% 120%, rgba(16,185,129,0.25), transparent),
+                #0f172a;            /* slate-900 fallback for dark vibe */
+    color: #fff;
+    overflow: hidden;
+  }
+
+  /* Hide overlay on desktop/tablet by default */
+  @media (min-width: 769px) {
+    #mobileIntro { display: none !important; }
+  }
+
+  .intro-bg {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+  }
+
+  .blob {
+    position: absolute;
+    width: 60vmin;
+    height: 60vmin;
+    filter: blur(40px);
+    opacity: 0.5;
+    border-radius: 50%;
+    animation: float 18s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  .blob.blob-1 { background: #6366f1; top: 0%; left: -10%; animation-delay: 0s; }
+  .blob.blob-2 { background: #22c55e; bottom: -5%; right: -5%; animation-delay: 3s; }
+  .blob.blob-3 { background: #f43f5e; top: 30%; right: 10%; animation-delay: 6s; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0) translateX(0) scale(1); }
+    50%     { transform: translateY(-20px) translateX(10px) scale(1.05); }
+  }
+
+  .intro-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    padding: 24px 20px;
+    backdrop-filter: blur(6px);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .brand .logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #6366f1, #22c55e);
+    color: white; font-weight: 800; letter-spacing: 0.5px;
+  }
+  .brand h1 { font-size: 20px; margin: 0; font-weight: 800; }
+  .brand small { opacity: 0.8; }
+
+  .carousel-container {
+    position: relative;
+    min-height: 280px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .carousel-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    transition: transform 420ms ease, opacity 420ms ease;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 10px 6px;
+  }
+  .carousel-slide.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .carousel-illustration {
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 12px;
+    opacity: 0.95;
+  }
+  .carousel-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
+  .carousel-text { font-size: 14px; opacity: 0.9; margin: 0 auto; max-width: 26ch; }
+
+  .howto-list {
+    text-align: left;
+    margin: 8px auto 0;
+    padding-left: 0;
+    list-style: none;
+    max-width: 32ch;
+  }
+  .howto-list li { margin: 8px 0; display: flex; gap: 8px; align-items: flex-start; }
+  .howto-list li i { margin-top: 2px; }
+
+  .controls {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px;
+  }
+  .dots { display: flex; gap: 8px; align-items: center; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: transparent;
+    opacity: 0.9;
+    transform: translateZ(0);
+  }
+  .dot.active { background: #fff; border-color: #fff; }
+
+  .nav-btn {
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 10px;
+  }
+
+  .cta {
+    margin-top: 14px;
+    width: 100%;
+    display: grid;
+    gap: 8px;
+  }
+  .cta .btn-primary {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #0b1b13;
+    transform: translateZ(0);
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+  .cta .btn-primary:active { transform: translateY(1px); }
+  .cta .btn-outline {
+    width: 100%;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+  }
+</style>
+
+<!-- Mobile Intro (mobile-only, stays until Get Started) -->
+<div id="mobileIntro" aria-hidden="true">
+  <div class="intro-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="intro-card">
+    <div class="brand">
+      <div class="logo">QF</div>
+      <div>
+        <h1>QuickFix Pro</h1>
+        <small>Fixes at your fingertips</small>
+      </div>
+    </div>
+
+    <div class="carousel-container">
+      <!-- Slide 1: Welcome -->
+      <div class="carousel-slide active">
+        <div>
+          <div class="carousel-illustration"><i class="fas fa-sparkles"></i></div>
+          <p class="carousel-title">Welcome!</p>
+          <p class="carousel-text">Find trusted pros, book in minutes, track jobs, and get things done fast.</p>
+        </div>
+      </div>
+
+      <!-- Slide 2: How it works – Search -->
+      <div class="carousel-slide">
+        <div>
+          <div class="carousel-illustration"><i class="fas fa-magnifying-glass"></i></div>
+          <p class="carousel-title">1. Search</p>
+          <ul class="howto-list">
+            <li><i class="fas fa-circle-small"></i><span>Browse popular services or type what you need.</span></li>
+            <li><i class="fas fa-circle-small"></i><span>See ratings, prices, and availability at a glance.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 3: How it works – Book -->
+      <div class="carousel-slide">
+        <div>
+          <div class="carousel-illustration"><i class="fas fa-calendar-check"></i></div>
+          <p class="carousel-title">2. Book</p>
+          <ul class="howto-list">
+            <li><i class="fas fa-circle-small"></i><span>Pick a time that works for you.</span></li>
+            <li><i class="fas fa-circle-small"></i><span>Share a few details & photos for better quotes.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 4: How it works – Track & Pay -->
+      <div class="carousel-slide">
+        <div>
+          <div class="carousel-illustration"><i class="fas fa-comments"></i></div>
+          <p class="carousel-title">3. Track, Chat & Pay</p>
+          <ul class="howto-list">
+            <li><i class="fas fa-circle-small"></i><span>Chat with the pro, track progress, and get updates.</span></li>
+            <li><i class="fas fa-circle-small"></i><span>Pay securely & leave a review when done.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button type="button" class="nav-btn" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+      <div class="dots">
+        <button class="dot active" aria-label="Slide 1" onclick="goToSlide(0)"></button>
+        <button class="dot" aria-label="Slide 2" onclick="goToSlide(1)"></button>
+        <button class="dot" aria-label="Slide 3" onclick="goToSlide(2)"></button>
+        <button class="dot" aria-label="Slide 4" onclick="goToSlide(3)"></button>
+      </div>
+      <button type="button" class="nav-btn" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="cta">
+      <button class="btn-primary" id="getStartedBtn" onclick="enterMainApp()">
+        Get Started
+      </button>
+      <button class="btn-outline" onclick="nextSlide()">What can I do here?</button>
+    </div>
+  </div>
+</div>
+
+
 
 </head>
 <body>
