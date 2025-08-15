@@ -337,16 +337,24 @@ function prevSlide() {
 }
 
 function enterMainApp() {
-    const mobileIntro = document.getElementById('mobileIntro');
-    mobileIntro.style.display = 'none';
-    isFirstVisit = false;
-    localStorage.setItem('hasSeenIntro', 'true');
+  const mobileIntro = document.getElementById('mobileIntro');
+  mobileIntro.style.display = 'none';
+  localStorage.setItem('hasSeenIntro', 'true');
+
+  // unlock page scroll
+  document.documentElement.classList.remove('no-scroll');
+  document.body.classList.remove('no-scroll');
+
+  document.body.style.overflow = 'auto';
+  toast('Welcome to QuickFix Pro!', 'success');
+}
+
     
     // Show main content
     document.body.style.overflow = 'auto';
     
     toast('Welcome to QuickFix Pro!', 'success');
-}
+
 
 // Auto-advance carousel
 function startCarouselAutoAdvance() {
@@ -2458,20 +2466,25 @@ function detectLocation() {
 function initializeApp() {
   console.log('Initializing QuickFix Pro...');
   
-  // Check if user has seen intro before
-  const hasSeenIntro = localStorage.getItem('hasSeenIntro');
-  const isMobile = window.innerWidth <= 768;
-  
-  if (!hasSeenIntro && isMobile) {
-    // Show mobile intro
-    document.getElementById('mobileIntro').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    startCarouselAutoAdvance();
-  } else {
-    // Hide mobile intro
-    document.getElementById('mobileIntro').style.display = 'none';
-    document.body.style.overflow = 'auto';
-  }
+// Check if user has seen intro before
+const hasSeenIntro = localStorage.getItem('hasSeenIntro') === 'true';
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+const introEl = document.getElementById('mobileIntro');
+
+if (!hasSeenIntro && isMobile) {
+  // Show mobile intro and lock the page
+  introEl.style.display = 'flex';
+  document.documentElement.classList.add('no-scroll');
+  document.body.classList.add('no-scroll');
+  startCarouselAutoAdvance();
+} else {
+  // Hide it for desktop or after first 'Get Started'
+  introEl.style.display = 'none';
+  document.documentElement.classList.remove('no-scroll');
+  document.body.classList.remove('no-scroll');
+  document.body.style.overflow = 'auto';
+}
+
   
   // Load mock data
   initializeMockData();
@@ -2643,14 +2656,6 @@ window.addEventListener('resize', function() {
     // Handle mobile menu on resize
     if (window.innerWidth > 1024) {
         closeMobileMenu();
-    }
-    
-    // Handle intro carousel on resize
-    if (window.innerWidth > 768) {
-        const mobileIntro = document.getElementById('mobileIntro');
-        if (mobileIntro && mobileIntro.style.display !== 'none') {
-            enterMainApp();
-        }
     }
 });
 

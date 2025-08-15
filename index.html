@@ -1477,6 +1477,24 @@
       .faq-question { min-height: 64px; }
     }
   </style>
+
+<style>
+  /* Full-screen mobile intro */
+  #mobileIntro {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none; /* your JS will switch this to 'flex' */
+  }
+
+  /* Lock scrolling while intro is up */
+  html.no-scroll, body.no-scroll {
+    overflow: hidden;
+    height: 100%;
+  }
+</style>
+
+
 </head>
 <body>
   <!-- Mobile Intro Carousel (Mobile Only) -->
