@@ -349,22 +349,18 @@ function enterMainApp() {
   toast('Welcome to QuickFix Pro!', 'success');
 }
 
-    
-    // Show main content
-    document.body.style.overflow = 'auto';
-    
-    toast('Welcome to QuickFix Pro!', 'success');
-
 
 // Auto-advance carousel
 function startCarouselAutoAdvance() {
-    if (window.innerWidth <= 768) {
-        setInterval(() => {
-            if (document.getElementById('mobileIntro').style.display !== 'none') {
-                nextSlide();
-            }
-        }, 4000);
-    }
+  if (window.innerWidth <= 768) {
+    const intro = document.getElementById('mobileIntro');
+    if (!intro) return;
+    setInterval(() => {
+      if (intro && intro.style.display !== 'none') {
+        nextSlide();
+      }
+    }, 4000);
+  }
 }
 
 // Mobile Menu Functions
@@ -547,9 +543,16 @@ function doSearch(query) {
 function selectRole(role) {
   console.log('Select role:', role);
   $$('.user-type-card').forEach(card => card.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  event.currentTarget.querySelector('input[type="radio"]').checked = true;
+
+  // Find the radio by its value and mark its card
+  const input = document.querySelector(`input[name="accountRole"][value="${role}"]`);
+  if (input) {
+    input.checked = true;
+    const card = input.closest('.user-type-card');
+    if (card) card.classList.add('selected');
+  }
 }
+
 
 function openSettings() {
   console.log('Open settings');
@@ -976,7 +979,8 @@ function removeJobPhoto(photoId) {
 function loadAvailableTimes() {
   const dateInput = $('#preferredDate');
   const selectedDate = new Date(dateInput.value);
-  const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
+  const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
   
   console.log('Loading available times for:', dayName);
   
@@ -2462,35 +2466,40 @@ function detectLocation() {
   }
 }
 
-// Initialize app
 function initializeApp() {
   console.log('Initializing QuickFix Pro...');
-  
-// Check if user has seen intro before
-const hasSeenIntro = localStorage.getItem('hasSeenIntro') === 'true';
-const isMobile = window.matchMedia('(max-width: 768px)').matches;
-const introEl = document.getElementById('mobileIntro');
 
-if (!hasSeenIntro && isMobile) {
-  // Show mobile intro and lock the page
-  introEl.style.display = 'flex';
-  document.documentElement.classList.add('no-scroll');
-  document.body.classList.add('no-scroll');
-  startCarouselAutoAdvance();
-} else {
-  // Hide it for desktop or after first 'Get Started'
-  introEl.style.display = 'none';
-  document.documentElement.classList.remove('no-scroll');
-  document.body.classList.remove('no-scroll');
-  document.body.style.overflow = 'auto';
-}
+  // Check if user has seen intro before
+  const hasSeenIntro = localStorage.getItem('hasSeenIntro') === 'true';
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const introEl = document.getElementById('mobileIntro');
 
-  
+  if (introEl) {
+    if (!hasSeenIntro && isMobile) {
+      introEl.style.display = 'flex';
+      document.documentElement.classList.add('no-scroll');
+      document.body.classList.add('no-scroll');
+      startCarouselAutoAdvance();
+      // ensure first slide is visible
+      showSlide(0);
+    } else {
+      introEl.style.display = 'none';
+      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
+      document.body.style.overflow = 'auto';
+    }
+  } else {
+    // If this page doesn't have the intro, just ensure scrolling works
+    document.documentElement.classList.remove('no-scroll');
+    document.body.classList.remove('no-scroll');
+    document.body.style.overflow = 'auto';
+  }
+
   // Load mock data
   initializeMockData();
   loadMockContent();
   detectLocation();
-  
+
   // Initialize search on Enter key
   const searchInputs = document.querySelectorAll('#searchInput, #mobileSearchInput');
   searchInputs.forEach(input => {
@@ -2500,19 +2509,21 @@ if (!hasSeenIntro && isMobile) {
       }
     });
   });
-  
+
   // Close mobile menu when clicking outside
   document.addEventListener('click', function(e) {
     const mobileMenu = document.getElementById('mobileMenu');
     const hamburgerBtn = document.querySelector('.hamburger-btn');
-    
-    if (mobileMenu.classList.contains('active') && 
-        !mobileMenu.contains(e.target) && 
+    if (!mobileMenu || !hamburgerBtn) return;
+
+    if (mobileMenu.classList.contains('active') &&
+        !mobileMenu.contains(e.target) &&
         !hamburgerBtn.contains(e.target)) {
       closeMobileMenu();
     }
   });
 }
+
 
 // Firebase auth state observer
 auth.onAuthStateChanged(async (user) => {
